@@ -228,7 +228,7 @@ export default function WorkerDashboard() {
         <TopBar title="Worker Portal" />
 
         <div className="worker-page-container" style={{ padding: "2rem", flex: 1 }}>
-          <div className="worker-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+          <div className="worker-header-row flex-stack-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
             <h3 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Job Requests</h3>
             <div style={{ display: "flex", gap: "1rem" }}>
               <div style={{ position: "relative" }}>
@@ -449,7 +449,7 @@ export default function WorkerDashboard() {
                           <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
                             Enter Harvested Trees
                           </label>
-                          <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <div className="flex-stack-mobile" style={{ display: "flex", gap: "0.5rem" }}>
                             <input
                               type="number"
                               min="0"
