@@ -8,6 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { collection, getDocs, deleteDoc, doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/context/ToastContext";
 
 interface Worker {
   uid: string;
@@ -20,6 +21,7 @@ interface Worker {
 }
 
 export default function WorkersDirectory() {
+  const { showToast } = useToast();
   const router = useRouter();
   const [currentUserName, setCurrentUserName] = useState("Manager");
   const [currentUserRole, setCurrentUserRole] = useState("manager");
@@ -74,9 +76,10 @@ export default function WorkersDirectory() {
       try {
         await deleteDoc(doc(db, "users", uid));
         setWorkers((prev) => prev.filter((worker) => worker.uid !== uid));
+        showToast("Worker deleted successfully.", "success");
       } catch (error) {
         console.error("Error deleting worker:", error);
-        alert("Failed to delete worker. Please try again.");
+        showToast("Failed to delete worker. Please try again.", "error");
       }
     }
   };

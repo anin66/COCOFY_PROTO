@@ -8,6 +8,7 @@ import { Search, Briefcase, MapPin, Calendar, TreePine, Users, Clock, CheckCircl
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, getDoc, increment } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { useToast } from "@/context/ToastContext";
 
 interface AssignedWorker {
   uid: string;
@@ -32,6 +33,7 @@ interface Job {
 }
 
 export default function WorkerDashboard() {
+  const { showToast } = useToast();
   const router = useRouter();
   const [currentUid, setCurrentUid] = useState<string | null>(null);
   const [userName, setUserName] = useState("Worker");
@@ -137,7 +139,7 @@ export default function WorkerDashboard() {
     } catch (err) {
       console.error("Error responding to job:", err);
       setMyJobs(oldJobs);
-      alert("Failed to respond. Please try again.");
+      showToast("Failed to respond. Please try again.", "error");
     } finally {
       setRespondingJobId(null);
     }
@@ -156,10 +158,11 @@ export default function WorkerDashboard() {
       await updateDoc(jobRef, {
         status: "WORK_COMPLETED",
       });
+      showToast("Job completed successfully.", "success");
     } catch (err) {
       console.error("Error completing job:", err);
       setMyJobs(oldJobs);
-      alert("Failed to complete job. Please try again.");
+      showToast("Failed to complete job. Please try again.", "error");
     }
   };
 
@@ -203,10 +206,11 @@ export default function WorkerDashboard() {
       await updateDoc(jobRef, {
         assignedWorkers: updatedWorkers,
       });
+      showToast("Harvest confirmed successfully.", "success");
     } catch (err) {
       console.error("Error confirming harvest:", err);
       setMyJobs(oldJobs);
-      alert("Failed to confirm harvest. Please try again.");
+      showToast("Failed to confirm harvest. Please try again.", "error");
     }
   };
 

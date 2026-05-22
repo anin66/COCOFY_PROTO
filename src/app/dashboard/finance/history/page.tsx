@@ -12,9 +12,11 @@ import {
   IndianRupee, Download, Users, FileText, Image as ImageIcon, History as HistoryIcon
 } from "lucide-react";
 import html2canvas from "html2canvas";
+import { useToast } from "@/context/ToastContext";
 import jsPDF from "jspdf";
 
 export default function FinanceHistory() {
+  const { showToast } = useToast();
   const router = useRouter();
   const [currentUserRole, setCurrentUserRole] = useState<string>("finance");
   const [currentUserName, setCurrentUserName] = useState<string>("Finance Manager");
@@ -89,7 +91,7 @@ export default function FinanceHistory() {
       pdf.save(`Receipt_${customerName.replace(/\s+/g, '_')}_${paymentId.slice(0, 6)}.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF receipt. Please check console for details.");
+      showToast("Failed to generate PDF receipt. Please check console for details.", "error");
     } finally {
       setGeneratingPdf(null);
     }

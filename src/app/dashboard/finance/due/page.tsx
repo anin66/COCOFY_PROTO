@@ -12,8 +12,10 @@ import {
   CheckCircle, MapPin, Phone, Calendar, TreePine, 
   IndianRupee, UploadCloud, X, History, AlertCircle
 } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 
 export default function FinanceDueAmount() {
+  const { showToast } = useToast();
   const router = useRouter();
   const [currentUserRole, setCurrentUserRole] = useState<string>("finance");
   const [currentUserName, setCurrentUserName] = useState<string>("Finance Manager");
@@ -97,12 +99,12 @@ export default function FinanceDueAmount() {
     if (!selectedPayment) return;
     
     if (paymentMethod === "CASH" && !receiverName.trim()) {
-      alert("Receiver name is mandatory for cash payments.");
+      showToast("Receiver name is mandatory for cash payments.", "warning");
       return;
     }
 
     if (paymentTab === "PAY_PARTIAL" && !receivedAmount) {
-      alert("Please enter the received amount.");
+      showToast("Please enter the received amount.", "warning");
       return;
     }
 
@@ -112,11 +114,11 @@ export default function FinanceDueAmount() {
     } else {
       paidAmount = parseFloat(receivedAmount);
       if (isNaN(paidAmount) || paidAmount <= 0) {
-        alert("Enter a valid amount greater than 0");
+        showToast("Enter a valid amount greater than 0", "warning");
         return;
       }
       if (paidAmount > selectedPayment.dueAmount) {
-        alert("Cannot pay more than the remaining due amount.");
+        showToast("Cannot pay more than the remaining due amount.", "error");
         return;
       }
     }
@@ -154,6 +156,7 @@ export default function FinanceDueAmount() {
       });
 
       setPaymentModalOpen(false);
+      showToast("Payment recorded successfully.", "success");
       
       if (isFullyPaid) {
         router.push("/dashboard/finance/history");
@@ -161,7 +164,7 @@ export default function FinanceDueAmount() {
       
     } catch (error) {
       console.error("Error updating payment:", error);
-      alert("Failed to update payment record.");
+      showToast("Failed to update payment record.", "error");
     } finally {
       setSubmitting(false);
     }

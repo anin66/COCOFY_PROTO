@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Truck, Search, Check, User } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import { useToast } from "@/context/ToastContext";
 
 interface DeliveryUser {
   uid: string;
@@ -23,6 +24,7 @@ export default function AssignDeliveryModal({
   onClose,
   onAssigned,
 }: AssignDeliveryModalProps) {
+  const { showToast } = useToast();
   const [deliveryBoys, setDeliveryBoys] = useState<DeliveryUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
@@ -75,13 +77,15 @@ export default function AssignDeliveryModal({
           status: "pending",
         },
         status: "DELIVERY_PENDING",
+      }).then(() => {
+        showToast("Delivery boy assigned successfully.", "success");
       }).catch((err) => {
         console.error("Firestore error assigning delivery boy:", err);
-        alert("Failed to save delivery assignment on server.");
+        showToast("Failed to save delivery assignment on server.", "error");
       });
     } catch (err) {
       console.error("Error assigning delivery boy:", err);
-      alert("Failed to assign delivery boy.");
+      showToast("Failed to assign delivery boy.", "error");
     } finally {
       setSubmitting(false);
     }

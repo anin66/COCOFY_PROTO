@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import DatePicker from "@/components/ui/DatePicker";
 import AssignTeamModal from "@/components/dashboard/AssignTeamModal";
 import AssignDeliveryModal from "@/components/dashboard/AssignDeliveryModal";
+import { useToast } from "@/context/ToastContext";
 
 interface AssignedWorker {
   uid: string;
@@ -48,6 +49,7 @@ interface Job {
 }
 
 export default function ManagerDashboard() {
+  const { showToast } = useToast();
   const router = useRouter();
   const [currentUserName, setCurrentUserName] = useState("Manager");
   const [currentUserRole, setCurrentUserRole] = useState("manager");
@@ -171,9 +173,10 @@ export default function ManagerDashboard() {
     try {
       const jobRef = doc(db, "jobs", id);
       await updateDoc(jobRef, updatedFields);
+      showToast("Job updated successfully.", "success");
     } catch (error) {
       console.error("Error updating job:", error);
-      alert("Failed to update job.");
+      showToast("Failed to update job.", "error");
       setJobs(oldJobs);
     }
   };
@@ -210,9 +213,11 @@ export default function ManagerDashboard() {
       setIsDeleteModalClosing(false);
 
       // Trigger Firestore delete in background asynchronously
-      deleteDoc(doc(db, "jobs", jobId)).catch((error) => {
+      deleteDoc(doc(db, "jobs", jobId)).then(() => {
+        showToast("Job deleted successfully.", "success");
+      }).catch((error) => {
         console.error("Firestore delete error:", error);
-        alert("Failed to remove job from server.");
+        showToast("Failed to remove job from server.", "error");
       });
 
       // Filter local state instantly to trigger instantaneous card rearrangement
@@ -220,7 +225,7 @@ export default function ManagerDashboard() {
       setSubmitting(false);
     } catch (error) {
       console.error("Error confirming delete:", error);
-      alert("Failed to delete job.");
+      showToast("Failed to delete job.", "error");
       setSubmitting(false);
     }
   };
@@ -294,11 +299,12 @@ export default function ManagerDashboard() {
 
         // Remove the animation class from the card after it finishes playing
         setTimeout(() => setNewlyCreatedJobId(null), 1000);
+        showToast("Job created successfully.", "success");
       }, 350); 
       
     } catch (error) {
       console.error("Error creating job:", error);
-      alert("Failed to create job.");
+      showToast("Failed to create job.", "error");
       setSubmitting(false);
     }
   };
@@ -314,7 +320,7 @@ export default function ManagerDashboard() {
     e.preventDefault();
     if (!confirmingJob) return;
     if (!confirmStartTime.trim()) {
-      alert("Please select or input an exact start time.");
+      showToast("Please select or input an exact start time.", "warning");
       return;
     }
 
@@ -345,9 +351,10 @@ export default function ManagerDashboard() {
     try {
       const jobRef = doc(db, "jobs", confirmingJob.id);
       await updateDoc(jobRef, updateData);
+      showToast("Job confirmed successfully.", "success");
     } catch (error) {
       console.error("Error confirming job:", error);
-      alert("Failed to confirm job.");
+      showToast("Failed to confirm job.", "error");
       setJobs(oldJobs);
     }
   };
@@ -363,9 +370,10 @@ export default function ManagerDashboard() {
       await updateDoc(jobRef, {
         status: "ARCHIVED",
       });
+      showToast("Job archived successfully.", "success");
     } catch (error) {
       console.error("Error archiving job:", error);
-      alert("Failed to archive job.");
+      showToast("Failed to archive job.", "error");
       setJobs(oldJobs);
     }
   };

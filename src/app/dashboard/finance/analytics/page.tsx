@@ -20,6 +20,7 @@ import {
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import DatePicker from "@/components/ui/DatePicker";
+import { useToast } from "@/context/ToastContext";
 
 /* ============================== TYPES ============================== */
 interface Job {
@@ -197,6 +198,7 @@ const createSmoothPath = (points: { x: number; y: number }[]) => {
 
 /* ============================== MAIN COMPONENT ============================== */
 export default function FinanceAnalytics() {
+  const { showToast } = useToast();
   const router = useRouter();
   const [currentUserRole, setCurrentUserRole] = useState("finance");
   const [currentUserName, setCurrentUserName] = useState("Finance Manager");
@@ -705,8 +707,8 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
   };
 
   const handleSaveExpense = async () => {
-    if (!expAmount || parseFloat(expAmount) <= 0) { alert("Enter a valid amount."); return; }
-    if (!expDate) { alert("Select a date."); return; }
+    if (!expAmount || parseFloat(expAmount) <= 0) { showToast("Enter a valid amount.", "error"); return; }
+    if (!expDate) { showToast("Select a date.", "error"); return; }
     setExpSubmitting(true);
     try {
       const data = {
@@ -724,9 +726,10 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
         await addDoc(collection(db, "expenses"), data);
       }
       setExpenseModalOpen(false);
+      showToast(editingExpense ? "Expense updated successfully." : "Expense added successfully.", "success");
     } catch (err) {
       console.error("Expense save error:", err);
-      alert("Failed to save expense.");
+      showToast("Failed to save expense.", "error");
     } finally {
       setExpSubmitting(false);
     }
@@ -734,8 +737,11 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
 
   const handleDeleteExpense = async (id: string) => {
     if (!confirm("Delete this expense?")) return;
-    try { await deleteDoc(doc(db, "expenses", id)); }
-    catch (err) { console.error("Delete error:", err); alert("Failed to delete."); }
+    try { 
+      await deleteDoc(doc(db, "expenses", id)); 
+      showToast("Expense deleted successfully.", "success");
+    }
+    catch (err) { console.error("Delete error:", err); showToast("Failed to delete.", "error"); }
   };
 
   /* ============================== LEDGER DATA ============================== */
@@ -1094,7 +1100,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
       pdf.save(`${pdfFileName}.pdf`);
     } catch (err) {
       console.error("PDF error:", err);
-      alert("Failed to generate PDF.");
+      showToast("Failed to generate PDF.", "error");
     } finally {
       setGeneratingPdf(false);
     }

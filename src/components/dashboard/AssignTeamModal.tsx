@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Users, Search, Check, User } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import { useToast } from "@/context/ToastContext";
 
 interface WorkerUser {
   uid: string;
@@ -29,6 +30,7 @@ export default function AssignTeamModal({
   onClose,
   onAssigned,
 }: AssignTeamModalProps) {
+  const { showToast } = useToast();
   const [workers, setWorkers] = useState<WorkerUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUids, setSelectedUids] = useState<Set<string>>(new Set());
@@ -105,13 +107,15 @@ export default function AssignTeamModal({
       updateDoc(jobRef, {
         assignedWorkers: selectedWorkers,
         status: "TEAM_PENDING",
+      }).then(() => {
+        showToast("Workers assigned successfully.", "success");
       }).catch((err) => {
         console.error("Firestore error assigning workers:", err);
-        alert("Failed to save worker assignment on server.");
+        showToast("Failed to save worker assignment on server.", "error");
       });
     } catch (err) {
       console.error("Error assigning workers:", err);
-      alert("Failed to assign workers.");
+      showToast("Failed to assign workers.", "error");
     } finally {
       setSubmitting(false);
     }

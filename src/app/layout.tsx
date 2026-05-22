@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import { ToastProvider } from "@/context/ToastContext";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -34,8 +35,11 @@ export default function RootLayout({
           <div className="blob blob-2"></div>
           <div className="blob blob-3"></div>
         </div>
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
 }
+

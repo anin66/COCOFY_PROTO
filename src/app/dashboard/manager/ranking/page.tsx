@@ -7,6 +7,7 @@ import { Trophy, Edit2, Check, X, RefreshCw, Star, User, Mail, Phone, Calendar }
 import { db, auth } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, doc, updateDoc, writeBatch, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { useToast } from "@/context/ToastContext";
 
 interface Worker {
   uid: string;
@@ -18,6 +19,7 @@ interface Worker {
 }
 
 export default function WorkerRankings() {
+  const { showToast } = useToast();
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUid, setEditingUid] = useState<string | null>(null);
@@ -82,9 +84,10 @@ export default function WorkerRankings() {
         rankingPoints: editPoints,
       });
       setEditingUid(null);
+      showToast("Ranking points updated successfully.", "success");
     } catch (err) {
       console.error("Error updating ranking points:", err);
-      alert("Failed to update points. Please try again.");
+      showToast("Failed to update points. Please try again.", "error");
     } finally {
       setUpdatingUid(null);
     }
@@ -101,9 +104,10 @@ export default function WorkerRankings() {
           batch.update(userRef, { rankingPoints: 0 });
         });
         await batch.commit();
+        showToast("Rankings reset successfully.", "success");
       } catch (err) {
         console.error("Error resetting rankings:", err);
-        alert("Failed to reset rankings.");
+        showToast("Failed to reset rankings.", "error");
       } finally {
         setResetting(false);
       }

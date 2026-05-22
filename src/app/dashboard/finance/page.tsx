@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
+import { useToast } from "@/context/ToastContext";
 import { db, auth, storage } from "@/lib/firebase";
 import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -38,6 +39,7 @@ interface Job {
 
 export default function FinanceOverview() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [currentUserRole, setCurrentUserRole] = useState<string>("finance");
   const [currentUserName, setCurrentUserName] = useState<string>("Finance Manager");
   const [loading, setLoading] = useState(true);
@@ -166,12 +168,12 @@ export default function FinanceOverview() {
     if (!selectedJob) return;
     
     if (paymentMethod === "CASH" && !receiverName.trim() && paymentTab !== "UNPAID") {
-      alert("Receiver name is mandatory for cash payments.");
+      showToast("Receiver name is mandatory for cash payments.", "error");
       return;
     }
 
     if (paymentTab === "PARTIALLY_PAID" && !receivedAmount) {
-      alert("Please enter the received amount.");
+      showToast("Please enter the received amount.", "error");
       return;
     }
 
@@ -240,7 +242,7 @@ export default function FinanceOverview() {
       }
     } catch (error) {
       console.error("Error saving payment:", error);
-      alert("Failed to save payment record.");
+      showToast("Failed to save payment record.", "error");
     } finally {
       setSubmitting(false);
     }

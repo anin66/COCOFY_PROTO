@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
+import { useToast } from "@/context/ToastContext";
 import { Search, Briefcase, Phone, MapPin, Calendar, TreePine, Users, Clock, CheckCircle, Truck } from "lucide-react";
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, getDoc } from "firebase/firestore";
@@ -23,6 +24,7 @@ interface Job {
 }
 
 export default function DeliveryDashboard() {
+  const { showToast } = useToast();
   const [currentUid, setCurrentUid] = useState<string | null>(null);
   const [userName, setUserName] = useState("Delivery");
   const [myJobs, setMyJobs] = useState<Job[]>([]);
@@ -97,7 +99,7 @@ export default function DeliveryDashboard() {
     } catch (err) {
       console.error("Error confirming delivery:", err);
       setMyJobs(oldJobs);
-      alert("Failed to confirm. Please try again.");
+      showToast("Failed to confirm. Please try again.", "error");
     } finally {
       setConfirmingJobId(null);
     }
@@ -119,7 +121,7 @@ export default function DeliveryDashboard() {
     } catch (err) {
       console.error("Error starting pickup:", err);
       setMyJobs(oldJobs);
-      alert("Failed to start pickup. Please try again.");
+      showToast("Failed to start pickup. Please try again.", "error");
     }
   };
 
@@ -139,7 +141,7 @@ export default function DeliveryDashboard() {
     } catch (err) {
       console.error("Error updating arrival status:", err);
       setMyJobs(oldJobs);
-      alert("Failed to update arrival status. Please try again.");
+      showToast("Failed to update arrival status. Please try again.", "error");
     }
   };
 
