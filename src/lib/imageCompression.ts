@@ -137,3 +137,24 @@ export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMess
       });
   });
 }
+
+/**
+ * Converts a File or Blob into a base64 Data URL string.
+ */
+export function fileToBase64(file: Blob | File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Failed to convert file to base64"));
+      }
+    };
+    reader.onerror = () => {
+      reject(reader.error || new Error("FileReader error"));
+    };
+    reader.readAsDataURL(file);
+  });
+}
+

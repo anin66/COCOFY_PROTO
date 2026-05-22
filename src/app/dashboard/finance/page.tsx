@@ -4,10 +4,9 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { useToast } from "@/context/ToastContext";
-import { db, auth, storage } from "@/lib/firebase";
-import { compressImage, withTimeout } from "@/lib/imageCompression";
+import { db, auth } from "@/lib/firebase";
+import { compressImage, fileToBase64, withTimeout } from "@/lib/imageCompression";
 import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { 
@@ -205,16 +204,12 @@ export default function FinanceOverview() {
       if (targetUploadedFile) {
         try {
           const compressedFile = await compressImage(targetUploadedFile);
-          const fileRef = ref(storage, `payments/${targetJob.id}/${Date.now()}_${compressedFile.name}`);
-          await withTimeout(
-            uploadBytes(fileRef, compressedFile),
-            10000,
-            "Upload timed out."
-          );
-          fileUrl = await getDownloadURL(fileRef);
+          fileUrl = await fileToBase64(compressedFile);
         } catch (uploadError) {
-          console.error("Failed to upload optional receipt screenshot:", uploadError);
-          showToast("Payment recorded without receipt (upload failed).", "warning");
+          console.error("Failed to process receipt screenshot:", uploadError);
+          showToast("Failed to process receipt image. Please try another image.", "error");
+          setSubmitting(false);
+          return;
         }
       }
 
