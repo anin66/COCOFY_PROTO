@@ -13,6 +13,7 @@ import {
   Clock, FileText, Users, CheckCircle, Truck, MapPin, 
   MoreVertical, Edit, Trash2, Phone, Calendar, TreePine, XCircle, IndianRupee, UploadCloud, X
 } from "lucide-react";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 
 interface AssignedWorker {
   uid: string;
@@ -269,15 +270,17 @@ export default function FinanceOverview() {
           <div className="flex-stack-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2rem" }}>
             <div>
               <h2 style={{ fontSize: "2rem", fontWeight: 700, margin: "0 0 0.5rem 0" }}>Pending Payments</h2>
-              <p style={{ color: "rgba(255,255,255,0.6)", margin: 0 }}>
+              <p style={{ color: "var(--text-muted)", margin: 0 }}>
                 Jobs that have been completed and are awaiting payment collection.
               </p>
             </div>
           </div>
 
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
-              <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "3px" }}></div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </div>
           ) : jobs.length === 0 ? (
             <div style={{
@@ -289,7 +292,7 @@ export default function FinanceOverview() {
               backdropFilter: "blur(12px)",
               borderRadius: "12px",
               border: "1px dashed var(--surface-border)",
-              color: "rgba(255,255,255,0.5)"
+              color: "var(--text-dim)"
             }}>
               <p>No completed jobs awaiting payment.</p>
             </div>
@@ -324,7 +327,7 @@ export default function FinanceOverview() {
 
                     <h4 style={{ fontSize: "1.5rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "rgba(255,255,255,0.8)" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <Phone size={16} color="var(--accent)" className="icon-hover-effect" />
                         {job.phone}
@@ -349,15 +352,15 @@ export default function FinanceOverview() {
                       </div>
                       {job.assignedWorkers?.filter(w => w.status === "accepted").map((w, idx) => (
                         <div key={idx} style={{
-                          display: "flex", alignItems: "center", justifyContent: "space-between",
-                          padding: "0.5rem 0.75rem", borderRadius: "8px",
-                          background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "rgba(255,255,255,0.03)",
-                          border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.08)"}`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "0.5rem 0.75rem",
+                          borderRadius: "8px",
+                          background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "var(--surface-1)",
+                          border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "var(--surface-border)"}`,
                         }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
-                            {w.harvestConfirmed ? <CheckCircle size={14} color="#10b981" /> : <Clock size={14} color="#f59e0b" />}
-                            <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{w.name}</span>
-                          </div>
+                          <span style={{ color: "var(--foreground)", fontWeight: 550 }}>{w.name}</span>
                           <span style={{
                             fontSize: "0.8rem", fontWeight: 600,
                             color: w.harvestConfirmed ? "#10b981" : "#f59e0b",
@@ -412,11 +415,11 @@ export default function FinanceOverview() {
               overflow: "hidden"
             }}
           >
-            <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)" }}>
-              <h3 style={{ fontSize: "1.25rem", margin: 0, fontWeight: 700 }}>Receive Payment</h3>
+            <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--surface-1)" }}>
+              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: 0 }}>Record Customer Payment</h3>
               <button 
-                onClick={() => !submitting && setPaymentModalOpen(false)}
-                style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}
+                onClick={() => setPaymentModalOpen(false)}
+                style={{ background: "none", border: "none", color: "var(--text-light)", cursor: "pointer" }}
               >
                 <X size={20} />
               </button>
@@ -430,9 +433,9 @@ export default function FinanceOverview() {
                     onClick={() => setPaymentTab(tab as any)}
                     style={{
                       flex: 1, padding: "0.75rem", borderRadius: "8px",
-                      background: paymentTab === tab ? "rgba(123, 44, 191, 0.15)" : "rgba(255,255,255,0.03)",
+                      background: paymentTab === tab ? "rgba(123, 44, 191, 0.15)" : "var(--surface-2)",
                       border: `1px solid ${paymentTab === tab ? "var(--primary)" : "var(--surface-border)"}`,
-                      color: paymentTab === tab ? "white" : "rgba(255,255,255,0.6)",
+                      color: paymentTab === tab ? "white" : "var(--text-muted)",
                       fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", transition: "all 0.2s"
                     }}
                   >
@@ -444,7 +447,7 @@ export default function FinanceOverview() {
               {paymentTab !== "UNPAID" && (
                 <>
                   <div style={{ marginBottom: "1.5rem" }}>
-                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "rgba(255,255,255,0.7)", marginBottom: "0.5rem" }}>
+                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "var(--text-muted)", marginBottom: "0.5rem" }}>
                       Amount Received
                     </label>
                     <input 
@@ -467,7 +470,7 @@ export default function FinanceOverview() {
                   </div>
 
                   <div style={{ marginBottom: "1.5rem" }}>
-                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "rgba(255,255,255,0.7)", marginBottom: "0.5rem" }}>
+                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "var(--text-muted)", marginBottom: "0.5rem" }}>
                       Payment Method
                     </label>
                     <div style={{ display: "flex", gap: "1rem" }}>
@@ -484,7 +487,7 @@ export default function FinanceOverview() {
 
                   {paymentMethod === "CASH" && (
                     <div style={{ marginBottom: "1.5rem" }}>
-                      <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "rgba(255,255,255,0.7)", marginBottom: "0.5rem" }}>
+                      <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "var(--text-muted)", marginBottom: "0.5rem" }}>
                         Receiver Name (Required)
                       </label>
                       <input 
@@ -502,7 +505,7 @@ export default function FinanceOverview() {
                   )}
 
                   <div style={{ marginBottom: "1.5rem" }}>
-                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "rgba(255,255,255,0.7)", marginBottom: "0.5rem" }}>
+                    <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 550, color: "var(--text-muted)", marginBottom: "0.5rem" }}>
                       {paymentMethod === "GPAY" ? "Screenshot Upload (Optional)" : "Receiver Photo (Optional)"}
                     </label>
                     
@@ -516,7 +519,7 @@ export default function FinanceOverview() {
                       <span style={{ fontSize: "0.85rem", color: "white", fontWeight: 550 }}>
                         {uploadedFile ? uploadedFile.name : "Click to select a file"}
                       </span>
-                      <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", marginTop: "0.25rem" }}>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-dim)", marginTop: "0.25rem" }}>
                         Max size: 20MB
                       </span>
                       <input type="file" onChange={handleFileChange} accept="image/*" style={{ display: "none" }} />

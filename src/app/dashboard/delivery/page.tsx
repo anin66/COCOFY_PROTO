@@ -9,6 +9,7 @@ import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { triggerPushNotification } from "@/lib/notifications";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 
 interface Job {
   id: string;
@@ -190,13 +191,13 @@ export default function DeliveryDashboard() {
             <h3 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Job Requests</h3>
             <div style={{ display: "flex", gap: "1rem" }}>
               <div style={{ position: "relative" }}>
-                <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                 <input
                   type="text"
                   placeholder="Search jobs..."
                   style={{
                     background: "var(--surface)", border: "1px solid var(--surface-border)",
-                    color: "white", padding: "0.6rem 1rem 0.6rem 2.5rem",
+                    color: "var(--foreground)", padding: "0.6rem 1rem 0.6rem 2.5rem",
                     borderRadius: "8px", width: "250px", outline: "none", fontFamily: "inherit",
                   }}
                 />
@@ -205,14 +206,16 @@ export default function DeliveryDashboard() {
           </div>
 
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
-              <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "3px" }} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </div>
           ) : myJobs.length === 0 ? (
             <div style={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
               height: "400px", background: "rgba(13,6,40,0.5)", backdropFilter: "blur(12px)",
-              borderRadius: "16px", border: "1px dashed rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.4)", gap: "1rem",
+              borderRadius: "16px", border: "1px dashed var(--surface-border)", color: "var(--text-dim)", gap: "1rem",
             }}>
               <Truck size={48} strokeWidth={1.5} />
               <h4 style={{ fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", margin: 0 }}>
@@ -265,7 +268,7 @@ export default function DeliveryDashboard() {
                     <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
 
                     {/* Details Grid — includes customer phone for delivery */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "rgba(255,255,255,0.8)" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "var(--text-muted)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <Phone size={16} color="#10b981" className="icon-hover-effect" />
                         <span style={{ color: "#10b981", fontWeight: 600 }}>{job.phone}</span>
@@ -379,7 +382,7 @@ export default function DeliveryDashboard() {
           position: absolute;
           top: 0; left: -150%;
           width: 50%; height: 100%;
-          background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+          background: linear-gradient(to right, rgba(255,255,255,0) 0%, var(--surface-border) 50%, rgba(255,255,255,0) 100%);
           transform: skewX(-25deg);
           transition: none;
           pointer-events: none;

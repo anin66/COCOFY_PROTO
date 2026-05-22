@@ -176,7 +176,7 @@ export default function LoginPage() {
                 <div className="form-group">
                   <label className="form-label">Full Name</label>
                   <div style={{ position: "relative" }}>
-                    <User size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                    <User size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                     <input type="text" className="form-input" style={{ width: "100%", paddingLeft: "3rem" }} placeholder="John Doe" required value={name} onChange={e => setName(e.target.value)} />
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export default function LoginPage() {
                 <div className="form-group">
                   <label className="form-label">Phone Number</label>
                   <div style={{ position: "relative" }}>
-                    <Phone size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                    <Phone size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                     <input type="tel" className="form-input" style={{ width: "100%", paddingLeft: "3rem" }} placeholder="+1 234 567 8900" required value={phone} onChange={e => setPhone(e.target.value)} />
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export default function LoginPage() {
                 <div className="form-group">
                   <label className="form-label">Date of Birth</label>
                   <div style={{ position: "relative" }}>
-                    <Calendar size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                    <Calendar size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                     <input type="date" className="form-input" style={{ width: "100%", paddingLeft: "3rem" }} required value={dob} onChange={e => setDob(e.target.value)} />
                   </div>
                 </div>
@@ -213,7 +213,7 @@ export default function LoginPage() {
             <div className="form-group">
               <label className="form-label">Email Address</label>
               <div style={{ position: "relative" }}>
-                <Mail size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                <Mail size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                 <input type="email" className="form-input" style={{ width: "100%", paddingLeft: "3rem" }} placeholder="hello@cocofy.com" required value={email} onChange={e => setEmail(e.target.value)} />
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function LoginPage() {
             <div className="form-group">
               <label className="form-label">Password</label>
               <div style={{ position: "relative" }}>
-                <Lock size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                <Lock size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                 <input type="password" className="form-input" style={{ width: "100%", paddingLeft: "3rem" }} placeholder="••••••••" required value={password} onChange={e => setPassword(e.target.value)} />
               </div>
             </div>

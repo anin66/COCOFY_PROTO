@@ -10,6 +10,7 @@ import {
 import { db, auth } from "@/lib/firebase";
 import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 interface SalaryPlan {
   id: string;
@@ -523,9 +524,7 @@ export default function WorkerSalary() {
                 </div>
 
                 {jobsLoading ? (
-                  <div style={{ padding: "3rem", display: "flex", justifyContent: "center" }}>
-                    <div className="spinner" style={{ width: "28px", height: "28px", borderWidth: "2px" }} />
-                  </div>
+                  <SkeletonTable rows={5} cols={5} />
                 ) : filteredJobs.length === 0 ? (
                   <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: "0.9rem" }}>
                     No job assignments logged for this month.
@@ -550,10 +549,10 @@ export default function WorkerSalary() {
                         const isConfirmed = myWorkerRecord?.harvestConfirmed || false;
 
                         return (
-                          <tr key={job.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                            <td style={{ padding: "1rem 1.5rem", fontSize: "0.88rem", color: "white" }}>{job.date}</td>
+                          <tr key={job.id} style={{ borderBottom: "1px solid var(--surface-border)" }}>
+                            <td style={{ padding: "1rem 1.5rem", fontSize: "0.88rem", color: "var(--foreground)" }}>{job.date}</td>
                             <td style={{ padding: "1rem 1.5rem", fontSize: "0.88rem", fontWeight: 600 }}>{job.customerName}</td>
-                            <td style={{ padding: "1rem 1.5rem", fontSize: "0.88rem", color: "rgba(255,255,255,0.7)" }}>{job.location}</td>
+                            <td style={{ padding: "1rem 1.5rem", fontSize: "0.88rem", color: "var(--text-muted)" }}>{job.location}</td>
                             <td style={{ padding: "1rem 1.5rem", textAlign: "right" }}>
                               <span style={{
                                 fontSize: "0.72rem",
@@ -576,7 +575,7 @@ export default function WorkerSalary() {
                                   <span style={{ color: "#f59e0b", fontSize: "0.8rem", fontWeight: 550 }}>Confirm Pending</span>
                                 )
                               ) : (
-                                <span style={{ color: "rgba(255,255,255,0.3)" }}>--</span>
+                                <span style={{ color: "var(--text-dim)" }}>--</span>
                               )}
                             </td>
                           </tr>

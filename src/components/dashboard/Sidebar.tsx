@@ -239,7 +239,7 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
                   e.currentTarget.style.color = "var(--primary)";
                   e.currentTarget.style.opacity = "1";
                   e.currentTarget.style.transform = "translateX(4px)";
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
+                  e.currentTarget.style.background = "var(--surface-1)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -271,7 +271,7 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
             justifyContent: "center",
             overflow: "hidden"
           }}>
-            <UserIcon size={24} color="rgba(255,255,255,0.5)" />
+            <UserIcon size={24} color="var(--text-light)" />
           </div>
           <div>
             <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{userName}</div>
@@ -291,14 +291,14 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
             padding: "0.75rem",
             background: "transparent",
             border: "none",
-            color: "rgba(255,255,255,0.6)",
+            color: "var(--text-muted)",
             cursor: "pointer",
             transition: "color 0.2s ease",
             textAlign: "left",
             fontSize: "0.9rem"
           }}
           onMouseEnter={(e) => e.currentTarget.style.color = "var(--error)"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.6)"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
         >
           <LogOut size={18} />
           Sign Out

@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import DatePicker from "@/components/ui/DatePicker";
 import AssignTeamModal from "@/components/dashboard/AssignTeamModal";
 import AssignDeliveryModal from "@/components/dashboard/AssignDeliveryModal";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 import { useToast } from "@/context/ToastContext";
 
 interface AssignedWorker {
@@ -410,14 +411,14 @@ export default function ManagerDashboard() {
             <div className="flex-stack-mobile" style={{ display: "flex", gap: "1rem", width: "100%", maxWidth: "500px", justifyContent: "flex-end" }}>
               {/* Search Bar */}
               <div style={{ position: "relative", width: "100%" }}>
-                <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                 <input 
                   type="text" 
                   placeholder="Search customer/location..." 
                   style={{
                     background: "var(--surface)",
                     border: "1px solid var(--surface-border)",
-                    color: "white",
+                    color: "var(--foreground)",
                     padding: "0.6rem 1rem 0.6rem 2.5rem",
                     borderRadius: "8px",
                     width: "100%",
@@ -456,8 +457,14 @@ export default function ManagerDashboard() {
 
           {/* Job Requests Content Area */}
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
-              <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "3px" }}></div>
+            <div style={{ 
+              display: "grid", 
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
+              gap: "1.5rem" 
+            }}>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </div>
           ) : jobs.length === 0 ? (
             <div style={{
@@ -465,11 +472,11 @@ export default function ManagerDashboard() {
               alignItems: "center",
               justifyContent: "center",
               height: "300px",
-              background: "rgba(13, 6, 40, 0.5)",
+              background: "var(--surface-overlay)",
               backdropFilter: "blur(12px)",
               borderRadius: "12px",
               border: "1px dashed var(--surface-border)",
-              color: "rgba(255,255,255,0.5)"
+              color: "var(--text-light)"
             }}>
               <p>No active job requests. Click 'New Job' to create one.</p>
             </div>
@@ -520,7 +527,7 @@ export default function ManagerDashboard() {
                         style={{ 
                           background: "none", 
                           border: "none", 
-                          color: activeDropdownId === job.id ? "white" : "rgba(255,255,255,0.5)", 
+                          color: activeDropdownId === job.id ? "var(--foreground)" : "var(--text-light)", 
                           cursor: "pointer",
                           padding: "0.25rem",
                           borderRadius: "50%",
@@ -531,14 +538,14 @@ export default function ManagerDashboard() {
                         }}
                         onMouseEnter={(e) => {
                           if (activeDropdownId !== job.id) {
-                            e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                            e.currentTarget.style.color = "white";
+                            e.currentTarget.style.background = "var(--surface-2)";
+                            e.currentTarget.style.color = "var(--foreground)";
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (activeDropdownId !== job.id) {
                             e.currentTarget.style.background = "none";
-                            e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                            e.currentTarget.style.color = "var(--text-light)";
                           }
                         }}
                       >
@@ -581,7 +588,7 @@ export default function ManagerDashboard() {
                                 padding: "0.75rem 1rem",
                                 background: "none",
                                 border: "none",
-                                color: "rgba(255,255,255,0.8)",
+                                color: "var(--text-muted)",
                                 fontSize: "0.85rem",
                                 fontWeight: 550,
                                 textAlign: "left",
@@ -589,12 +596,12 @@ export default function ManagerDashboard() {
                                 transition: "all 0.2s"
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+                                e.currentTarget.style.background = "var(--surface-2)";
                                 e.currentTarget.style.color = "var(--accent)";
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.background = "none";
-                                e.currentTarget.style.color = "rgba(255,255,255,0.8)";
+                                e.currentTarget.style.color = "var(--text-muted)";
                               }}
                             >
                               <Edit size={14} />
@@ -642,7 +649,7 @@ export default function ManagerDashboard() {
                   <h4 style={{ fontSize: "1.5rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
 
                   {/* Grid of details */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "rgba(255,255,255,0.8)" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <Phone size={16} color="var(--accent)" className="icon-hover-effect" />
                       {job.phone}
@@ -680,14 +687,14 @@ export default function ManagerDashboard() {
                         <div key={idx} style={{
                           display: "flex", alignItems: "center", justifyContent: "space-between",
                           padding: "0.5rem 0.75rem", borderRadius: "8px",
-                          background: w.status === "accepted" ? "rgba(16,185,129,0.08)" : w.status === "rejected" ? "rgba(239,68,68,0.08)" : "rgba(255,255,255,0.03)",
-                          border: `1px solid ${w.status === "accepted" ? "rgba(16,185,129,0.25)" : w.status === "rejected" ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.08)"}`,
+                          background: w.status === "accepted" ? "rgba(16,185,129,0.08)" : w.status === "rejected" ? "rgba(239,68,68,0.08)" : "var(--surface-1)",
+                          border: `1px solid ${w.status === "accepted" ? "rgba(16,185,129,0.25)" : w.status === "rejected" ? "rgba(239,68,68,0.25)" : "var(--surface-border)"}`,
                         }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
                             {w.status === "accepted" ? <CheckCircle size={14} /> :
                              w.status === "rejected" ? <XCircle size={14} color="#ef4444" /> :
                              <Clock size={14} color="#f59e0b" />}
-                            <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{w.name}</span>
+                            <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{w.name}</span>
                           </div>
                           <span style={{
                             fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase",
@@ -708,12 +715,12 @@ export default function ManagerDashboard() {
                         <div key={idx} style={{
                           display: "flex", alignItems: "center", justifyContent: "space-between",
                           padding: "0.5rem 0.75rem", borderRadius: "8px",
-                          background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "rgba(255,255,255,0.03)",
-                          border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.08)"}`,
+                          background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "var(--surface-1)",
+                          border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "var(--surface-border)"}`,
                         }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
                             {w.harvestConfirmed ? <CheckCircle size={14} color="#10b981" /> : <Clock size={14} color="#f59e0b" />}
-                            <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{w.name}</span>
+                            <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{w.name}</span>
                           </div>
                           <span style={{
                             fontSize: "0.8rem", fontWeight: 600,
@@ -828,8 +835,8 @@ export default function ManagerDashboard() {
                     ) : (
                       <div style={{
                         width: "100%", padding: "0.875rem",
-                        background: "rgba(255,255,255,0.03)",
-                        color: "rgba(255,255,255,0.4)",
+                        background: "var(--surface-1)",
+                        color: "var(--text-dim)",
                         borderRadius: "12px",
                         fontSize: "0.85rem",
                         fontWeight: 600,
@@ -880,7 +887,7 @@ export default function ManagerDashboard() {
                 </div>
                 <button 
                   onClick={closeModal}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "var(--text-light)", cursor: "pointer" }}
                 >
                   <X size={20} />
                 </button>
@@ -888,7 +895,7 @@ export default function ManagerDashboard() {
 
               {/* Modal Body */}
               <div style={{ padding: "2rem" }}>
-                <p style={{ margin: "0 0 2rem 0", color: "rgba(255,255,255,0.7)", fontSize: "0.9rem", lineHeight: 1.5 }}>
+                <p style={{ margin: "0 0 2rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
                   Set up a new coconut harvesting task. Specify the trees and team size needed.
                 </p>
 
@@ -905,9 +912,9 @@ export default function ManagerDashboard() {
                       required
                       style={{
                         width: "100%",
-                        background: "rgba(0,0,0,0.2)",
+                        background: "var(--surface-2)",
                         border: "1px solid var(--accent)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -920,7 +927,7 @@ export default function ManagerDashboard() {
                   <div style={{ gridColumn: "2 / 3" }}>
                     <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>Phone Number</label>
                     <div style={{ position: "relative" }}>
-                      <Phone size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                      <Phone size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                       <input 
                         type="tel" 
                         name="phone"
@@ -932,7 +939,7 @@ export default function ManagerDashboard() {
                           width: "100%",
                           background: "var(--surface-2)",
                           border: "1px solid var(--surface-border)",
-                          color: "white",
+                          color: "var(--foreground)",
                           padding: "0.75rem 1rem 0.75rem 2.5rem",
                           borderRadius: "8px",
                           outline: "none",
@@ -956,7 +963,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -992,7 +999,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1017,7 +1024,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1042,7 +1049,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1066,7 +1073,7 @@ export default function ManagerDashboard() {
                   style={{
                     padding: "0.6rem 1.2rem",
                     background: "transparent",
-                    color: "white",
+                    color: "var(--text-muted)",
                     border: "none",
                     fontWeight: 600,
                     cursor: "pointer"
@@ -1129,7 +1136,7 @@ export default function ManagerDashboard() {
                 </div>
                 <button 
                   onClick={closeEditModal}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "var(--text-light)", cursor: "pointer" }}
                 >
                   <X size={20} />
                 </button>
@@ -1137,7 +1144,7 @@ export default function ManagerDashboard() {
 
               {/* Modal Body */}
               <div style={{ padding: "2rem" }}>
-                <p style={{ margin: "0 0 2rem 0", color: "rgba(255,255,255,0.7)", fontSize: "0.9rem", lineHeight: 1.5 }}>
+                <p style={{ margin: "0 0 2rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
                   Update coconut harvesting task details for this customer.
                 </p>
 
@@ -1154,9 +1161,9 @@ export default function ManagerDashboard() {
                       required
                       style={{
                         width: "100%",
-                        background: "rgba(0,0,0,0.2)",
+                        background: "var(--surface-2)",
                         border: "1px solid var(--accent)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1169,7 +1176,7 @@ export default function ManagerDashboard() {
                   <div style={{ gridColumn: "2 / 3" }}>
                     <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>Phone Number</label>
                     <div style={{ position: "relative" }}>
-                      <Phone size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                      <Phone size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                       <input 
                         type="tel" 
                         name="phone"
@@ -1181,7 +1188,7 @@ export default function ManagerDashboard() {
                           width: "100%",
                           background: "var(--surface-2)",
                           border: "1px solid var(--surface-border)",
-                          color: "white",
+                          color: "var(--foreground)",
                           padding: "0.75rem 1rem 0.75rem 2.5rem",
                           borderRadius: "8px",
                           outline: "none",
@@ -1205,7 +1212,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1241,7 +1248,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1266,7 +1273,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1291,7 +1298,7 @@ export default function ManagerDashboard() {
                         width: "100%",
                         background: "var(--surface-2)",
                         border: "1px solid var(--surface-border)",
-                        color: "white",
+                        color: "var(--foreground)",
                         padding: "0.75rem 1rem",
                         borderRadius: "8px",
                         outline: "none",
@@ -1315,7 +1322,7 @@ export default function ManagerDashboard() {
                   style={{
                     padding: "0.6rem 1.2rem",
                     background: "transparent",
-                    color: "white",
+                    color: "var(--text-muted)",
                     border: "none",
                     fontWeight: 600,
                     cursor: "pointer"
@@ -1388,8 +1395,8 @@ export default function ManagerDashboard() {
                 
                 <h3 style={{ margin: "0 0 0.75rem 0", fontSize: "1.25rem", fontWeight: 700 }}>Delete Job Request</h3>
                 
-                <p style={{ margin: 0, color: "rgba(255,255,255,0.7)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-                  Are you sure you want to delete the job request for <strong style={{ color: "white" }}>{deleteConfirmJob.customerName}</strong>? This action cannot be undone and will remove the task completely.
+                <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                  Are you sure you want to delete the job request for <strong style={{ color: "var(--foreground)" }}>{deleteConfirmJob.customerName}</strong>? This action cannot be undone and will remove the task completely.
                 </p>
               </div>
 
@@ -1401,7 +1408,7 @@ export default function ManagerDashboard() {
                   style={{
                     padding: "0.6rem 1.2rem",
                     background: "transparent",
-                    color: "white",
+                    color: "var(--text-muted)",
                     border: "none",
                     fontWeight: 600,
                     cursor: "pointer"
@@ -1460,11 +1467,11 @@ export default function ManagerDashboard() {
               <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <Clock size={24} color="var(--accent)" />
-                  <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "white" }}>Confirm Job Details</h2>
+                  <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "var(--foreground)" }}>Confirm Job Details</h2>
                 </div>
                 <button 
                   onClick={closeConfirmModal}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "var(--text-light)", cursor: "pointer" }}
                 >
                   <X size={20} />
                 </button>
@@ -1472,8 +1479,8 @@ export default function ManagerDashboard() {
 
               {/* Modal Body */}
               <div style={{ padding: "2rem" }}>
-                <p style={{ margin: "0 0 1.5rem 0", color: "rgba(255,255,255,0.7)", fontSize: "0.9rem", lineHeight: 1.5 }}>
-                  Finalize the start time and pricing structure for <strong style={{ color: "white" }}>{confirmingJob.customerName}</strong>.
+                <p style={{ margin: "0 0 1.5rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
+                  Finalize the start time and pricing structure for <strong style={{ color: "var(--foreground)" }}>{confirmingJob.customerName}</strong>.
                 </p>
 
                 <form id="confirm-job-form" onSubmit={handleConfirmJobSubmit}>
@@ -1483,7 +1490,7 @@ export default function ManagerDashboard() {
                       Exact Start Time
                     </label>
                     <div style={{ position: "relative" }}>
-                      <Clock size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                      <Clock size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                       <input 
                         type="text"
                         placeholder="e.g. 6:15 AM or 17:30"
@@ -1493,7 +1500,7 @@ export default function ManagerDashboard() {
                           width: "100%",
                           background: "var(--surface-2)",
                           border: "1px solid var(--surface-border)",
-                          color: "white",
+                          color: "var(--foreground)",
                           padding: "0.75rem 1rem 0.75rem 2.5rem",
                           borderRadius: "8px",
                           outline: "none",
@@ -1519,9 +1526,9 @@ export default function ManagerDashboard() {
                             style={{
                               padding: "0.5rem 1rem",
                               borderRadius: "8px",
-                              background: isSelected ? "rgba(123, 44, 191, 0.15)" : "var(--surface-2)",
+                              background: isSelected ? "var(--primary-glow)" : "var(--surface-2)",
                               border: isSelected ? "1px solid var(--accent)" : "1px solid var(--surface-border)",
-                              color: isSelected ? "var(--accent)" : "rgba(255,255,255,0.7)",
+                              color: isSelected ? "var(--accent)" : "var(--text-muted)",
                               fontSize: "0.8rem",
                               fontWeight: 600,
                               cursor: "pointer",
@@ -1529,14 +1536,14 @@ export default function ManagerDashboard() {
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected) {
-                                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                                e.currentTarget.style.color = "white";
+                                e.currentTarget.style.background = "var(--surface-overlay)";
+                                e.currentTarget.style.color = "var(--foreground)";
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected) {
                                 e.currentTarget.style.background = "var(--surface-2)";
-                                e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                                e.currentTarget.style.color = "var(--text-muted)";
                               }
                             }}
                           >
@@ -1553,7 +1560,7 @@ export default function ManagerDashboard() {
                       Confirm Price (₹/tree)
                     </label>
                     <div style={{ position: "relative" }}>
-                      <Briefcase size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                      <Briefcase size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                       <input 
                         type="text"
                         placeholder="Type a price or select a preset below"
@@ -1563,7 +1570,7 @@ export default function ManagerDashboard() {
                           width: "100%",
                           background: "var(--surface-2)",
                           border: "1px solid var(--surface-border)",
-                          color: "white",
+                          color: "var(--foreground)",
                           padding: "0.75rem 1rem 0.75rem 2.5rem",
                           borderRadius: "8px",
                           outline: "none",
@@ -1594,9 +1601,9 @@ export default function ManagerDashboard() {
                             style={{
                               padding: "0.5rem 1rem",
                               borderRadius: "8px",
-                              background: isSelected ? "rgba(123, 44, 191, 0.15)" : "var(--surface-2)",
+                              background: isSelected ? "var(--primary-glow)" : "var(--surface-2)",
                               border: isSelected ? "1px solid var(--accent)" : "1px solid var(--surface-border)",
-                              color: isSelected ? "var(--accent)" : "rgba(255,255,255,0.7)",
+                              color: isSelected ? "var(--accent)" : "var(--text-muted)",
                               fontSize: "0.8rem",
                               fontWeight: 600,
                               cursor: "pointer",
@@ -1604,14 +1611,14 @@ export default function ManagerDashboard() {
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected) {
-                                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                                e.currentTarget.style.color = "white";
+                                e.currentTarget.style.background = "var(--surface-overlay)";
+                                e.currentTarget.style.color = "var(--foreground)";
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected) {
                                 e.currentTarget.style.background = "var(--surface-2)";
-                                e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                                e.currentTarget.style.color = "var(--text-muted)";
                               }
                             }}
                           >
@@ -1633,10 +1640,10 @@ export default function ManagerDashboard() {
                     padding: "0.75rem 1rem",
                     marginBottom: "0.5rem",
                     fontSize: "0.85rem",
-                    color: "rgba(255,255,255,0.7)"
+                    color: "var(--text-muted)"
                   }}>
                     <Calendar size={16} color="var(--accent)" />
-                    <span>Scheduled for: <strong style={{ color: "white" }}>{confirmingJob.date}</strong></span>
+                    <span>Scheduled for: <strong style={{ color: "var(--foreground)" }}>{confirmingJob.date}</strong></span>
                   </div>
                 </form>
               </div>
@@ -1649,7 +1656,7 @@ export default function ManagerDashboard() {
                   style={{
                     padding: "0.6rem 1.2rem",
                     background: "transparent",
-                    color: "white",
+                    color: "var(--text-muted)",
                     border: "none",
                     fontWeight: 600,
                     cursor: "pointer"

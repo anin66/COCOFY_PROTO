@@ -10,6 +10,7 @@ import { collection, onSnapshot, doc, updateDoc, getDoc, increment } from "fireb
 import { onAuthStateChanged } from "firebase/auth";
 import { useToast } from "@/context/ToastContext";
 import { triggerPushNotification } from "@/lib/notifications";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 
 interface AssignedWorker {
   uid: string;
@@ -279,13 +280,13 @@ export default function WorkerDashboard() {
             <h3 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Job Requests</h3>
             <div style={{ display: "flex", gap: "1rem" }}>
               <div style={{ position: "relative" }}>
-                <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
+                <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                 <input
                   type="text"
                   placeholder="Search jobs..."
                   style={{
                     background: "var(--surface)", border: "1px solid var(--surface-border)",
-                    color: "white", padding: "0.6rem 1rem 0.6rem 2.5rem",
+                    color: "var(--foreground)", padding: "0.6rem 1rem 0.6rem 2.5rem",
                     borderRadius: "8px", width: "250px", outline: "none", fontFamily: "inherit",
                   }}
                 />
@@ -294,14 +295,16 @@ export default function WorkerDashboard() {
           </div>
 
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
-              <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "3px" }} />
+            <div className="job-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </div>
           ) : myJobs.length === 0 ? (
             <div style={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
               height: "400px", background: "rgba(13,6,40,0.5)", backdropFilter: "blur(12px)",
-              borderRadius: "16px", border: "1px dashed rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.4)", gap: "1rem",
+              borderRadius: "16px", border: "1px dashed var(--surface-border)", color: "var(--text-dim)", gap: "1rem",
             }}>
               <Briefcase size={48} strokeWidth={1.5} />
               <h4 style={{ fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", margin: 0 }}>
@@ -352,7 +355,7 @@ export default function WorkerDashboard() {
                             ? { background: "rgba(123, 44, 191, 0.15)", border: "1px solid var(--accent)", color: "var(--accent)" }
                             : job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED"
                             ? { background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }
-                            : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }),
+                            : { background: "var(--surface-2)", border: "1px solid var(--surface-border)", color: "var(--text-light)" }),
                         }}>
                           {job.status === "ACTIVE" ? "ACTIVE" :
                            job.status === "PICKUP_STARTED" ? "PICKUP STARTED" :
@@ -368,7 +371,7 @@ export default function WorkerDashboard() {
                     <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
 
                     {/* Details Grid — no phone number */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "rgba(255,255,255,0.8)" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "var(--text-muted)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
                         {job.location}
@@ -487,13 +490,13 @@ export default function WorkerDashboard() {
                         <div style={{
                           padding: "1rem",
                           borderRadius: "12px",
-                          background: "rgba(255,255,255,0.02)",
+                          background: "var(--surface-1)",
                           border: "1px solid var(--surface-border)",
                           display: "flex",
                           flexDirection: "column",
                           gap: "0.75rem"
                         }}>
-                          <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                          <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-muted)" }}>
                             Enter Harvested Trees
                           </label>
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
@@ -592,7 +595,7 @@ export default function WorkerDashboard() {
                 ⚠️
               </div>
               <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>Reject Job Request?</h3>
-              <p style={{ margin: "0.75rem 0 0", fontSize: "0.9rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
+              <p style={{ margin: "0.75rem 0 0", fontSize: "0.9rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
                 Are you sure you want to reject this job?
                 <br />
                 <span style={{ color: "#ef4444", fontWeight: 700 }}>10 ranking points will be deducted</span> from your profile.
@@ -659,7 +662,7 @@ export default function WorkerDashboard() {
         .job-card:hover {
           transform: translateY(-8px) scale(1.02);
           border-color: var(--accent);
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--surface-1);
           box-shadow: 0 25px 45px -15px rgba(123, 44, 191, 0.4),
                       0 0 30px -5px rgba(255, 0, 127, 0.15);
         }
@@ -668,7 +671,7 @@ export default function WorkerDashboard() {
           position: absolute;
           top: 0; left: -150%;
           width: 50%; height: 100%;
-          background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+          background: linear-gradient(to right, rgba(255,255,255,0) 0%, var(--surface-border) 50%, rgba(255,255,255,0) 100%);
           transform: skewX(-25deg);
           transition: none;
           pointer-events: none;

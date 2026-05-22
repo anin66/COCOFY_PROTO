@@ -1344,4 +1344,49 @@ p {
   }
 }
 
+/* ============================== SMOOTH THEME TRANSITION & SKELETON ANIMATIONS ============================== */
+
+/* Smooth transitions for key layout elements when theme switches */
+body, 
+aside, 
+main, 
+header, 
+footer, 
+.glass-panel, 
+.glass-card, 
+.form-input, 
+.form-select, 
+.confirm-card {
+  transition: background-color 0.3s ease, 
+              background 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease, 
+              backdrop-filter 0.3s ease;
+}
+
+/* Skeleton Loading Effect */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-1) 25%,
+    var(--surface-2) 50%,
+    var(--surface-1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+
 
