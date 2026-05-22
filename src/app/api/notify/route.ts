@@ -175,6 +175,14 @@ export async function POST(request: Request) {
         acc[key] = String(data[key]);
         return acc;
       }, {}) : {},
+      android: {
+        priority: "high" as const,
+      },
+      apns: {
+        headers: {
+          "apns-priority": "10",
+        },
+      },
       webpush: {
         headers: {
           Urgency: "high", // Request immediate delivery from push service (high urgency)
