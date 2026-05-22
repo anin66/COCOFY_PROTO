@@ -17,6 +17,13 @@
   --error: #ef233c;
   --success: #06d6a0;
   
+  --primary-glow: rgba(123, 44, 191, 0.15);
+  --primary-glow-border: rgba(123, 44, 191, 0.3);
+  --accent-glow: rgba(76, 201, 240, 0.15);
+  --accent-glow-border: rgba(76, 201, 240, 0.3);
+  --success-glow: rgba(6, 214, 160, 0.15);
+  --success-glow-border: rgba(6, 214, 160, 0.3);
+  
   --text-muted: rgba(255, 255, 255, 0.7);
   --text-light: rgba(255, 255, 255, 0.5);
   --text-dim: rgba(255, 255, 255, 0.4);
@@ -330,6 +337,13 @@ p {
   --error: #dc2626;
   --success: #10b981;
   
+  --primary-glow: rgba(124, 58, 237, 0.15);
+  --primary-glow-border: rgba(124, 58, 237, 0.3);
+  --accent-glow: rgba(8, 145, 178, 0.15);
+  --accent-glow-border: rgba(8, 145, 178, 0.3);
+  --success-glow: rgba(16, 185, 129, 0.15);
+  --success-glow-border: rgba(16, 185, 129, 0.3);
+  
   --text-muted: rgba(28, 25, 33, 0.7);
   --text-light: rgba(28, 25, 33, 0.5);
   --text-dim: rgba(28, 25, 33, 0.4);
@@ -342,48 +356,76 @@ p {
 }
 
 /* Override inline text and background colors specifically for Light Mode */
-[data-theme="light"] [style*="color: rgba(255,255,255,0.85)"],
-[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.85)"] {
+[data-theme="light"] [style*="color: rgba(255,255,255,0.8"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.8"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.9"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.9"] {
   color: var(--foreground) !important;
 }
 
-[data-theme="light"] [style*="color: rgba(255,255,255,0.8)"],
-[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.8)"] {
-  color: var(--foreground) !important;
-}
-
-[data-theme="light"] [style*="color: rgba(255,255,255,0.7)"],
-[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.7)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.6"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.6"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.7"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.7"],
 [data-theme="light"] [style*="color: var(--text-muted)"] {
   color: var(--text-muted) !important;
 }
 
-[data-theme="light"] [style*="color: rgba(255,255,255,0.6)"],
-[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.6)"] {
-  color: var(--text-muted) !important;
-}
-
-[data-theme="light"] [style*="color: rgba(255,255,255,0.5)"],
-[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.5)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.4"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.4"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.5"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.5"],
 [data-theme="light"] [style*="color: var(--text-light)"] {
   color: var(--text-light) !important;
 }
 
-[data-theme="light"] [style*="color: rgba(255,255,255,0.4)"],
-[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.4)"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.2"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.2"],
+[data-theme="light"] [style*="color: rgba(255,255,255,0.3"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 0.3"],
 [data-theme="light"] [style*="color: var(--text-dim)"] {
   color: var(--text-dim) !important;
 }
 
-/* Overriding white text globally except for buttons/elements styled with solid accent/primary backgrounds */
-[data-theme="light"] [style*="color: white"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]),
-[data-theme="light"] [style*="color: \"white\""]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]),
-[data-theme="light"] [style*="color: 'white'"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]),
-[data-theme="light"] [style*="color: rgb(255, 255, 255)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]),
-[data-theme="light"] [style*="color: rgb(255,255,255)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]),
-[data-theme="light"] [style*="color:rgba(255,255,255,1)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]),
-[data-theme="light"] [style*="color: rgba(255, 255, 255, 1)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]) {
+/* Overriding white text globally except for buttons/elements styled with solid accent/primary/danger backgrounds */
+[data-theme="light"] [style*="color: white"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]):not([style*="#ef4444"]):not([style*="#b91c1c"]),
+[data-theme="light"] [style*="color: \"white\""]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]):not([style*="#ef4444"]):not([style*="#b91c1c"]),
+[data-theme="light"] [style*="color: 'white'"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]):not([style*="#ef4444"]):not([style*="#b91c1c"]),
+[data-theme="light"] [style*="color: rgb(255, 255, 255)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]):not([style*="#ef4444"]):not([style*="#b91c1c"]),
+[data-theme="light"] [style*="color: rgb(255,255,255)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]):not([style*="#ef4444"]):not([style*="#b91c1c"]),
+[data-theme="light"] [style*="color:rgba(255,255,255,1)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]):not([style*="#ef4444"]):not([style*="#b91c1c"]),
+[data-theme="light"] [style*="color: rgba(255, 255, 255, 1)"]:not(.btn-primary):not([style*="background"]):not([style*="background-color"]):not([class*="-badge"]):not([style*="#ef4444"]):not([style*="#b91c1c"]) {
   color: var(--foreground) !important;
+}
+
+/* Override all translucent white backgrounds in light mode to translucent black backgrounds */
+[data-theme="light"] [style*="background: rgba(255,255,255,0."],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0."],
+[data-theme="light"] [style*="background:rgba(255,255,255,0."],
+[data-theme="light"] [style*="background:rgba(255, 255, 255, 0."] {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Override borders using transparent white colors in light mode */
+[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0."],
+[data-theme="light"] [style*="border: 1px solid rgba(255, 255, 255, 0."],
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0."],
+[data-theme="light"] [style*="border:1px solid rgba(255, 255, 255, 0."],
+[data-theme="light"] [style*="border-color: rgba(255,255,255,0."],
+[data-theme="light"] [style*="border-color: rgba(255, 255, 255, 0."],
+[data-theme="light"] [style*="border-color:rgba(255,255,255,0."],
+[data-theme="light"] [style*="border-color:rgba(255, 255, 255, 0."] {
+  border-color: var(--surface-border) !important;
+}
+
+/* Target and fix action buttons (like Edit) that have inline rgba(255,255,255,0.05) or 0.1 backgrounds and white color */
+[data-theme="light"] button[style*="rgba(255,255,255,0."],
+[data-theme="light"] button[style*="rgba(255, 255, 255, 0."],
+[data-theme="light"] button[style*="background: rgba(255,255,255,0."],
+[data-theme="light"] button[style*="background:rgba(255,255,255,0."] {
+  background: var(--surface-2) !important;
+  color: var(--foreground) !important;
+  border-color: var(--surface-border) !important;
 }
 
 /* Also map dark-mode specific card/backdrops to light-theme equivalents */
@@ -401,14 +443,24 @@ p {
   background: var(--surface-2) !important;
 }
 
-/* Form input adjustments inside light mode */
+/* Secondary Button Overrides in Light Mode */
+[data-theme="light"] .btn-secondary {
+  color: var(--foreground) !important;
+  background: var(--surface-2) !important;
+  border: 1px solid var(--surface-border) !important;
+}
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Form input adjustments inside light mode - ensuring background & border override inline styles */
 [data-theme="light"] .form-input, 
 [data-theme="light"] .form-select,
 [data-theme="light"] input,
 [data-theme="light"] select,
 [data-theme="light"] textarea {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid var(--surface-border);
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--surface-border) !important;
   color: var(--foreground) !important;
 }
 
@@ -420,6 +472,38 @@ p {
 [data-theme="light"] .form-select option {
   background-color: var(--surface-2);
   color: var(--foreground);
+}
+
+/* Scheduling Calendar and Purple Accent overrides for Light Mode */
+[data-theme="light"] [style*="color: rgba(196,181,253"],
+[data-theme="light"] [style*="color: rgba(196, 181, 253"] {
+  color: var(--primary) !important;
+}
+
+[data-theme="light"] [style*="background: rgba(139,92,246"],
+[data-theme="light"] [style*="background: rgba(139, 92, 246"] {
+  background: rgba(124, 58, 237, 0.08) !important;
+  border-color: rgba(124, 58, 237, 0.2) !important;
+}
+
+[data-theme="light"] [style*="color: rgba(167,139,250"],
+[data-theme="light"] [style*="color: rgba(167, 139, 250"] {
+  color: var(--text-light) !important;
+}
+
+/* Selected calendar day cells */
+[data-theme="light"] button[style*="background: rgba(123,44,191,0.15)"],
+[data-theme="light"] button[style*="background: rgba(123, 44, 191, 0.15)"],
+[data-theme="light"] button[style*="background:rgba(123,44,191,0.15)"] {
+  background: var(--primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+}
+
+/* Ensure border lines in ranking page adapt to Light Mode */
+[data-theme="light"] tr[style*="border-bottom: 1px solid rgba(255,255,255,0.05)"],
+[data-theme="light"] tr[style*="border-bottom: 1px solid rgba(255, 255, 255, 0.05)"] {
+  border-bottom: 1px solid var(--surface-border) !important;
 }
 
 /* Correcting dashboard sidebar active styles and items */

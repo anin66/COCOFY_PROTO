@@ -105,7 +105,7 @@ export default function WorkersDirectory() {
         overflow: "hidden"
       }}>
         {data.length === 0 ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.5)" }}>
+          <div style={{ padding: "3rem", textAlign: "center", color: "var(--text-light)" }}>
             No users found in this category.
           </div>
         ) : (
@@ -116,9 +116,9 @@ export default function WorkersDirectory() {
                   borderBottom: "1px solid var(--surface-border)", 
                   background: "rgba(0,0,0,0.2)" 
                 }}>
-                  <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.05em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase" }}>Full Name & DOB</th>
-                  <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.05em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase" }}>Contact</th>
-                  <th style={{ padding: "1rem 1.5rem", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.05em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase" }}>Actions</th>
+                  <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.05em", color: "var(--text-muted)", textTransform: "uppercase" }}>Full Name & DOB</th>
+                  <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.05em", color: "var(--text-muted)", textTransform: "uppercase" }}>Contact</th>
+                  <th style={{ padding: "1rem 1.5rem", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.05em", color: "var(--text-muted)", textTransform: "uppercase" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -126,13 +126,13 @@ export default function WorkersDirectory() {
                   <tr key={worker.uid} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", transition: "background 0.2s" }} className="hover-row">
                     <td style={{ padding: "1rem 1.5rem" }}>
                       <div style={{ fontWeight: 600 }}>{worker.name}</div>
-                      <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.5)", marginTop: "0.3rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <div style={{ fontSize: "0.85rem", color: "var(--text-light)", marginTop: "0.3rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
                         <Calendar size={12} /> {worker.dob || "N/A"}
                       </div>
                     </td>
                     <td style={{ padding: "1rem 1.5rem" }}>
-                      <div style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.8)" }}>{worker.email}</div>
-                      <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.5)", marginTop: "0.3rem" }}>
+                      <div style={{ fontSize: "0.9rem", color: "var(--foreground)" }}>{worker.email}</div>
+                      <div style={{ fontSize: "0.85rem", color: "var(--text-light)", marginTop: "0.3rem" }}>
                         {worker.phone}
                       </div>
                     </td>

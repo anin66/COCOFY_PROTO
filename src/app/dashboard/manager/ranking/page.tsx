@@ -125,7 +125,7 @@ export default function WorkerRankings() {
           <div className="flex-stack-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
             <div>
               <h3 style={{ fontSize: "1.5rem", margin: 0, fontWeight: 700 }}>Performance Rankings</h3>
-              <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "rgba(255,255,255,0.5)" }}>
+              <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "var(--text-light)" }}>
                 Workers are rewarded with +10 pts on acceptance, and penalized with -10 pts on rejection.
               </p>
             </div>
@@ -166,7 +166,7 @@ export default function WorkerRankings() {
             <div style={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
               height: "300px", background: "var(--surface)", border: "1px dashed var(--surface-border)",
-              borderRadius: "16px", color: "rgba(255,255,255,0.4)", gap: "1rem"
+              borderRadius: "16px", color: "var(--text-dim)", gap: "1rem"
             }}>
               <Trophy size={40} strokeWidth={1.5} />
               <div style={{ fontWeight: 600 }}>No Harvesting Workers Found</div>
@@ -200,7 +200,7 @@ export default function WorkerRankings() {
                     // Style medals for top 3
                     const isTop3 = index < 3;
                     const medalColors = ["#ffd700", "#c0c0c0", "#cd7f32"];
-                    const medalBg = isTop3 ? medalColors[index] : "rgba(255,255,255,0.1)";
+                    const medalBg = isTop3 ? medalColors[index] : "var(--surface-2)";
 
                     return (
                       <tr key={worker.uid} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", transition: "background 0.2s" }} className="hover-row">
@@ -209,7 +209,7 @@ export default function WorkerRankings() {
                           <div style={{
                             width: "28px", height: "28px", borderRadius: "50%",
                             background: medalBg,
-                            color: isTop3 ? "#000" : "white",
+                            color: isTop3 ? "#000" : "var(--foreground)",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             fontWeight: 700, fontSize: "0.85rem"
                           }}>
@@ -220,7 +220,7 @@ export default function WorkerRankings() {
                         {/* Name & Contact */}
                         <td style={tdStyle}>
                           <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>{worker.name}</div>
-                          <div style={{ display: "flex", gap: "1rem", marginTop: "0.3rem", fontSize: "0.78rem", color: "rgba(255,255,255,0.45)" }}>
+                          <div style={{ display: "flex", gap: "1rem", marginTop: "0.3rem", fontSize: "0.78rem", color: "var(--text-light)" }}>
                             <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
                               <Mail size={12} />
                               {worker.email}
@@ -317,9 +317,9 @@ export default function WorkerRankings() {
                               <button
                                 onClick={() => handleStartEdit(worker)}
                                 style={{
-                                  background: "rgba(255,255,255,0.05)",
+                                  background: "var(--surface-2)",
                                   border: "1px solid var(--surface-border)",
-                                  color: "white",
+                                  color: "var(--foreground)",
                                   cursor: "pointer",
                                   padding: "0.45rem 0.8rem",
                                   borderRadius: "8px",
@@ -330,8 +330,14 @@ export default function WorkerRankings() {
                                   fontWeight: 600,
                                   transition: "all 0.2s"
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-                                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = "var(--surface-overlay)";
+                                  e.currentTarget.style.borderColor = "var(--primary)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = "var(--surface-2)";
+                                  e.currentTarget.style.borderColor = "var(--surface-border)";
+                                }}
                                 title="Edit Points"
                               >
                                 <Edit2 size={12} />
@@ -372,7 +378,7 @@ const thStyle: React.CSSProperties = {
   fontSize: "0.75rem",
   fontWeight: 700,
   letterSpacing: "0.05em",
-  color: "rgba(255,255,255,0.6)",
+  color: "var(--text-muted)",
   textTransform: "uppercase"
 };
 
