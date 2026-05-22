@@ -1537,10 +1537,10 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
               {/* ===================================================================
                   ADVANCED FINANCIAL MANAGEMENT TOOLS
                   =================================================================== */}
-              <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "2rem" }}>
+              <div className="finance-tools-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "2rem" }}>
                 {/* 1. Projections & Growth Simulator */}
-                <div style={cardStyle}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <div className="projections-card" style={cardStyle}>
+                  <div className="card-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
                     <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <TrendingUp size={18} color="#a855f7" /> Projections & Growth Simulator
                     </h3>
@@ -1570,7 +1570,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                     {projectionsData.map((item, idx) => (
-                      <div key={idx} style={{
+                      <div key={idx} className="projection-item-row" style={{
                         padding: "0.75rem 1rem", borderRadius: "10px",
                         background: "var(--surface-1)", border: "1px solid var(--surface-border)",
                         display: "flex", justifyContent: "space-between", alignItems: "center"
@@ -1593,7 +1593,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                 </div>
 
                 {/* 2. Break-Even Yield Calculator */}
-                <div style={cardStyle}>
+                <div className="break-even-card" style={cardStyle}>
                   <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <Target size={18} color="#10b981" /> Break-Even Yield Calculator
                   </h3>
@@ -1601,7 +1601,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                     Calculate how many trees must be harvested to cover fixed and labor costs.
                   </p>
 
-                  <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem", marginBottom: "1.25rem" }}>
+                  <div className="break-even-inputs-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem", marginBottom: "1.25rem" }}>
                     <div>
                       <label style={{ ...labelStyle, fontSize: "0.75rem" }}>Fixed Costs (₹)</label>
                       <input 
@@ -1640,7 +1640,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                     
                     return (
                       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                        <div style={{
+                        <div className="break-even-summary-row" style={{
                           padding: "0.75rem", borderRadius: "10px", background: "rgba(16,185,129,0.06)",
                           border: "1px solid rgba(16,185,129,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center"
                         }}>
@@ -1681,8 +1681,8 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                 </div>
 
                 {/* 3. Budget vs Actual Planner */}
-                <div style={{ ...cardStyle, gridColumn: "span 2" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <div className="span-2-card" style={{ ...cardStyle }}>
+                  <div className="card-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
                     <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <DollarSign size={18} color="#ef233c" /> Budget vs Actual Expense Planner
                     </h3>
@@ -1702,7 +1702,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                     Monitor spending limits across categories. Spend limits are color-coded: Green (≤70%), Orange (71-100%), Red (&gt;100% Alert).
                   </p>
 
-                  <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+                  <div className="budget-planner-categories" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
                     {EXPENSE_TYPES.slice(0, 10).map((cat) => {
                       const budget = categoryBudgets[cat] || 0;
                       const actual = categoryExpenses[cat] || 0;
@@ -1722,7 +1722,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                             {utilPct > 100 && <AlertTriangle size={14} color="#ef233c" style={{ filter: "drop-shadow(0 0 4px rgba(239,35,60,0.5))" }} />}
                           </div>
                           
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-light)", marginBottom: "0.4rem" }}>
+                          <div className="budget-status-row" style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-light)", marginBottom: "0.4rem" }}>
                             <span>Actual: <span style={{ color: actual > 0 ? "var(--foreground)" : "var(--text-dim)" }}>₹{actual.toLocaleString()}</span></span>
                             {editingBudgets ? (
                               <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
@@ -1759,7 +1759,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                 </div>
 
                 {/* 4. Dues Aging & Reminder Generator */}
-                <div style={cardStyle}>
+                <div className="dues-aging-card" style={cardStyle}>
                   <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <AlertTriangle size={18} color="#f59e0b" /> Dues Aging & Collection Assistant
                   </h3>
@@ -1767,7 +1767,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                     Monitor how long invoices have been unpaid and draft recovery messages for clients.
                   </p>
 
-                  <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "1.25rem", textAlign: "center" }}>
+                  <div className="dues-buckets-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "1.25rem", textAlign: "center" }}>
                     <div style={{ padding: "0.5rem", borderRadius: "8px", background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.15)" }}>
                       <div style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>0-7 Days</div>
                       <div style={{ fontWeight: 700, color: "#10b981", fontSize: "0.95rem" }}>{fmtFull(agingDuesData.bucket1Amt)}</div>
@@ -1812,7 +1812,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
 
                         {selectedDueClient && (
                           <>
-                            <div style={{ display: "flex", gap: "0.25rem" }}>
+                            <div className="reminder-template-btns" style={{ display: "flex", gap: "0.25rem" }}>
                               {(["friendly", "formal", "urgent"] as const).map((t) => (
                                 <button
                                   key={t}
@@ -1886,7 +1886,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                 </div>
 
                 {/* 5. Location Profitability Analysis */}
-                <div style={cardStyle}>
+                <div className="margin-ranker-card" style={cardStyle}>
                   <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <MapPin size={18} color="#4cc9f0" /> Location Margin Ranker
                   </h3>
@@ -1895,7 +1895,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                   </p>
                   <div style={{ maxHeight: "250px", overflowY: "auto", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)" }}>
                     {locationProfitability.length > 0 ? (
-                      <div className="scroll-table-container">
+                      <div className="ranker-table-container">
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem" }}>
                           <thead>
                             <tr style={{ background: "rgba(76,201,240,0.08)" }}>

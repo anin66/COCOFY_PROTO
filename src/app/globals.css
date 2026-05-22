@@ -615,6 +615,16 @@ p {
   color: var(--text-muted) !important;
 }
 
+/* Advanced Financial Management Tools Desktop Classes */
+.span-2-card {
+  grid-column: span 2;
+}
+.finance-tools-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
 /* ============================== MOBILE RESPONSIVENESS OVERRIDES ============================== */
 
 @media (max-width: 768px) {
@@ -853,6 +863,66 @@ p {
   .ledger-action-btns button {
     flex: 1 1 auto !important;
     justify-content: center !important;
+  }
+
+  /* Advanced Financial Management Tools Mobile Overrides */
+  .finance-tools-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+  .span-2-card {
+    grid-column: 1 / -1 !important;
+  }
+  .card-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+  .projection-item-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+  .projection-item-row > div:last-child {
+    text-align: left !important;
+  }
+  .break-even-inputs-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .break-even-summary-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  .break-even-summary-row > div:last-child {
+    text-align: left !important;
+  }
+  .budget-planner-categories {
+    grid-template-columns: 1fr !important;
+  }
+  .budget-status-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.25rem !important;
+  }
+  .dues-buckets-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+  .reminder-template-btns {
+    flex-wrap: wrap !important;
+  }
+  .reminder-template-btns button {
+    flex: 1 1 auto !important;
+  }
+  .ranker-table-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+  .ranker-table-container table {
+    min-width: 100% !important;
+    width: 100% !important;
   }
 }
 
