@@ -1268,10 +1268,10 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
       <main style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <TopBar title="Analytics & Ledger" />
 
-        <div style={{ padding: "2rem 2.5rem", flex: 1, maxWidth: "1500px", margin: "0 auto", width: "100%" }}>
+        <div className="analytics-content-wrapper" style={{ padding: "2rem 2.5rem", flex: 1, maxWidth: "1500px", margin: "0 auto", width: "100%" }}>
 
           {/* ===== TAB SWITCHER ===== */}
-          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "2rem" }}>
+          <div className="tab-switcher" style={{ display: "flex", gap: "0.5rem", marginBottom: "2rem" }}>
             {(["analytics", "ledger"] as const).map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)} style={{
                 padding: "0.75rem 2rem", borderRadius: "12px", border: "1px solid",
@@ -1294,7 +1294,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
           {activeTab === "analytics" && (
             <>
               {/* ----- DATE RANGE FILTER ----- */}
-              <div style={{
+              <div className="analytics-filter-row" style={{
                 display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "2rem",
                 padding: "1rem 1.25rem", borderRadius: "14px",
                 background: "rgba(255,255,255,0.02)", border: "1px solid var(--surface-border)"
@@ -1320,12 +1320,12 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                   cursor: "pointer", fontWeight: 500, transition: "all 0.2s"
                 }}>Custom</button>
                 {datePreset === "custom" && (
-                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                    <div style={{ width: "160px" }}>
+                  <div className="custom-date-picker-wrapper" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <div className="custom-date-input" style={{ width: "160px" }}>
                       <DatePicker value={customFrom} onChange={setCustomFrom} />
                     </div>
-                    <span style={{ color: "var(--text-dim)", fontSize: "0.8rem" }}>to</span>
-                    <div style={{ width: "160px" }}>
+                    <span className="custom-date-sep" style={{ color: "var(--text-dim)", fontSize: "0.8rem" }}>to</span>
+                    <div className="custom-date-input" style={{ width: "160px" }}>
                       <DatePicker value={customTo} onChange={setCustomTo} />
                     </div>
                   </div>
@@ -1388,26 +1388,24 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                   <MapPin size={18} color="var(--accent)" /> Revenue by Location
                 </h3>
                 {locationStats.length > 0 ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                     {locationStats.map((loc, i) => {
                       const maxRev = locationStats[0]?.revenue || 1;
                       const pct = (loc.revenue / maxRev) * 100;
                       return (
-                        <div key={loc.location} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                          <span style={{ minWidth: "130px", fontSize: "0.85rem", color: "rgba(255,255,255,0.8)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {loc.location}
-                          </span>
-                          <div style={{ flex: 1, height: "28px", background: "rgba(255,255,255,0.04)", borderRadius: "6px", overflow: "hidden", position: "relative" }}>
+                        <div key={loc.location} className="location-stat-row" style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem", fontWeight: 550 }}>
+                            <span style={{ color: "var(--foreground)" }}>{loc.location}</span>
+                            <span style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>
+                              {fmtFull(loc.revenue)} · {loc.jobs} {loc.jobs === 1 ? 'job' : 'jobs'} · {loc.trees} {loc.trees === 1 ? 'tree' : 'trees'}
+                            </span>
+                          </div>
+                          <div style={{ height: "10px", background: "rgba(255,255,255,0.04)", borderRadius: "6px", overflow: "hidden", position: "relative" }}>
                             <div style={{
                               width: `${pct}%`, height: "100%", borderRadius: "6px",
                               background: `linear-gradient(90deg, rgba(123,44,191,0.6) 0%, rgba(76,201,240,0.6) 100%)`,
-                              transition: "width 0.8s cubic-bezier(0.16,1,0.3,1)",
-                              display: "flex", alignItems: "center", paddingLeft: "0.5rem"
-                            }}>
-                              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "white", whiteSpace: "nowrap" }}>
-                                {fmtFull(loc.revenue)} · {loc.jobs} jobs · {loc.trees} trees
-                              </span>
-                            </div>
+                              transition: "width 0.8s cubic-bezier(0.16,1,0.3,1)"
+                            }} />
                           </div>
                         </div>
                       );
@@ -2020,8 +2018,8 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                 background: "rgba(255,255,255,0.02)", border: "1px solid var(--surface-border)"
               }}>
                 {/* Row 1: Period Type & Date Picker */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <div className="ledger-period-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                     <Calendar size={18} color="var(--accent)" />
                     <span style={{ fontWeight: 600, fontSize: "0.95rem", marginRight: "0.5rem" }}>Statement Period:</span>
                     
@@ -2045,7 +2043,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                   </div>
 
                   {/* Contextual Date Picker */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div className="ledger-date-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     {ledgerPeriodType === "today" && (
                       <div style={{ width: "160px" }}>
                         <DatePicker 
@@ -2058,7 +2056,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                       <select 
                         value={ledgerMonth} 
                         onChange={(e) => setLedgerMonth(e.target.value)} 
-                        style={{ ...inputStyle, minWidth: "150px" }}
+                        style={{ ...inputStyle, minWidth: "150px", width: "100%" }}
                       >
                         {availableMonths.map((m) => {
                           const [y, mo] = m.split("-");
@@ -2070,7 +2068,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                       <select 
                         value={ledgerYear} 
                         onChange={(e) => setLedgerYear(e.target.value)} 
-                        style={{ ...inputStyle, minWidth: "120px" }}
+                        style={{ ...inputStyle, minWidth: "120px", width: "100%" }}
                       >
                         {availableYears.map((y) => (
                           <option key={y} value={y}>{y}</option>
@@ -2078,16 +2076,16 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                       </select>
                     )}
                     {ledgerPeriodType === "custom" && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <span style={{ fontSize: "0.8rem", color: "var(--text-light)" }}>From:</span>
-                        <div style={{ width: "160px" }}>
+                      <div className="custom-date-picker-wrapper" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <span style={{ fontSize: "0.8rem", color: "var(--text-light)", whiteSpace: "nowrap" }}>From:</span>
+                        <div className="custom-date-input" style={{ width: "160px" }}>
                           <DatePicker 
                             value={ledgerStartDate} 
                             onChange={setLedgerStartDate} 
                           />
                         </div>
-                        <span style={{ fontSize: "0.8rem", color: "var(--text-light)" }}>To:</span>
-                        <div style={{ width: "160px" }}>
+                        <span className="custom-date-sep" style={{ fontSize: "0.8rem", color: "var(--text-light)", whiteSpace: "nowrap" }}>To:</span>
+                        <div className="custom-date-input" style={{ width: "160px" }}>
                           <DatePicker 
                             value={ledgerEndDate} 
                             onChange={setLedgerEndDate} 
@@ -2096,14 +2094,14 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                       </div>
                     )}
                     
-                    <span style={{ fontSize: "0.85rem", color: "var(--accent)", fontWeight: 600, background: "rgba(123,44,191,0.1)", padding: "0.4rem 0.8rem", borderRadius: "8px", border: "1px solid rgba(123,44,191,0.2)" }}>
+                    <span style={{ fontSize: "0.85rem", color: "var(--accent)", fontWeight: 600, background: "rgba(123,44,191,0.1)", padding: "0.4rem 0.8rem", borderRadius: "8px", border: "1px solid rgba(123,44,191,0.2)", whiteSpace: "nowrap" }}>
                       Active: {periodLabel}
                     </span>
                   </div>
                 </div>
 
                 {/* Row 2: Format Switcher & Export buttons */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", borderTop: "1px dashed var(--surface-border)", paddingTop: "1rem" }}>
+                <div className="ledger-export-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", borderTop: "1px dashed var(--surface-border)", paddingTop: "1rem" }}>
                   {/* Format switcher */}
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 550 }}>Layout View:</span>
@@ -2134,9 +2132,9 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                   </div>
 
                   {/* CSV Export & PDF controls */}
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  <div className="ledger-action-btns" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     {/* CSV Exports */}
-                    <div style={{ display: "flex", gap: "0.25rem", background: "var(--surface-2)", padding: "0.2rem", borderRadius: "10px", border: "1px solid var(--surface-border)" }}>
+                    <div className="ledger-csv-group" style={{ display: "flex", gap: "0.25rem", background: "var(--surface-2)", padding: "0.2rem", borderRadius: "10px", border: "1px solid var(--surface-border)" }}>
                       <button onClick={exportConsolidatedLedgerCSV} title="Download consolidated CSV" style={csvBtnStyle}>
                         <Download size={14} /> Consolidated CSV
                       </button>
