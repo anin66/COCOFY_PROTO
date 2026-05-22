@@ -131,14 +131,19 @@ export default function FinanceDueAmount() {
       
       let fileUrl = null;
       if (uploadedFile) {
-        const compressedFile = await compressImage(uploadedFile);
-        const fileRef = ref(storage, `payments/${selectedPayment.id}/${Date.now()}_${compressedFile.name}`);
-        await withTimeout(
-          uploadBytes(fileRef, compressedFile),
-          15000,
-          "Upload timed out. Please check your network connection."
-        );
-        fileUrl = await getDownloadURL(fileRef);
+        try {
+          const compressedFile = await compressImage(uploadedFile);
+          const fileRef = ref(storage, `payments/${selectedPayment.id}/${Date.now()}_${compressedFile.name}`);
+          await withTimeout(
+            uploadBytes(fileRef, compressedFile),
+            10000,
+            "Upload timed out."
+          );
+          fileUrl = await getDownloadURL(fileRef);
+        } catch (uploadError) {
+          console.error("Failed to upload optional receipt screenshot:", uploadError);
+          showToast("Payment recorded without receipt (upload failed).", "warning");
+        }
       }
 
       const transaction = {
