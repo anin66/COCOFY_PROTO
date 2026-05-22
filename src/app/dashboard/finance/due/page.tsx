@@ -13,6 +13,7 @@ import {
   IndianRupee, UploadCloud, X, History, AlertCircle
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+import { compressImage } from "@/lib/imageCompression";
 
 export default function FinanceDueAmount() {
   const { showToast } = useToast();
@@ -130,8 +131,9 @@ export default function FinanceDueAmount() {
       
       let fileUrl = null;
       if (uploadedFile) {
-        const fileRef = ref(storage, `payments/${selectedPayment.id}/${Date.now()}_${uploadedFile.name}`);
-        await uploadBytes(fileRef, uploadedFile);
+        const compressedFile = await compressImage(uploadedFile);
+        const fileRef = ref(storage, `payments/${selectedPayment.id}/${Date.now()}_${compressedFile.name}`);
+        await uploadBytes(fileRef, compressedFile);
         fileUrl = await getDownloadURL(fileRef);
       }
 

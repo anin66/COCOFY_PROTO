@@ -5,6 +5,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { useToast } from "@/context/ToastContext";
 import { db, auth, storage } from "@/lib/firebase";
+import { compressImage } from "@/lib/imageCompression";
 import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
@@ -202,8 +203,9 @@ export default function FinanceOverview() {
       
       let fileUrl = null;
       if (targetUploadedFile) {
-        const fileRef = ref(storage, `payments/${targetJob.id}/${Date.now()}_${targetUploadedFile.name}`);
-        await uploadBytes(fileRef, targetUploadedFile);
+        const compressedFile = await compressImage(targetUploadedFile);
+        const fileRef = ref(storage, `payments/${targetJob.id}/${Date.now()}_${compressedFile.name}`);
+        await uploadBytes(fileRef, compressedFile);
         fileUrl = await getDownloadURL(fileRef);
       }
 
