@@ -17,9 +17,11 @@ import {
   LogOut,
   X
 } from "lucide-react";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { doc, updateDoc, arrayRemove } from "firebase/firestore";
+import { getMessaging, isSupported, getToken } from "firebase/messaging";
 
 interface SidebarProps {
   userName?: string;
@@ -83,6 +85,34 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
 
   const handleSignOut = async () => {
     try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        // 1. Remove the current FCM token from Firestore if supported
+        try {
+          const supported = await isSupported();
+          if (supported) {
+            const messagingInstance = getMessaging();
+            const token = await getToken(messagingInstance, {
+              vapidKey: "BDIFGhWoFRXZnc1xNjwd_Tb3A7lYu2kLv4XVRCE5KptT0xXMiglgWtg2-iJk4OgeT9_9qa5sD-EFyw3bCF5ptIw"
+            });
+            if (token) {
+              const userDocRef = doc(db, "users", currentUser.uid);
+              await updateDoc(userDocRef, {
+                fcmTokens: arrayRemove(token)
+              });
+              console.log("FCM token removed from user document on sign out.");
+            }
+          }
+        } catch (fcmErr) {
+          console.warn("Could not unregister FCM token during sign out:", fcmErr);
+        }
+
+        // 2. Clear local storage cache keys
+        localStorage.removeItem("fcm_registered_uid");
+        localStorage.removeItem("fcm_registered_token_preview");
+      }
+
+      // 3. Perform Firebase sign out
       await signOut(auth);
       router.push("/login");
     } catch (error) {
