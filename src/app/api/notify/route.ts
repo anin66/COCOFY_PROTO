@@ -1,6 +1,45 @@
 import { NextResponse } from "next/server";
 import * as admin from "firebase-admin";
 
+// Helper to parse stringified JSON service account keys with escaped quotes robustly
+function parseServiceAccountKey(keyStr: string): any {
+  let cleaned = keyStr.trim();
+  
+  // 1. If wrapped in outer quotes (e.g. from Vercel env UI), strip them or try parsing once as string
+  if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+    try {
+      const parsedOnce = JSON.parse(cleaned);
+      if (typeof parsedOnce === "object") return parsedOnce;
+      if (typeof parsedOnce === "string") {
+        cleaned = parsedOnce.trim();
+      }
+    } catch (e) {
+      cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+    }
+  } else if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
+    cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+  }
+
+  // 1.5. Convert any raw newlines/carriage returns back into escaped \n and \r
+  let jsonStr = cleaned.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+
+  // 2. Unescape all escaped double quotes
+  jsonStr = jsonStr.replace(/\\"/g, '"');
+
+  // 3. Escape invalid backslashes (like \h or other non-JSON escape sequences)
+  const cleanedJsonStr = jsonStr.replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+
+  // 4. Parse JSON
+  const parsed = JSON.parse(cleanedJsonStr);
+  
+  // 5. Replace literal \n in private_key with actual newlines
+  if (parsed && typeof parsed === "object" && typeof parsed.private_key === "string") {
+    parsed.private_key = parsed.private_key.replace(/\\n/g, '\n');
+  }
+  
+  return parsed;
+}
+
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   const privateKey = process.env.FIREBASE_PRIVATE_KEY
@@ -10,7 +49,9 @@ if (!admin.apps.length) {
   let credential;
   if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     try {
-      credential = admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY));
+      const parsedKey = parseServiceAccountKey(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      credential = admin.credential.cert(parsedKey);
+      console.log("Firebase Admin: Service Account Key successfully parsed.");
     } catch (e) {
       console.error("Firebase Admin Service Account Key Parsing Failed:", e);
     }
