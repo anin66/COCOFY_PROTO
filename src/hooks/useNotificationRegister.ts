@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
-import { getToken } from "firebase/messaging";
-import { auth, db, messaging } from "@/lib/firebase";
+import { getToken, isSupported, getMessaging } from "firebase/messaging";
+import { app, db } from "@/lib/firebase";
 
 const DEFAULT_VAPID_KEY = "BDIFGhWoFRXZnc1xNjwd_Tb3A7lYu2kLv4XVRCE5KptT0xXMiglgWtg2-iJk4OgeT9_9qa5sD-EFyw3bCF5ptIw";
 
@@ -28,10 +28,12 @@ export function useNotificationRegister(userId: string | undefined) {
         }
 
         // 3. Wait for Firebase Messaging to be supported and initialized
-        if (!messaging) {
-          console.log("Firebase Messaging not initialized or supported in this browser.");
+        const supported = await isSupported();
+        if (!supported) {
+          console.log("Firebase Messaging not supported in this browser.");
           return;
         }
+        const messagingInstance = getMessaging(app);
 
         // 4. Register the Service Worker (standard practice for Next.js app router messaging)
         const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
@@ -39,7 +41,7 @@ export function useNotificationRegister(userId: string | undefined) {
 
         // 5. Retrieve FCM token
         const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || DEFAULT_VAPID_KEY;
-        const currentToken = await getToken(messaging, {
+        const currentToken = await getToken(messagingInstance, {
           vapidKey,
           serviceWorkerRegistration: registration,
         });
