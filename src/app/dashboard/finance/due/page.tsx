@@ -13,7 +13,7 @@ import {
   IndianRupee, UploadCloud, X, History, AlertCircle
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
-import { compressImage } from "@/lib/imageCompression";
+import { compressImage, withTimeout } from "@/lib/imageCompression";
 
 export default function FinanceDueAmount() {
   const { showToast } = useToast();
@@ -133,7 +133,11 @@ export default function FinanceDueAmount() {
       if (uploadedFile) {
         const compressedFile = await compressImage(uploadedFile);
         const fileRef = ref(storage, `payments/${selectedPayment.id}/${Date.now()}_${compressedFile.name}`);
-        await uploadBytes(fileRef, compressedFile);
+        await withTimeout(
+          uploadBytes(fileRef, compressedFile),
+          15000,
+          "Upload timed out. Please check your network connection."
+        );
         fileUrl = await getDownloadURL(fileRef);
       }
 
@@ -149,13 +153,17 @@ export default function FinanceDueAmount() {
       
       const isFullyPaid = newDueAmount <= 0;
 
-      await updateDoc(paymentRef, {
-        paidAmount: newTotalPaid,
-        dueAmount: newDueAmount,
-        paymentStatus: isFullyPaid ? "FULLY_PAID" : "PARTIALLY_PAID",
-        transactions: arrayUnion(transaction),
-        lastUpdatedAt: new Date().toISOString()
-      });
+      await withTimeout(
+        updateDoc(paymentRef, {
+          paidAmount: newTotalPaid,
+          dueAmount: newDueAmount,
+          paymentStatus: isFullyPaid ? "FULLY_PAID" : "PARTIALLY_PAID",
+          transactions: arrayUnion(transaction),
+          lastUpdatedAt: new Date().toISOString()
+        }),
+        10000,
+        "Database update timed out. Please check your connection."
+      );
 
       setPaymentModalOpen(false);
       showToast("Payment recorded successfully.", "success");
@@ -164,9 +172,9 @@ export default function FinanceDueAmount() {
         router.push("/dashboard/finance/history");
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating payment:", error);
-      showToast("Failed to update payment record.", "error");
+      showToast(error.message || "Failed to update payment record.", "error");
     } finally {
       setSubmitting(false);
     }

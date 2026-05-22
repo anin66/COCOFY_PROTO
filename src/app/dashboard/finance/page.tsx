@@ -5,7 +5,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { useToast } from "@/context/ToastContext";
 import { db, auth, storage } from "@/lib/firebase";
-import { compressImage } from "@/lib/imageCompression";
+import { compressImage, withTimeout } from "@/lib/imageCompression";
 import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
@@ -205,7 +205,11 @@ export default function FinanceOverview() {
       if (targetUploadedFile) {
         const compressedFile = await compressImage(targetUploadedFile);
         const fileRef = ref(storage, `payments/${targetJob.id}/${Date.now()}_${compressedFile.name}`);
-        await uploadBytes(fileRef, compressedFile);
+        await withTimeout(
+          uploadBytes(fileRef, compressedFile),
+          15000,
+          "Upload timed out. Please check your network connection."
+        );
         fileUrl = await getDownloadURL(fileRef);
       }
 
@@ -228,7 +232,11 @@ export default function FinanceOverview() {
         lastUpdatedAt: new Date().toISOString()
       };
 
-      await setDoc(doc(db, "payments", targetJob.id), paymentData);
+      await withTimeout(
+        setDoc(doc(db, "payments", targetJob.id), paymentData),
+        10000,
+        "Database update timed out. Please check your connection."
+      );
 
       // Optimistically remove the job from the current overview list
       setJobs((prev) => prev.filter((j) => j.id !== targetJob.id));
@@ -242,9 +250,9 @@ export default function FinanceOverview() {
       } else {
         router.push("/dashboard/finance/due");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving payment:", error);
-      showToast("Failed to save payment record.", "error");
+      showToast(error.message || "Failed to save payment record.", "error");
     } finally {
       setSubmitting(false);
     }
