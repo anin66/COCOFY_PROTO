@@ -449,7 +449,7 @@ export default function WorkerDashboard() {
                           <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
                             Enter Harvested Trees
                           </label>
-                          <div className="flex-stack-mobile" style={{ display: "flex", gap: "0.5rem" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
                             <input
                               type="number"
                               min="0"
@@ -460,7 +460,7 @@ export default function WorkerDashboard() {
                                 [job.id]: parseInt(e.target.value) || 0
                               })}
                               style={{
-                                flex: 1,
+                                width: "100%",
                                 background: "var(--surface-2)",
                                 border: "1px solid var(--surface-border)",
                                 color: "white",
@@ -477,6 +477,7 @@ export default function WorkerDashboard() {
                                 handleConfirmHarvest(job.id, count);
                               }}
                               style={{
+                                width: "100%",
                                 padding: "0.6rem 1.2rem",
                                 background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
                                 color: "white",
