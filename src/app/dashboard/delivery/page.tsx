@@ -8,6 +8,7 @@ import { Search, Briefcase, Phone, MapPin, Calendar, TreePine, Users, Clock, Che
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { triggerPushNotification, getUidsByRole } from "@/lib/notifications";
 
 interface Job {
   id: string;
@@ -96,6 +97,16 @@ export default function DeliveryDashboard() {
         assignedDelivery: { ...jobData.assignedDelivery, status: "confirmed" },
         status: "ACTIVE",
       });
+
+      // Notify managers
+      const location = jobData.location || "Unknown Location";
+      getUidsByRole("manager").then((managers) => {
+        triggerPushNotification(
+          managers,
+          "Delivery Confirmed",
+          `Delivery Boy ${userName} confirmed pickup details for ${location}.`
+        );
+      });
     } catch (err) {
       console.error("Error confirming delivery:", err);
       setMyJobs(oldJobs);
@@ -107,6 +118,8 @@ export default function DeliveryDashboard() {
 
   const handleStartPickup = async (jobId: string) => {
     const oldJobs = [...myJobs];
+    const job = myJobs.find((j) => j.id === jobId);
+    const location = job?.location || "Unknown Location";
 
     // Optimistic Update
     setMyJobs((prev) =>
@@ -118,6 +131,15 @@ export default function DeliveryDashboard() {
       await updateDoc(jobRef, {
         status: "PICKUP_STARTED",
       });
+
+      // Notify managers
+      getUidsByRole("manager").then((managers) => {
+        triggerPushNotification(
+          managers,
+          "Pickup Started",
+          `Delivery Boy ${userName} is en route to ${location} for pickup.`
+        );
+      });
     } catch (err) {
       console.error("Error starting pickup:", err);
       setMyJobs(oldJobs);
@@ -127,6 +149,8 @@ export default function DeliveryDashboard() {
 
   const handleArrive = async (jobId: string) => {
     const oldJobs = [...myJobs];
+    const job = myJobs.find((j) => j.id === jobId);
+    const location = job?.location || "Unknown Location";
 
     // Optimistic Update
     setMyJobs((prev) =>
@@ -137,6 +161,15 @@ export default function DeliveryDashboard() {
       const jobRef = doc(db, "jobs", jobId);
       await updateDoc(jobRef, {
         status: "ARRIVED_AT_DESTINATION",
+      });
+
+      // Notify managers
+      getUidsByRole("manager").then((managers) => {
+        triggerPushNotification(
+          managers,
+          "Delivery Arrived",
+          `Delivery Boy ${userName} has arrived at ${location} with the harvest.`
+        );
       });
     } catch (err) {
       console.error("Error updating arrival status:", err);

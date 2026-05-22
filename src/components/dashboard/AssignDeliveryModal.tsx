@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { X, Truck, Search, Check, User } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, getDoc } from "firebase/firestore";
 import { useToast } from "@/context/ToastContext";
+import { triggerPushNotification } from "@/lib/notifications";
 
 interface DeliveryUser {
   uid: string;
@@ -65,6 +66,11 @@ export default function AssignDeliveryModal({
       const chosen = deliveryBoys.find((d) => d.uid === selectedUid)!;
       const jobRef = doc(db, "jobs", jobId);
 
+      // Fetch job details first to get the location for the notification
+      const jobSnap = await getDoc(jobRef);
+      const jobData = jobSnap.exists() ? jobSnap.data() : null;
+      const location = jobData?.location || "Unknown Location";
+
       // Optimistic transition
       onAssigned();
       animateClose();
@@ -79,6 +85,12 @@ export default function AssignDeliveryModal({
         status: "DELIVERY_PENDING",
       }).then(() => {
         showToast("Delivery boy assigned successfully.", "success");
+        // Trigger push notification to the assigned delivery boy
+        triggerPushNotification(
+          [chosen.uid],
+          "New Delivery Assigned",
+          `You have been assigned to harvest transport from ${location}.`
+        );
       }).catch((err) => {
         console.error("Firestore error assigning delivery boy:", err);
         showToast("Failed to save delivery assignment on server.", "error");

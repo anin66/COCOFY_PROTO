@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { X, Users, Search, Check, User } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, getDoc } from "firebase/firestore";
 import { useToast } from "@/context/ToastContext";
+import { triggerPushNotification } from "@/lib/notifications";
 
 interface WorkerUser {
   uid: string;
@@ -99,6 +100,11 @@ export default function AssignTeamModal({
 
       const jobRef = doc(db, "jobs", jobId);
       
+      // Fetch job details first to get the location for the notification
+      const jobSnap = await getDoc(jobRef);
+      const jobData = jobSnap.exists() ? jobSnap.data() : null;
+      const location = jobData?.location || "Unknown Location";
+
       // Optimistic transition
       onAssigned();
       animateClose();
@@ -109,6 +115,13 @@ export default function AssignTeamModal({
         status: "TEAM_PENDING",
       }).then(() => {
         showToast("Workers assigned successfully.", "success");
+        // Trigger push notification to newly assigned workers
+        const workerUids = selectedWorkers.map(w => w.uid);
+        triggerPushNotification(
+          workerUids,
+          "New Job Assigned",
+          `You have been assigned to a new harvesting job at ${location}.`
+        );
       }).catch((err) => {
         console.error("Firestore error assigning workers:", err);
         showToast("Failed to save worker assignment on server.", "error");

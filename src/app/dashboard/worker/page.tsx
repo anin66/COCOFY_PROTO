@@ -9,6 +9,7 @@ import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, getDoc, increment } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useToast } from "@/context/ToastContext";
+import { triggerPushNotification, getUidsByRole } from "@/lib/notifications";
 
 interface AssignedWorker {
   uid: string;
@@ -136,6 +137,15 @@ export default function WorkerDashboard() {
       await updateDoc(userRef, {
         rankingPoints: increment(response === "accepted" ? 10 : -10),
       });
+
+      // Notify managers about job accept/reject
+      getUidsByRole("manager").then((managers) => {
+        triggerPushNotification(
+          managers,
+          response === "accepted" ? "Job Accepted" : "Job Rejected",
+          `Worker ${userName} has ${response === "accepted" ? "accepted" : "rejected"} job at ${jobData.location || "Unknown Location"}.`
+        );
+      });
     } catch (err) {
       console.error("Error responding to job:", err);
       setMyJobs(oldJobs);
@@ -147,6 +157,8 @@ export default function WorkerDashboard() {
 
   const handleCompleteJob = async (jobId: string) => {
     const oldJobs = [...myJobs];
+    const job = myJobs.find((j) => j.id === jobId);
+    const location = job?.location || "Unknown Location";
 
     // Optimistic Update
     setMyJobs((prev) =>
@@ -159,6 +171,15 @@ export default function WorkerDashboard() {
         status: "WORK_COMPLETED",
       });
       showToast("Job completed successfully.", "success");
+
+      // Notify managers
+      getUidsByRole("manager").then((managers) => {
+        triggerPushNotification(
+          managers,
+          "Job Completed",
+          `Harvesting work has been completed at ${location}.`
+        );
+      });
     } catch (err) {
       console.error("Error completing job:", err);
       setMyJobs(oldJobs);
@@ -207,6 +228,35 @@ export default function WorkerDashboard() {
         assignedWorkers: updatedWorkers,
       });
       showToast("Harvest confirmed successfully.", "success");
+
+      const location = jobData.location || "Unknown Location";
+
+      // 8. Trigger push notification for harvest recorded
+      getUidsByRole("manager").then((managers) => {
+        triggerPushNotification(
+          managers,
+          "Harvest Recorded",
+          `${userName} recorded harvesting ${harvestCount} trees at ${location}.`
+        );
+      });
+
+      // 9. Trigger push notification for final harvest complete if all workers have entered tree counts
+      const allEntered = updatedWorkers.every((w) => w.harvestConfirmed);
+      if (allEntered) {
+        const totalHarvested = updatedWorkers.reduce((sum, w) => sum + (w.harvestedTrees || 0), 0);
+        
+        Promise.all([
+          getUidsByRole("manager"),
+          getUidsByRole("finance")
+        ]).then(([managers, financeManagers]) => {
+          const combinedRecipients = Array.from(new Set([...managers, ...financeManagers]));
+          triggerPushNotification(
+            combinedRecipients,
+            "Harvest Fully Finalized",
+            `All workers have entered tree counts for ${location}. Total harvested: ${totalHarvested}.`
+          );
+        });
+      }
     } catch (err) {
       console.error("Error confirming harvest:", err);
       setMyJobs(oldJobs);

@@ -2,6 +2,8 @@
 
 import { Bell, Sun, Moon, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
+import { auth } from "@/lib/firebase";
+import { useNotificationRegister } from "@/hooks/useNotificationRegister";
 
 interface TopBarProps {
   title: string;
@@ -10,6 +12,21 @@ interface TopBarProps {
 export default function TopBar({ title }: TopBarProps) {
   const [isActive, setIsActive] = useState(true);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [userId, setUserId] = useState<string | undefined>();
+
+  // Register push notifications
+  useNotificationRegister(userId);
+
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(undefined);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     // Read current theme on mount

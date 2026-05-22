@@ -2,8 +2,8 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getMessaging, isSupported } from "firebase/messaging";
-import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics";
+import { getMessaging, isSupported, Messaging } from "firebase/messaging";
+import { getAnalytics, isSupported as isAnalyticsSupported, Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAAeC7_aNrMBsaoBYNZs9jnQvpCc9x04kU",
@@ -22,8 +22,8 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Messaging and Analytics are only supported in browser environments
-let messaging = null;
-let analytics = null;
+let messaging: Messaging | null = null;
+let analytics: Analytics | null = null;
 
 if (typeof window !== "undefined") {
   isSupported().then((supported) => {
