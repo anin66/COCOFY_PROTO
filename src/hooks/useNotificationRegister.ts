@@ -28,6 +28,21 @@ export function useNotificationRegister(userId: string | undefined) {
     if (!userId) return;
     if (typeof window === "undefined") return;
 
+    // Load initial state immediately from localStorage if already registered before
+    if (Notification.permission === "granted") {
+      const cachedUid = localStorage.getItem("fcm_registered_uid");
+      const cachedTokenPreview = localStorage.getItem("fcm_registered_token_preview");
+      if (cachedUid === userId) {
+        updateDebug({
+          browserSupported: true,
+          permission: "granted",
+          swState: "registered-successfully",
+          fcmToken: cachedTokenPreview || "Registered (cached)",
+          error: ""
+        });
+      }
+    }
+
     const registerNotification = async () => {
       try {
         updateDebug({ browserSupported: true, permission: Notification.permission, swState: "checking-support", error: "" });
@@ -77,8 +92,9 @@ export function useNotificationRegister(userId: string | undefined) {
         });
 
         if (currentToken) {
+          const tokenPreview = currentToken.substring(0, 12) + "..." + currentToken.substring(currentToken.length - 8);
           console.log("FCM registration token acquired:", currentToken);
-          updateDebug({ fcmToken: currentToken.substring(0, 12) + "..." + currentToken.substring(currentToken.length - 8), swState: "saving-to-firestore" });
+          updateDebug({ fcmToken: tokenPreview, swState: "saving-to-firestore" });
 
           // 6. Save token to Firestore under users/{userId}
           const userDocRef = doc(db, "users", userId);
@@ -86,6 +102,11 @@ export function useNotificationRegister(userId: string | undefined) {
             fcmTokens: arrayUnion(currentToken)
           });
           console.log("FCM token successfully registered in Firestore users document.");
+          
+          // Cache in localStorage to load instantly on refresh
+          localStorage.setItem("fcm_registered_uid", userId);
+          localStorage.setItem("fcm_registered_token_preview", tokenPreview);
+
           updateDebug({ swState: "registered-successfully" });
         } else {
           console.warn("No registration token available. Request permission to generate one.");

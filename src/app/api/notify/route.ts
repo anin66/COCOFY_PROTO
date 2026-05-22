@@ -146,6 +146,23 @@ export async function POST(request: Request) {
         acc[key] = String(data[key]);
         return acc;
       }, {}) : {},
+      webpush: {
+        headers: {
+          Urgency: "high", // Request immediate delivery from push service (high urgency)
+          TTL: "43200",    // Time to Live: 12 hours (in seconds)
+        },
+        notification: {
+          title,
+          body,
+          icon: "/favicon.ico",
+          badge: "/favicon.ico",
+          vibrate: [200, 100, 200], // Vibration pattern
+          requireInteraction: false,
+        },
+        fcmOptions: {
+          link: "/dashboard", // Click action URL (standard for Web FCM v1 API)
+        }
+      },
       tokens: uniqueTokens,
     };
 

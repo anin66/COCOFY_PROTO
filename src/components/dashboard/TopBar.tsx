@@ -32,7 +32,20 @@ export default function TopBar({ title }: TopBarProps) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setDebugState((window as any).__notificationDebug || null);
+      // First try to load from localStorage if registered previously to avoid transient orange state
+      const cachedUid = userId;
+      const cachedTokenPreview = localStorage.getItem("fcm_registered_token_preview");
+      if (cachedUid && localStorage.getItem("fcm_registered_uid") === cachedUid && Notification.permission === "granted") {
+        setDebugState({
+          browserSupported: true,
+          permission: "granted",
+          swState: "registered-successfully",
+          fcmToken: cachedTokenPreview || "Registered (cached)",
+          error: ""
+        });
+      } else {
+        setDebugState((window as any).__notificationDebug || null);
+      }
       
       const handleUpdate = () => {
         setDebugState((window as any).__notificationDebug || null);
@@ -40,7 +53,7 @@ export default function TopBar({ title }: TopBarProps) {
       window.addEventListener("notification-debug-update", handleUpdate);
       return () => window.removeEventListener("notification-debug-update", handleUpdate);
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     // Read current theme on mount
