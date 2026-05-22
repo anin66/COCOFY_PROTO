@@ -536,7 +536,7 @@ p {
 @media (max-width: 768px) {
   /* Typography adjust */
   h1 {
-    font-size: 2.25rem !important;
+    font-size: clamp(1.8rem, 8vw, 2.5rem) !important;
   }
   h2 {
     font-size: 1.5rem !important;
@@ -545,22 +545,39 @@ p {
     font-size: 1.25rem !important;
   }
 
+  /* Landing Header & Navigation */
+  .landing-header {
+    padding: 1rem 1.25rem !important;
+  }
+  .login-nav {
+    padding: 1rem 1.25rem !important;
+  }
+
   /* Landing Hero */
   .hero-section {
     flex-direction: column !important;
-    gap: 2rem !important;
-    padding: 1.5rem !important;
+    gap: 1.5rem !important;
+    padding: 1.5rem 1.25rem !important;
     text-align: center;
   }
   .hero-section p {
     margin: 0 auto 2rem auto !important;
+    font-size: 1rem !important;
   }
-  .hero-section .btn {
+  .hero-cta-wrapper {
+    justify-content: center !important;
+  }
+  .hero-cta-wrapper .btn {
     width: 100% !important;
   }
   .hero-3d-container {
-    height: 300px !important;
+    height: 280px !important;
     min-height: 250px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+  .hero-canvas-wrapper {
+    min-height: 260px !important;
     width: 100% !important;
   }
 
@@ -621,6 +638,32 @@ p {
     margin: 1rem !important;
     width: calc(100% - 2rem) !important;
   }
+
+  /* Reduce double padding on mobile to give content more room */
+  section {
+    padding: 1.25rem 1rem !important;
+  }
+  .glass-panel {
+    padding: 1.25rem 1.0rem !important;
+  }
+
+  /* Target main elements to prevent horizontal overflow */
+  main {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Target double padding inside dashboard pages content wrapper */
+  main > div {
+    padding: 1.25rem 1.0rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Stack sched-stats-container into a single column on small screen widths */
+  .sched-stats-container {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -629,8 +672,25 @@ p {
     font-size: 1.15rem !important;
   }
   
-  /* Select role buttons in login */
+  /* Select role buttons in login - stack vertically to prevent text overlap & overflow */
   .login-role-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+  .login-role-grid button {
+    font-size: 0.95rem !important;
+    padding: 0.75rem !important;
+  }
+
+  /* Force stack card detail grids to prevent wrapping and squishing of text */
+  .job-card div[style*="grid-template-columns"],
+  .job-card div[style*="gridTemplateColumns"],
+  .glass-card div[style*="grid-template-columns"],
+  .glass-card div[style*="gridTemplateColumns"],
+  .plan-card div[style*="grid-template-columns"],
+  .plan-card div[style*="gridTemplateColumns"],
+  [class*="-card"] div[style*="grid-template-columns"],
+  [class*="-card"] div[style*="gridTemplateColumns"] {
     grid-template-columns: 1fr !important;
   }
 }
