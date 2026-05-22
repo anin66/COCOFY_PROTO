@@ -8,6 +8,7 @@ import { db, auth } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, doc, updateDoc, writeBatch, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useToast } from "@/context/ToastContext";
+import { useConfirm } from "@/context/ConfirmContext";
 
 interface Worker {
   uid: string;
@@ -20,6 +21,7 @@ interface Worker {
 
 export default function WorkerRankings() {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUid, setEditingUid] = useState<string | null>(null);
@@ -95,7 +97,16 @@ export default function WorkerRankings() {
 
   const handleResetAll = async () => {
     if (workers.length === 0) return;
-    if (window.confirm("⚠️ WARNING: Are you sure you want to reset ALL worker rankings to zero? This action cannot be undone.")) {
+    
+    const confirmed = await confirm({
+      title: "Reset Worker Rankings",
+      message: "Are you sure you want to reset ALL worker rankings to zero? This action cannot be undone.",
+      confirmText: "Reset Rankings",
+      cancelText: "Cancel",
+      type: "danger"
+    });
+
+    if (confirmed) {
       setResetting(true);
       try {
         const batch = writeBatch(db);

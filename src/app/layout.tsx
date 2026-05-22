@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
+import { ConfirmProvider } from "@/context/ConfirmContext";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -36,7 +37,9 @@ export default function RootLayout({
           <div className="blob blob-3"></div>
         </div>
         <ToastProvider>
-          {children}
+          <ConfirmProvider>
+            {children}
+          </ConfirmProvider>
         </ToastProvider>
       </body>
     </html>

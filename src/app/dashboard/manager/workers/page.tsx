@@ -9,6 +9,7 @@ import { collection, getDocs, deleteDoc, doc, getDoc } from "firebase/firestore"
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
+import { useConfirm } from "@/context/ConfirmContext";
 
 interface Worker {
   uid: string;
@@ -22,6 +23,7 @@ interface Worker {
 
 export default function WorkersDirectory() {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const router = useRouter();
   const [currentUserName, setCurrentUserName] = useState("Manager");
   const [currentUserRole, setCurrentUserRole] = useState("manager");
@@ -72,7 +74,15 @@ export default function WorkersDirectory() {
   }, []);
 
   const handleDelete = async (uid: string) => {
-    if (window.confirm("Are you sure you want to delete this worker? This action cannot be undone.")) {
+    const confirmed = await confirm({
+      title: "Delete Worker Profile?",
+      message: "Are you sure you want to delete this worker? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger"
+    });
+
+    if (confirmed) {
       try {
         await deleteDoc(doc(db, "users", uid));
         setWorkers((prev) => prev.filter((worker) => worker.uid !== uid));

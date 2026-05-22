@@ -21,6 +21,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import DatePicker from "@/components/ui/DatePicker";
 import { useToast } from "@/context/ToastContext";
+import { useConfirm } from "@/context/ConfirmContext";
 
 /* ============================== TYPES ============================== */
 interface Job {
@@ -199,6 +200,7 @@ const createSmoothPath = (points: { x: number; y: number }[]) => {
 /* ============================== MAIN COMPONENT ============================== */
 export default function FinanceAnalytics() {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const router = useRouter();
   const [currentUserRole, setCurrentUserRole] = useState("finance");
   const [currentUserName, setCurrentUserName] = useState("Finance Manager");
@@ -736,7 +738,14 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (!confirm("Delete this expense?")) return;
+    const confirmed = await confirm({
+      title: "Delete Expense?",
+      message: "Are you sure you want to delete this expense? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger"
+    });
+    if (!confirmed) return;
     try { 
       await deleteDoc(doc(db, "expenses", id)); 
       showToast("Expense deleted successfully.", "success");
