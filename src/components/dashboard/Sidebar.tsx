@@ -96,11 +96,22 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
               vapidKey: "BDIFGhWoFRXZnc1xNjwd_Tb3A7lYu2kLv4XVRCE5KptT0xXMiglgWtg2-iJk4OgeT9_9qa5sD-EFyw3bCF5ptIw"
             });
             if (token) {
-              const userDocRef = doc(db, "users", currentUser.uid);
-              await updateDoc(userDocRef, {
-                fcmTokens: arrayRemove(token)
+              const unregisterRes = await fetch("/api/register-token", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  userId: currentUser.uid,
+                  token,
+                  unregister: true,
+                }),
               });
-              console.log("FCM token removed from user document on sign out.");
+              if (unregisterRes.ok) {
+                console.log("FCM token unregistered from user document on sign out via API.");
+              } else {
+                console.warn("Failed to unregister FCM token via API status:", unregisterRes.status);
+              }
             }
           }
         } catch (fcmErr) {

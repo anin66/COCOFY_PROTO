@@ -13,9 +13,15 @@ export async function triggerPushNotification(
   recipientUids: string[],
   title: string,
   body: string,
-  data?: Record<string, any>
+  data?: Record<string, any>,
+  recipientRoles?: string[]
 ) {
-  if (!recipientUids || recipientUids.length === 0) return;
+  if (
+    (!recipientUids || recipientUids.length === 0) &&
+    (!recipientRoles || recipientRoles.length === 0)
+  ) {
+    return;
+  }
 
   try {
     const res = await fetch("/api/notify", {
@@ -25,6 +31,7 @@ export async function triggerPushNotification(
       },
       body: JSON.stringify({
         recipientUids,
+        recipientRoles,
         title,
         body,
         data,

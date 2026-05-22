@@ -8,7 +8,7 @@ import { Search, Briefcase, Phone, MapPin, Calendar, TreePine, Users, Clock, Che
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { triggerPushNotification, getUidsByRole } from "@/lib/notifications";
+import { triggerPushNotification } from "@/lib/notifications";
 
 interface Job {
   id: string;
@@ -100,13 +100,13 @@ export default function DeliveryDashboard() {
 
       // Notify managers
       const location = jobData.location || "Unknown Location";
-      getUidsByRole("manager").then((managers) => {
-        triggerPushNotification(
-          managers,
-          "Delivery Confirmed",
-          `Delivery Boy ${userName} confirmed pickup details for ${location}.`
-        );
-      });
+      triggerPushNotification(
+        [],
+        "Delivery Confirmed",
+        `Delivery Boy ${userName} confirmed pickup details for ${location}.`,
+        undefined,
+        ["manager"]
+      );
     } catch (err) {
       console.error("Error confirming delivery:", err);
       setMyJobs(oldJobs);
@@ -133,13 +133,13 @@ export default function DeliveryDashboard() {
       });
 
       // Notify managers
-      getUidsByRole("manager").then((managers) => {
-        triggerPushNotification(
-          managers,
-          "Pickup Started",
-          `Delivery Boy ${userName} is en route to ${location} for pickup.`
-        );
-      });
+      triggerPushNotification(
+        [],
+        "Pickup Started",
+        `Delivery Boy ${userName} is en route to ${location} for pickup.`,
+        undefined,
+        ["manager"]
+      );
     } catch (err) {
       console.error("Error starting pickup:", err);
       setMyJobs(oldJobs);
@@ -164,13 +164,13 @@ export default function DeliveryDashboard() {
       });
 
       // Notify managers
-      getUidsByRole("manager").then((managers) => {
-        triggerPushNotification(
-          managers,
-          "Delivery Arrived",
-          `Delivery Boy ${userName} has arrived at ${location} with the harvest.`
-        );
-      });
+      triggerPushNotification(
+        [],
+        "Delivery Arrived",
+        `Delivery Boy ${userName} has arrived at ${location} with the harvest.`,
+        undefined,
+        ["manager"]
+      );
     } catch (err) {
       console.error("Error updating arrival status:", err);
       setMyJobs(oldJobs);

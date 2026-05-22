@@ -79,11 +79,14 @@ if (!admin.apps.length) {
 
 export async function POST(request: Request) {
   try {
-    const { recipientUids, title, body, data } = await request.json();
+    const { recipientUids, recipientRoles, title, body, data } = await request.json();
 
-    if (!recipientUids || !Array.isArray(recipientUids) || recipientUids.length === 0) {
+    if (
+      (!recipientUids || !Array.isArray(recipientUids) || recipientUids.length === 0) &&
+      (!recipientRoles || !Array.isArray(recipientRoles) || recipientRoles.length === 0)
+    ) {
       return NextResponse.json(
-        { error: "recipientUids is required and must be a non-empty array" },
+        { error: "Either recipientUids or recipientRoles is required and must be a non-empty array" },
         { status: 400 }
       );
     }
@@ -97,11 +100,12 @@ export async function POST(request: Request) {
 
     // If running in mock mode, just log and return success
     if (admin.apps.length === 0) {
-      console.log(`[MOCK NOTIFICATION] To UIDs [${recipientUids.join(", ")}]: ${title} - ${body}`);
+      const targetStr = `Uids [${(recipientUids || []).join(", ")}], Roles [${(recipientRoles || []).join(", ")}]`;
+      console.log(`[MOCK NOTIFICATION] To ${targetStr}: ${title} - ${body}`);
       return NextResponse.json({
         success: true,
         message: "Notification logged in mock mode (credentials missing).",
-        recipientCount: recipientUids.length,
+        recipientCount: (recipientUids || []).length + (recipientRoles || []).length,
       });
     }
 
@@ -109,8 +113,33 @@ export async function POST(request: Request) {
     const fcmTokens: string[] = [];
     const tokensToPrune: { [uid: string]: string[] } = {};
 
+    // Gather all target UIDs
+    const targetUids = new Set<string>(recipientUids || []);
+
+    if (recipientRoles && Array.isArray(recipientRoles) && recipientRoles.length > 0) {
+      for (const role of recipientRoles) {
+        if (typeof role !== "string") continue;
+        const lowercaseRole = role.toLowerCase();
+        
+        // Query users by role
+        const roleSnap = await db.collection("users").where("role", "==", lowercaseRole).get();
+        roleSnap.forEach((doc) => {
+          targetUids.add(doc.id);
+        });
+
+        // Also query uppercase just in case
+        const uppercaseRole = role.toUpperCase();
+        if (uppercaseRole !== lowercaseRole) {
+          const roleSnapUpper = await db.collection("users").where("role", "==", uppercaseRole).get();
+          roleSnapUpper.forEach((doc) => {
+            targetUids.add(doc.id);
+          });
+        }
+      }
+    }
+
     // 1. Fetch tokens for all recipients
-    for (const uid of recipientUids) {
+    for (const uid of targetUids) {
       const userDoc = await db.collection("users").doc(uid).get();
       if (userDoc.exists) {
         const userData = userDoc.data();

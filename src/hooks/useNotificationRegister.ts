@@ -96,12 +96,22 @@ export function useNotificationRegister(userId: string | undefined) {
           console.log("FCM registration token acquired:", currentToken);
           updateDebug({ fcmToken: tokenPreview, swState: "saving-to-firestore" });
 
-          // 6. Save token to Firestore under users/{userId}
-          const userDocRef = doc(db, "users", userId);
-          await updateDoc(userDocRef, {
-            fcmTokens: arrayUnion(currentToken)
+          // 6. Register token via backend to clean up duplicates
+          const registerRes = await fetch("/api/register-token", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId,
+              token: currentToken,
+            }),
           });
-          console.log("FCM token successfully registered in Firestore users document.");
+          if (!registerRes.ok) {
+            const errBody = await registerRes.json();
+            throw new Error(errBody.error || `Failed to register token via API with status ${registerRes.status}`);
+          }
+          console.log("FCM token successfully registered and sanitized via API.");
           
           // Cache in localStorage to load instantly on refresh
           localStorage.setItem("fcm_registered_uid", userId);
