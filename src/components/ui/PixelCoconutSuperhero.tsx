@@ -115,7 +115,7 @@ export default function PixelCoconutSuperhero() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      minHeight: "600px",
+      minHeight: "750px",
     }}>
       {loading && (
         <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
@@ -127,7 +127,7 @@ export default function PixelCoconutSuperhero() {
         style={{
           display: loading ? "none" : "block",
           width: "100%",
-          maxWidth: "700px",
+          maxWidth: "800px",
           height: "auto",
           imageRendering: "pixelated",
           filter: "drop-shadow(0 20px 40px var(--primary-glow-border))",
