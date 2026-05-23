@@ -12,8 +12,9 @@ export default function PixelCoconutSuperhero() {
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(10);
   const [duration, setDuration] = useState<number>(10);
-  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
+  const [hasMetadata, setHasMetadata] = useState<boolean>(false);
   
   // Chroma Key Settings
   const [keyColor, setKeyColor] = useState<{ r: number; g: number; b: number }>({ r: 0, g: 0, b: 0 });
@@ -33,29 +34,39 @@ export default function PixelCoconutSuperhero() {
     let rafId: number;
     let autoDetectDone = false;
 
+    // Direct DOM property configuration to guarantee muted autoplay
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+
     // Set duration when metadata is loaded
     const onMetadataLoaded = () => {
       setDuration(video.duration);
       setEndTime(video.duration);
+      setHasMetadata(true);
     };
+
     video.addEventListener("loadedmetadata", onMetadataLoaded);
+    if (video.readyState >= 1) {
+      onMetadataLoaded();
+    }
 
     // Main render loop
     const render = () => {
-      if (video.paused || video.ended) {
-        rafId = requestAnimationFrame(render);
-        return;
-      }
-
       // 1. Time clamping and looping logic
       const current = video.currentTime;
       setCurrentTime(current);
 
-      if (current < startTime) {
-        video.currentTime = startTime;
-      } else if (current >= endTime) {
-        video.currentTime = startTime;
+      if (!video.paused) {
+        if (current < startTime) {
+          video.currentTime = startTime;
+        } else if (current >= endTime) {
+          video.currentTime = startTime;
+        }
       }
+
+      // Sync state with DOM
+      setIsPlaying(!video.paused);
 
       // 2. Setup canvas sizes
       const vw = video.videoWidth;
@@ -143,7 +154,14 @@ export default function PixelCoconutSuperhero() {
       rafId = requestAnimationFrame(render);
     };
 
-    video.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    // Attempt autoplay
+    video.play()
+      .then(() => setIsPlaying(true))
+      .catch((err) => {
+        console.warn("Autoplay blocked or video not ready:", err);
+        setIsPlaying(false);
+      });
+
     rafId = requestAnimationFrame(render);
 
     return () => {
@@ -152,35 +170,42 @@ export default function PixelCoconutSuperhero() {
     };
   }, [startTime, endTime, keyColor, tolerance, feather, autoDetect]);
 
-  // Click on canvas to sample chroma-key color
+  // Click on canvas to sample color OR play/pause
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isPickingColor) return;
     const canvas = canvasRef.current;
-    const buffer = bufferCanvasRef.current;
-    if (!canvas || !buffer) return;
+    if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.floor(((e.clientX - rect.left) / rect.width) * canvas.width);
-    const y = Math.floor(((e.clientY - rect.top) / rect.height) * canvas.height);
+    if (isPickingColor) {
+      const buffer = bufferCanvasRef.current;
+      if (!buffer) return;
 
-    const bCtx = buffer.getContext("2d");
-    if (bCtx) {
-      const pixel = bCtx.getImageData(x, y, 1, 1).data;
-      setKeyColor({ r: pixel[0], g: pixel[1], b: pixel[2] });
-      setAutoDetect(false); // Disable auto-detect since user manually chose a color
-      setIsPickingColor(false);
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor(((e.clientX - rect.left) / rect.width) * canvas.width);
+      const y = Math.floor(((e.clientY - rect.top) / rect.height) * canvas.height);
+
+      const bCtx = buffer.getContext("2d");
+      if (bCtx) {
+        const pixel = bCtx.getImageData(x, y, 1, 1).data;
+        setKeyColor({ r: pixel[0], g: pixel[1], b: pixel[2] });
+        setAutoDetect(false);
+        setIsPickingColor(false);
+      }
+    } else {
+      // Toggle play/pause
+      togglePlayback();
     }
   };
 
   const togglePlayback = () => {
     const video = videoRef.current;
     if (!video) return;
-    if (isPlaying) {
+    if (video.paused) {
+      video.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.error("Playback failed:", err));
+    } else {
       video.pause();
       setIsPlaying(false);
-    } else {
-      video.play().catch(() => {});
-      setIsPlaying(true);
     }
   };
 
@@ -204,8 +229,8 @@ export default function PixelCoconutSuperhero() {
         playsInline
       />
 
-      {/* Render Canvas */}
-      <div style={{ position: "relative", cursor: isPickingColor ? "crosshair" : "default" }}>
+      {/* Render Canvas Container */}
+      <div style={{ position: "relative", cursor: isPickingColor ? "crosshair" : "pointer" }}>
         <canvas
           ref={canvasRef}
           onClick={handleCanvasClick}
@@ -218,6 +243,47 @@ export default function PixelCoconutSuperhero() {
             borderRadius: "16px",
           }}
         />
+
+        {/* Play Button Overlay (when paused) */}
+        {!isPlaying && (
+          <div 
+            onClick={togglePlayback}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(0, 0, 0, 0.2)",
+              borderRadius: "16px",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0,0,0,0.3)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,0,0,0.2)"}
+          >
+            <div style={{
+              width: "56px",
+              height: "56px",
+              borderRadius: "50%",
+              background: "var(--primary)",
+              color: "#000",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+              transform: "scale(1)",
+              transition: "transform 0.15s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
+            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+            >
+              <Play size={24} fill="#000" style={{ transform: "translateX(2px)" }} />
+            </div>
+          </div>
+        )}
 
         {isPickingColor && (
           <div style={{
@@ -265,7 +331,7 @@ export default function PixelCoconutSuperhero() {
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-          e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+          e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
         }}
       >
         {showControls ? <EyeOff size={16} /> : <Eye size={16} />}
