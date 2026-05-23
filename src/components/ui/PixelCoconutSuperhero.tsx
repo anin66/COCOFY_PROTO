@@ -31,11 +31,22 @@ export default function PixelCoconutSuperhero() {
       // Helper to check if a pixel is part of the checkerboard background
       // Checkerboard is made of white (#ffffff) and light gray (#cccccc / #e0e0e0)
       const isBgColor = (r: number, g: number, b: number): boolean => {
-        // Pure/near white
-        if (r > 240 && g > 240 && b > 240) return true;
-        // Light gray (channels are close to each other and brightness is high)
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const diff = max - min;
         const avg = (r + g + b) / 3;
-        if (avg > 180 && avg < 240 && Math.abs(r - g) < 10 && Math.abs(g - b) < 10) return true;
+
+        // Any neutral/gray shade that is not extremely dark
+        // This catches the checkerboard lines, compression artifacts, and the stray gray box
+        if (diff < 35) {
+          return avg > 40;
+        }
+        
+        // Catch any very bright pixels
+        if (r > 215 && g > 215 && b > 215) {
+          return true;
+        }
+
         return false;
       };
 
