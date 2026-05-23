@@ -2,27 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, Layers, Zap, Shield } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-const CoconutVideoPlayer = dynamic(() => import('@/components/ui/CoconutVideoPlayer'), {
-  ssr: false,
-  loading: () => (
-    <div style={{ 
-      width: "100%",
-      maxWidth: "520px",
-      borderRadius: "24px",
-      background: "rgba(0, 0, 0, 0.4)",
-      border: "1px solid var(--surface-border)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      aspectRatio: "1/1",
-      color: "var(--text-light)"
-    }}>
-      Loading Video...
-    </div>
-  )
-});
+import CoconutVideoPlayer from '@/components/ui/CoconutVideoPlayer';
 
 
 export default function Home() {

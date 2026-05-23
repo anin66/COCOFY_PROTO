@@ -10,24 +10,33 @@ const VIDEOS = [
 ];
 
 export default function CoconutVideoPlayer() {
-  const [currentVideo, setCurrentVideo] = useState<string>("");
+  // Start with coco_1.mp4 as default to ensure instant preloading during SSR and zero visual lag
+  const [currentVideo, setCurrentVideo] = useState<string>("/videos/coco_1.mp4");
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Initialize with a random video on mount (client-side only to prevent hydration mismatch)
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * VIDEOS.length);
-    setCurrentVideo(VIDEOS[randomIndex]);
-  }, []);
-
   const playNextVideo = () => {
-    if (!currentVideo) return;
-    
     // Filter out the current video to prevent consecutive repeat
     const candidates = VIDEOS.filter((v) => v !== currentVideo);
     const nextVideo = candidates[Math.floor(Math.random() * candidates.length)];
     
     setCurrentVideo(nextVideo);
   };
+
+  // Ensure DOM-level muting is always enforced on source change to satisfy browser autoplay requirements
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.muted = true;
+      video.defaultMuted = true;
+      
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.log("Autoplay failed or was interrupted:", err);
+        });
+      }
+    }
+  }, [currentVideo]);
 
   return (
     <div style={{
@@ -46,7 +55,7 @@ export default function CoconutVideoPlayer() {
             el.muted = true;
           }
         }}
-        src={currentVideo || undefined}
+        src={currentVideo}
         autoPlay
         muted
         playsInline
@@ -59,11 +68,6 @@ export default function CoconutVideoPlayer() {
           background: "transparent",
         }}
       />
-      {!currentVideo && (
-        <div style={{ color: "var(--text-light)", fontSize: "0.9rem" }}>
-          Initializing Video...
-        </div>
-      )}
     </div>
   );
 }
