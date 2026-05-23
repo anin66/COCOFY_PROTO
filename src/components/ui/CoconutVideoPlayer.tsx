@@ -10,33 +10,44 @@ const VIDEOS = [
 ];
 
 export default function CoconutVideoPlayer() {
-  // Start with coco_1.mp4 as default to ensure instant preloading during SSR and zero visual lag
-  const [currentVideo, setCurrentVideo] = useState<string>("/videos/coco_1.mp4");
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [activeIdx, setActiveIdx] = useState<number>(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  const playNextVideo = () => {
-    // Filter out the current video to prevent consecutive repeat
-    const candidates = VIDEOS.filter((v) => v !== currentVideo);
-    const nextVideo = candidates[Math.floor(Math.random() * candidates.length)];
+  const playNextVideo = (endedIdx: number) => {
+    // Exclude the current index to prevent consecutive repetition
+    const candidates = [0, 1, 2, 3].filter(idx => idx !== endedIdx);
+    const nextIdx = candidates[Math.floor(Math.random() * candidates.length)];
     
-    setCurrentVideo(nextVideo);
+    // Reset the finished video to the beginning
+    const endedVideo = videoRefs.current[endedIdx];
+    if (endedVideo) {
+      endedVideo.currentTime = 0;
+    }
+    
+    setActiveIdx(nextIdx);
   };
 
-  // Ensure DOM-level muting is always enforced on source change to satisfy browser autoplay requirements
+  // Play the active video immediately whenever activeIdx changes, and pause others
   useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.muted = true;
-      video.defaultMuted = true;
-      
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.log("Autoplay failed or was interrupted:", err);
-        });
+    videoRefs.current.forEach((video, idx) => {
+      if (video) {
+        // Enforce DOM-level muting required by modern browsers to allow autoplay
+        video.muted = true;
+        video.defaultMuted = true;
+        
+        if (idx === activeIdx) {
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              console.log("Autoplay failed or was interrupted:", err);
+            });
+          }
+        } else {
+          video.pause();
+        }
       }
-    }
-  }, [currentVideo]);
+    });
+  }, [activeIdx]);
 
   return (
     <div style={{
@@ -48,26 +59,32 @@ export default function CoconutVideoPlayer() {
       position: "relative",
       aspectRatio: "1/1", // Square aspect ratio fits the character videos perfectly
     }}>
-      <video
-        ref={(el) => {
-          (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
-          if (el) {
-            el.muted = true;
-          }
-        }}
-        src={currentVideo}
-        autoPlay
-        muted
-        playsInline
-        controls={false}
-        onEnded={playNextVideo}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          background: "transparent",
-        }}
-      />
+      {VIDEOS.map((src, idx) => (
+        <video
+          key={src}
+          ref={(el) => {
+            videoRefs.current[idx] = el;
+            if (el) {
+              el.muted = true;
+              el.defaultMuted = true;
+            }
+          }}
+          src={src}
+          autoPlay={idx === 0} // Native autoplay on first video for SSR zero-lag
+          muted
+          playsInline
+          controls={false}
+          onEnded={() => playNextVideo(idx)}
+          preload="auto" // Enforce browser preloading of all videos in the background
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            background: "transparent",
+            display: idx === activeIdx ? "block" : "none",
+          }}
+        />
+      ))}
     </div>
   );
 }
