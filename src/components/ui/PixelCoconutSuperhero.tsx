@@ -1,251 +1,463 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
-
-// ─── Source image extraction constants ────────────────────────────────────────
-// img2.png: 625×488px, character extracted at:
-//   startX=78, startY=1, blockW=16.4, cols=29, rows=26
-const SRC_X = 78;
-const SRC_Y = 1;
-const BLOCK = 16.4;
-const COLS = 29;
-const ROWS = 26;
-const SRC_W = Math.ceil(COLS * BLOCK);  // 476
-const SRC_H = Math.ceil(ROWS * BLOCK);  // 427
-
-// Right waving arm bounds (grid coords within character region)
-const ARM_GX = 18; // arm starts at column 18
-const ARM_GY = 6;  // arm starts at row 6
-const ARM_GW = 11; // 11 columns wide
-const ARM_GH = 8;  // 8 rows tall
-
-// Eye positions (grid coords)
-const L_EYE_GX = 7;
-const L_EYE_GY = 11;
-const EYE_GW = 3;
-const EYE_GH = 2;
-const R_EYE_GX = 14;
-const R_EYE_GY = 11;
-
-// Pupil size (1 grid unit)
-const PUPIL_GW = 1;
-const PUPIL_GH = 2;
-
-// Background color check - light grayish-green background of the sprite card
-function isBackground(r: number, g: number, b: number): boolean {
-  // All background variants are high-luminance greenish-gray
-  // They have: r > 185, g > 195, b > 185, and roughly r ≈ b < g
-  return (
-    r > 185 && g > 195 && b > 185 &&
-    Math.abs(r - b) < 25 &&
-    g >= r &&
-    g >= b
-  );
-}
+import React, { useEffect, useRef, useState } from "react";
+import { Play, Pause, Settings, Sliders, Scissors, Pipette, Eye, EyeOff } from "lucide-react";
 
 export default function PixelCoconutSuperhero() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bufferCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Pre-processed offscreen canvases
-  const bodyCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const armCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // Animation state
-  const mousePosRef = useRef({ x: 0, y: 0 });
-  const wavePhaseRef = useRef(0);
-  const floatPhaseRef = useRef(0);
-  const rafRef = useRef<number>(0);
-  const loadedRef = useRef(false);
-
-  // Pre-process the image: separate body and arm, remove background
-  const preprocessImage = useCallback((img: HTMLImageElement) => {
-    // ── Full character region ──────────────────────────────────────────────
-    const fullCanvas = document.createElement("canvas");
-    fullCanvas.width = SRC_W;
-    fullCanvas.height = SRC_H;
-    const fullCtx = fullCanvas.getContext("2d")!;
-    fullCtx.drawImage(img, SRC_X, SRC_Y, SRC_W, SRC_H, 0, 0, SRC_W, SRC_H);
-    const fullData = fullCtx.getImageData(0, 0, SRC_W, SRC_H);
-
-    // Remove background from the full image
-    for (let i = 0; i < fullData.data.length; i += 4) {
-      if (isBackground(fullData.data[i], fullData.data[i + 1], fullData.data[i + 2])) {
-        fullData.data[i + 3] = 0;
-      }
-    }
-    fullCtx.putImageData(fullData, 0, 0);
-
-    // ── Body canvas (full character minus arm region) ──────────────────────
-    const bodyCanvas = document.createElement("canvas");
-    bodyCanvas.width = SRC_W;
-    bodyCanvas.height = SRC_H;
-    const bodyCtx = bodyCanvas.getContext("2d")!;
-    bodyCtx.drawImage(fullCanvas, 0, 0);
-
-    // Clear the arm area from the body canvas
-    const armPxX = Math.round(ARM_GX * BLOCK);
-    const armPxY = Math.round(ARM_GY * BLOCK);
-    const armPxW = Math.round(ARM_GW * BLOCK);
-    const armPxH = Math.round(ARM_GH * BLOCK);
-    bodyCtx.clearRect(armPxX, armPxY, armPxW, armPxH);
-
-    // Also clear the eye whites so we can draw dynamic pupils on top
-    const lEyePxX = Math.round(L_EYE_GX * BLOCK);
-    const lEyePxY = Math.round(L_EYE_GY * BLOCK);
-    const eyePxW = Math.round(EYE_GW * BLOCK);
-    const eyePxH = Math.round(EYE_GH * BLOCK);
-    const rEyePxX = Math.round(R_EYE_GX * BLOCK);
-    // Don't clear eyes - just let pupils draw on top
-
-    bodyCanvasRef.current = bodyCanvas;
-
-    // ── Arm canvas (just the arm region) ──────────────────────────────────
-    const armCanvas = document.createElement("canvas");
-    armCanvas.width = armPxW;
-    armCanvas.height = armPxH;
-    const armCtx = armCanvas.getContext("2d")!;
-    armCtx.drawImage(
-      fullCanvas,
-      armPxX, armPxY, armPxW, armPxH,
-      0, 0, armPxW, armPxH
-    );
-    armCanvasRef.current = armCanvas;
-
-    loadedRef.current = true;
-  }, []);
-
-  const drawFrame = useCallback(() => {
-    const canvas = canvasRef.current;
-    const bodyCanvas = bodyCanvasRef.current;
-    const armCanvas = armCanvasRef.current;
-    if (!canvas || !bodyCanvas || !armCanvas || !loadedRef.current) {
-      rafRef.current = requestAnimationFrame(drawFrame);
-      return;
-    }
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const W = canvas.width;
-    const H = canvas.height;
-    const SCALE = W / SRC_W;
-    const block = BLOCK * SCALE;
-
-    // Animation phases
-    const wave = Math.sin(wavePhaseRef.current) * (14 * Math.PI / 180);
-    const floatY = Math.sin(floatPhaseRef.current) * 6; // pixels of float
-
-    ctx.clearRect(0, 0, W, H);
-    ctx.imageSmoothingEnabled = false;
-
-    ctx.save();
-
-    // Float animation
-    ctx.translate(0, floatY);
-
-    // ── 1. Draw body ──────────────────────────────────────────────────────
-    ctx.drawImage(bodyCanvas, 0, 0, SRC_W, SRC_H, 0, 0, W, H);
-
-    // ── 2. Draw animated waving arm ───────────────────────────────────────
-    const armDispX = ARM_GX * block;
-    const armDispY = ARM_GY * block;
-    const armDispW = ARM_GW * block;
-    const armDispH = ARM_GH * block;
-
-    ctx.save();
-    // Pivot at the shoulder: top-left of arm area
-    ctx.translate(armDispX, armDispY);
-    ctx.rotate(wave);
-    ctx.drawImage(armCanvas, 0, 0, armCanvas.width, armCanvas.height, 0, 0, armDispW, armDispH);
-    ctx.restore();
-
-    // ── 3. Draw cursor-tracking pupils ────────────────────────────────────
-    const rect = canvas.getBoundingClientRect();
-    const mx = mousePosRef.current.x;
-    const my = mousePosRef.current.y;
-
-    // Left eye pupil
-    const lCx = (L_EYE_GX + EYE_GW / 2) * block;
-    const lCy = (L_EYE_GY + EYE_GH / 2) * block;
-    const lDx = mx - (rect.left + lCx);
-    const lDy = my - (rect.top + lCy + floatY);
-    const lDist = Math.sqrt(lDx * lDx + lDy * lDy) || 1;
-    const lOx = (lDx / lDist) * block * 0.45;
-    const lOy = (lDy / lDist) * block * 0.25;
-
-    // Right eye pupil
-    const rCx = (R_EYE_GX + EYE_GW / 2) * block;
-    const rCy = (R_EYE_GY + EYE_GH / 2) * block;
-    const rDx = mx - (rect.left + rCx);
-    const rDy = my - (rect.top + rCy + floatY);
-    const rDist = Math.sqrt(rDx * rDx + rDy * rDy) || 1;
-    const rOx = (rDx / rDist) * block * 0.45;
-    const rOy = (rDy / rDist) * block * 0.25;
-
-    const pupilW = PUPIL_GW * block;
-    const pupilH = PUPIL_GH * block;
-
-    ctx.fillStyle = "#111710";
-    // Left pupil
-    ctx.fillRect(lCx - pupilW / 2 + lOx, lCy - pupilH / 2 + lOy, pupilW, pupilH);
-    // Right pupil
-    ctx.fillRect(rCx - pupilW / 2 + rOx, rCy - pupilH / 2 + rOy, pupilW, pupilH);
-
-    ctx.restore();
-
-    // Advance animation phases
-    wavePhaseRef.current += 0.055;
-    floatPhaseRef.current += 0.025;
-
-    rafRef.current = requestAnimationFrame(drawFrame);
-  }, []);
+  // --- Configuration State ---
+  const [startTime, setStartTime] = useState<number>(0);
+  const [endTime, setEndTime] = useState<number>(10);
+  const [duration, setDuration] = useState<number>(10);
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  
+  // Chroma Key Settings
+  const [keyColor, setKeyColor] = useState<{ r: number; g: number; b: number }>({ r: 0, g: 0, b: 0 });
+  const [tolerance, setTolerance] = useState<number>(45);
+  const [feather, setFeather] = useState<number>(15);
+  const [autoDetect, setAutoDetect] = useState<boolean>(true);
+  
+  // UI Panels
+  const [showControls, setShowControls] = useState<boolean>(false);
+  const [isPickingColor, setIsPickingColor] = useState<boolean>(false);
 
   useEffect(() => {
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.src = "/img2.png";
-    img.onload = () => {
-      preprocessImage(img);
-      rafRef.current = requestAnimationFrame(drawFrame);
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    let rafId: number;
+    let autoDetectDone = false;
+
+    // Set duration when metadata is loaded
+    const onMetadataLoaded = () => {
+      setDuration(video.duration);
+      setEndTime(video.duration);
+    };
+    video.addEventListener("loadedmetadata", onMetadataLoaded);
+
+    // Main render loop
+    const render = () => {
+      if (video.paused || video.ended) {
+        rafId = requestAnimationFrame(render);
+        return;
+      }
+
+      // 1. Time clamping and looping logic
+      const current = video.currentTime;
+      setCurrentTime(current);
+
+      if (current < startTime) {
+        video.currentTime = startTime;
+      } else if (current >= endTime) {
+        video.currentTime = startTime;
+      }
+
+      // 2. Setup canvas sizes
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (vw && vh) {
+        if (canvas.width !== vw) {
+          canvas.width = vw;
+          canvas.height = vh;
+        }
+
+        // Initialize offscreen buffer canvas if needed
+        if (!bufferCanvasRef.current) {
+          bufferCanvasRef.current = document.createElement("canvas");
+        }
+        const buffer = bufferCanvasRef.current;
+        if (buffer.width !== vw) {
+          buffer.width = vw;
+          buffer.height = vh;
+        }
+
+        const ctx = canvas.getContext("2d");
+        const bCtx = buffer.getContext("2d");
+
+        if (ctx && bCtx) {
+          // Draw video frame to buffer canvas
+          bCtx.drawImage(video, 0, 0, vw, vh);
+
+          // Get image data
+          const imgData = bCtx.getImageData(0, 0, vw, vh);
+          const pixels = imgData.data;
+
+          // 3. Auto-detect background color from corner pixels on first frame
+          if (autoDetect && !autoDetectDone && pixels.length > 0) {
+            // Sample the 4 corners: top-left, top-right, bottom-left, bottom-right
+            const corners = [
+              0, // Top-Left
+              (vw - 1) * 4, // Top-Right
+              (vh - 1) * vw * 4, // Bottom-Left
+              (vh * vw - 1) * 4 // Bottom-Right
+            ];
+            let avgR = 0, avgG = 0, avgB = 0;
+            corners.forEach(idx => {
+              avgR += pixels[idx];
+              avgG += pixels[idx + 1];
+              avgB += pixels[idx + 2];
+            });
+            setKeyColor({
+              r: Math.round(avgR / 4),
+              g: Math.round(avgG / 4),
+              b: Math.round(avgB / 4)
+            });
+            autoDetectDone = true;
+          }
+
+          // 4. Perform Chroma-Key background removal
+          const kr = keyColor.r;
+          const kg = keyColor.g;
+          const kb = keyColor.b;
+          const tolSq = tolerance * tolerance;
+          const featherRange = feather * feather;
+
+          for (let i = 0; i < pixels.length; i += 4) {
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
+
+            // Euclidean distance in RGB color space squared
+            const distSq = (r - kr) * (r - kr) + (g - kg) * (g - kg) + (b - kb) * (b - kb);
+
+            if (distSq < tolSq) {
+              pixels[i + 3] = 0; // Fully transparent
+            } else if (distSq < tolSq + featherRange && featherRange > 0) {
+              // Smooth feathering alpha transition
+              const diff = distSq - tolSq;
+              const ratio = diff / featherRange; // 0 to 1
+              pixels[i + 3] = Math.min(pixels[i + 3], Math.round(ratio * 255));
+            }
+          }
+
+          // Write processed pixels back to the visible canvas
+          ctx.putImageData(imgData, 0, 0);
+        }
+      }
+
+      rafId = requestAnimationFrame(render);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mousePosRef.current = { x: e.clientX, y: e.clientY };
-    };
-    window.addEventListener("mousemove", handleMouseMove);
+    video.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    rafId = requestAnimationFrame(render);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(rafRef.current);
+      video.removeEventListener("loadedmetadata", onMetadataLoaded);
+      cancelAnimationFrame(rafId);
     };
-  }, [preprocessImage, drawFrame]);
+  }, [startTime, endTime, keyColor, tolerance, feather, autoDetect]);
+
+  // Click on canvas to sample chroma-key color
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isPickingColor) return;
+    const canvas = canvasRef.current;
+    const buffer = bufferCanvasRef.current;
+    if (!canvas || !buffer) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor(((e.clientX - rect.left) / rect.width) * canvas.width);
+    const y = Math.floor(((e.clientY - rect.top) / rect.height) * canvas.height);
+
+    const bCtx = buffer.getContext("2d");
+    if (bCtx) {
+      const pixel = bCtx.getImageData(x, y, 1, 1).data;
+      setKeyColor({ r: pixel[0], g: pixel[1], b: pixel[2] });
+      setAutoDetect(false); // Disable auto-detect since user manually chose a color
+      setIsPickingColor(false);
+    }
+  };
+
+  const togglePlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (isPlaying) {
+      video.pause();
+      setIsPlaying(false);
+    } else {
+      video.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "350px",
-      }}
-    >
-      <canvas
-        ref={canvasRef}
-        width={SRC_W}
-        height={SRC_H}
-        style={{
-          width: "100%",
-          height: "100%",
-          maxWidth: "400px",
-          maxHeight: "380px",
-          imageRendering: "pixelated",
-          filter: "drop-shadow(0 15px 30px var(--primary-glow-border))",
-        }}
+    <div style={{
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+    }}>
+      {/* Hidden Video Source */}
+      <video
+        ref={videoRef}
+        src="/hero_video.mp4"
+        style={{ display: "none" }}
+        loop
+        muted
+        playsInline
       />
+
+      {/* Render Canvas */}
+      <div style={{ position: "relative", cursor: isPickingColor ? "crosshair" : "default" }}>
+        <canvas
+          ref={canvasRef}
+          onClick={handleCanvasClick}
+          style={{
+            display: "block",
+            width: "100%",
+            maxWidth: "380px",
+            height: "auto",
+            filter: "drop-shadow(0 15px 35px var(--primary-glow-border))",
+            borderRadius: "16px",
+          }}
+        />
+
+        {isPickingColor && (
+          <div style={{
+            position: "absolute",
+            top: "12px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(10, 10, 10, 0.85)",
+            backdropFilter: "blur(8px)",
+            padding: "6px 12px",
+            borderRadius: "20px",
+            fontSize: "0.75rem",
+            color: "#fff",
+            border: "1px solid rgba(255,255,255,0.15)",
+            pointerEvents: "none",
+            zIndex: 10,
+            whiteSpace: "nowrap"
+          }}>
+            Click anywhere on background to select color
+          </div>
+        )}
+      </div>
+
+      {/* Settings Panel Toggle */}
+      <button
+        onClick={() => setShowControls(!showControls)}
+        style={{
+          marginTop: "1rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          background: "rgba(255, 255, 255, 0.05)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          color: "var(--text-light)",
+          padding: "0.5rem 1rem",
+          borderRadius: "20px",
+          cursor: "pointer",
+          fontSize: "0.85rem",
+          transition: "all 0.2s",
+          backdropFilter: "blur(10px)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+          e.currentTarget.style.borderColor = "var(--primary)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+        }}
+      >
+        {showControls ? <EyeOff size={16} /> : <Eye size={16} />}
+        {showControls ? "Hide Calibration Settings" : "Calibrate Animation & Background"}
+      </button>
+
+      {/* Dev & Calibration Controls */}
+      {showControls && (
+        <div style={{
+          marginTop: "1rem",
+          width: "100%",
+          maxWidth: "400px",
+          background: "rgba(15, 18, 20, 0.95)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "16px",
+          padding: "1.25rem",
+          color: "#eee",
+          fontSize: "0.85rem",
+          zIndex: 10,
+          boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}>
+          {/* Section 1: Playback Timing */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: "bold" }}>
+                <Scissors size={14} className="text-primary" />
+                <span>Wave Loop Range</span>
+              </div>
+              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                {currentTime.toFixed(2)}s / {duration.toFixed(2)}s
+              </span>
+            </div>
+            
+            {/* Start Time Slider */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
+                <span>Start Time: {startTime.toFixed(2)}s</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={endTime.toFixed(2)}
+                step="0.05"
+                value={startTime}
+                onChange={(e) => setStartTime(parseFloat(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--primary)" }}
+              />
+            </div>
+
+            {/* End Time Slider */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
+                <span>End Time: {endTime.toFixed(2)}s</span>
+              </div>
+              <input
+                type="range"
+                min={startTime.toFixed(2)}
+                max={duration.toFixed(2)}
+                step="0.05"
+                value={endTime}
+                onChange={(e) => setEndTime(parseFloat(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--primary)" }}
+              />
+            </div>
+          </div>
+
+          {/* Section 2: Chroma Key Controls */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: "bold" }}>
+                <Pipette size={14} className="text-primary" />
+                <span>Background Removal</span>
+              </div>
+              <button
+                onClick={() => setAutoDetect(!autoDetect)}
+                style={{
+                  background: autoDetect ? "rgba(0, 240, 120, 0.15)" : "transparent",
+                  border: "1px solid " + (autoDetect ? "var(--primary)" : "rgba(255,255,255,0.15)"),
+                  color: autoDetect ? "var(--primary)" : "#aaa",
+                  padding: "2px 8px",
+                  borderRadius: "10px",
+                  fontSize: "0.7rem",
+                  cursor: "pointer",
+                }}
+              >
+                {autoDetect ? "Auto: ON" : "Auto: OFF"}
+              </button>
+            </div>
+
+            {/* Key Color Picker Indicator */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "0.25rem 0" }}>
+              <div style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: "6px",
+                background: `rgb(${keyColor.r}, ${keyColor.g}, ${keyColor.b})`,
+                border: "1px solid rgba(255,255,255,0.3)"
+              }} />
+              <button
+                onClick={() => setIsPickingColor(!isPickingColor)}
+                style={{
+                  background: isPickingColor ? "var(--primary)" : "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  color: isPickingColor ? "#000" : "#fff",
+                  padding: "4px 8px",
+                  borderRadius: "6px",
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  fontWeight: isPickingColor ? "bold" : "normal"
+                }}
+              >
+                {isPickingColor ? "Picking..." : "Click canvas to pick color"}
+              </button>
+            </div>
+
+            {/* Tolerance Slider */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
+                <span>Tolerance: {tolerance}</span>
+              </div>
+              <input
+                type="range"
+                min="5"
+                max="150"
+                value={tolerance}
+                onChange={(e) => setTolerance(parseInt(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--primary)" }}
+              />
+            </div>
+
+            {/* Feather Slider */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
+                <span>Feather/Smoothness: {feather}</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="60"
+                value={feather}
+                onChange={(e) => setFeather(parseInt(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--primary)" }}
+              />
+            </div>
+          </div>
+
+          {/* Section 3: Playback Action */}
+          <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
+            <button
+              onClick={togglePlayback}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "#fff",
+                padding: "4px 12px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "0.75rem"
+              }}
+            >
+              {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+              {isPlaying ? "Pause" : "Play"}
+            </button>
+
+            <button
+              onClick={() => {
+                const configString = `// Hardcode these parameters inside PixelCoconutSuperhero.tsx:\nconst DEFAULT_START_TIME = ${startTime.toFixed(2)};\nconst DEFAULT_END_TIME = ${endTime.toFixed(2)};\nconst DEFAULT_KEY_COLOR = { r: ${keyColor.r}, g: ${keyColor.g}, b: ${keyColor.b} };\nconst DEFAULT_TOLERANCE = ${tolerance};\nconst DEFAULT_FEATHER = ${feather};`;
+                navigator.clipboard.writeText(configString);
+                alert("Calibration parameters copied to clipboard!");
+              }}
+              style={{
+                background: "var(--primary)",
+                border: "none",
+                color: "#000",
+                padding: "4px 12px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "0.75rem",
+                fontWeight: "bold"
+              }}
+            >
+              Copy Settings
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
