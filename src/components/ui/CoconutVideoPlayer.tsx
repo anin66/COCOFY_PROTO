@@ -33,24 +33,25 @@ export default function CoconutVideoPlayer() {
     setTimeout(() => {
       setCurrentVideo(nextVideo);
       setFade(true);
-      
-      // Explicitly trigger load and play on video change to support all browsers
-      if (videoRef.current) {
-        videoRef.current.load();
-        videoRef.current.play().catch((err) => {
-          console.log("Autoplay interrupted or failed:", err);
-        });
-      }
     }, 300); // match fade transition timeout
   };
 
-  // Play immediately when currentVideo changes
+  // Play immediately when currentVideo changes and enforce muting in DOM
   useEffect(() => {
-    if (videoRef.current && currentVideo) {
-      videoRef.current.load();
-      videoRef.current.play().catch((err) => {
-        console.log("Autoplay failed:", err);
-      });
+    const video = videoRef.current;
+    if (video && currentVideo) {
+      // Force muted directly on the DOM element as React's muted attribute is sometimes bypassed by browsers
+      video.muted = true;
+      video.defaultMuted = true;
+      
+      video.load();
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.log("Autoplay failed or was interrupted:", err);
+          // Retry playing on any interaction or fallback
+        });
+      }
     }
   }, [currentVideo]);
 
@@ -72,23 +73,23 @@ export default function CoconutVideoPlayer() {
       transition: "opacity 0.3s ease",
       opacity: fade ? 1 : 0.2,
     }}>
-      {currentVideo ? (
-        <video
-          ref={videoRef}
-          src={currentVideo}
-          autoPlay
-          muted
-          playsInline
-          controls={false}
-          onEnded={playNextVideo}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            borderRadius: "24px",
-          }}
-        />
-      ) : (
+      <video
+        ref={videoRef}
+        src={currentVideo || undefined}
+        autoPlay
+        muted
+        playsInline
+        controls={false}
+        onEnded={playNextVideo}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          borderRadius: "24px",
+          display: currentVideo ? "block" : "none",
+        }}
+      />
+      {!currentVideo && (
         <div style={{ color: "var(--text-light)", fontSize: "0.9rem" }}>
           Initializing Video...
         </div>
