@@ -25,33 +25,7 @@ function CoconutModel() {
 
   return (
     <group ref={tiltRef} scale={scale}>
-      {/* Background Palm Leaves */}
-      <group position={[0, -0.6, -1.8]}>
-        {/* Left Leaf */}
-        <mesh position={[-1.5, 1.4, 0]} rotation={[0.1, 0.2, 0.7]} scale={[0.3, 4.2, 0.02]} castShadow>
-          <coneGeometry args={[1, 1, 4]} />
-          <meshStandardMaterial color="#2c5b27" roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
-        {/* Middle-Left Leaf */}
-        <mesh position={[-0.4, 1.8, -0.3]} rotation={[0.0, 0.0, 0.25]} scale={[0.35, 4.6, 0.02]} castShadow>
-          <coneGeometry args={[1, 1, 4]} />
-          <meshStandardMaterial color="#214b1d" roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
-        {/* Middle-Right Leaf */}
-        <mesh position={[0.5, 1.9, -0.4]} rotation={[0.0, 0.0, -0.2]} scale={[0.33, 4.5, 0.02]} castShadow>
-          <coneGeometry args={[1, 1, 4]} />
-          <meshStandardMaterial color="#2c5b27" roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
-        {/* Right Leaf */}
-        <mesh position={[1.6, 1.3, -0.1]} rotation={[-0.1, -0.2, -0.6]} scale={[0.28, 3.8, 0.02]} castShadow>
-          <coneGeometry args={[1, 1, 4]} />
-          <meshStandardMaterial color="#1f421b" roughness={0.9} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-
-      {/* Whole Green Coconut */}
-      {/* Cut-Open Half Coconut */}
-      {/* Replace procedural coconut spheres with the Tripo3D Coconut Superhero model */}
+      {/* Render only the Tripo3D Coconut Superhero model in the center */}
       <CoconutSuperhero />
     </group>
   );
@@ -71,8 +45,8 @@ function CoconutSuperhero() {
   return (
     <primitive 
       object={scene} 
-      position={[0, -1.8, 0]} 
-      scale={2.2} 
+      position={[0, -2.4, 0]} 
+      scale={3.8} 
     />
   );
 }
