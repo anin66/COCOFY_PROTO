@@ -45,8 +45,8 @@ function CoconutSuperhero() {
   return (
     <primitive 
       object={scene} 
-      position={[0, -2.4, 0]} 
-      scale={3.8} 
+      position={[0, -3.3, 0]} 
+      scale={5.0} 
     />
   );
 }
