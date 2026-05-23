@@ -138,13 +138,28 @@ export default function PixelCoconutSuperhero() {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full flex items-center justify-center relative overflow-visible"
-      style={{ minHeight: "400px" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        overflow: "visible",
+        minHeight: "400px"
+      }}
     >
       <svg
         viewBox="0 0 32 32"
-        className="w-full h-full max-w-[420px] max-h-[420px] drop-shadow-[0_15px_30px_var(--primary-glow-border)]"
-        style={{ imageRendering: "pixelated" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          maxWidth: "420px",
+          maxHeight: "420px",
+          filter: "drop-shadow(0 15px 30px var(--primary-glow-border))",
+          imageRendering: "pixelated",
+          overflow: "visible"
+        }}
       >
         <defs>
           <style>{`
