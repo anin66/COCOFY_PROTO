@@ -127,7 +127,7 @@ export default function PixelCoconutSuperhero() {
         style={{
           display: loading ? "none" : "block",
           width: "100%",
-          maxWidth: "800px",
+          maxWidth: "850px",
           height: "auto",
           imageRendering: "pixelated",
           filter: "drop-shadow(0 20px 40px var(--primary-glow-border))",
