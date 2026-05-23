@@ -2,7 +2,7 @@
 
 import { Suspense, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, ContactShadows } from "@react-three/drei";
+import { OrbitControls, ContactShadows, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 function CoconutModel() {
@@ -50,43 +50,35 @@ function CoconutModel() {
       </group>
 
       {/* Whole Green Coconut */}
-      <group position={[-1.0, 0.3, -0.5]} rotation={[-0.2, 0.4, -0.2]} scale={[0.95, 0.95, 0.95]}>
-        <mesh scale={[1.1, 1.35, 1.1]} castShadow receiveShadow>
-          <sphereGeometry args={[1, 32, 32]} />
-          <meshStandardMaterial color="#598b3c" roughness={0.8} metalness={0.05} />
-        </mesh>
-        <mesh position={[0, 1.3, 0]} scale={[0.4, 0.08, 0.4]} castShadow receiveShadow>
-          <sphereGeometry args={[1, 8, 4]} />
-          <meshStandardMaterial color="#3f6629" roughness={0.9} />
-        </mesh>
-        <mesh position={[0.1, 1.5, 0]} rotation={[0, 0, -0.3]} castShadow receiveShadow>
-          <cylinderGeometry args={[0.03, 0.04, 0.5, 8]} />
-          <meshStandardMaterial color="#3f6629" roughness={0.9} />
-        </mesh>
-      </group>
-
       {/* Cut-Open Half Coconut */}
-      <group position={[1.1, -0.5, 0.5]} rotation={[0.6, -0.5, 0.4]} scale={[0.9, 0.9, 0.9]}>
-        <mesh castShadow receiveShadow>
-          <sphereGeometry args={[1, 32, 32, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
-          <meshStandardMaterial color="#4e2c0e" roughness={0.95} metalness={0.05} side={THREE.DoubleSide} />
-        </mesh>
-        <mesh position={[0, 0.02, 0]} scale={[0.96, 0.96, 0.96]} castShadow receiveShadow>
-          <sphereGeometry args={[1, 32, 32, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
-          <meshStandardMaterial color="#f9f9fb" roughness={0.8} metalness={0.02} side={THREE.DoubleSide} />
-        </mesh>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]} receiveShadow>
-          <circleGeometry args={[1, 32]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.7} metalness={0.05} />
-        </mesh>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-          <circleGeometry args={[0.7, 32]} />
-          <meshStandardMaterial color="#e0f7fa" roughness={0.1} metalness={0.8} opacity={0.55} transparent />
-        </mesh>
-      </group>
+      {/* Replace procedural coconut spheres with the Tripo3D Coconut Superhero model */}
+      <CoconutSuperhero />
     </group>
   );
 }
+
+function CoconutSuperhero() {
+  const { scene } = useGLTF("/models/coconut_superhero.glb");
+  
+  // Enable shadows on all child meshes of the loaded model
+  scene.traverse((node) => {
+    if ((node as THREE.Mesh).isMesh) {
+      node.castShadow = true;
+      node.receiveShadow = true;
+    }
+  });
+
+  return (
+    <primitive 
+      object={scene} 
+      position={[0, -1.8, 0]} 
+      scale={2.2} 
+    />
+  );
+}
+
+// Preload the 3D model asset for zero-latency presentation
+useGLTF.preload("/models/coconut_superhero.glb");
 
 export default function CoconutCanvas() {
   return (
