@@ -1,529 +1,127 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Play, Pause, Settings, Sliders, Scissors, Pipette, Eye, EyeOff } from "lucide-react";
 
 export default function PixelCoconutSuperhero() {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const bufferCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // --- Configuration State ---
-  const [startTime, setStartTime] = useState<number>(0);
-  const [endTime, setEndTime] = useState<number>(10);
-  const [duration, setDuration] = useState<number>(10);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [currentTime, setCurrentTime] = useState<number>(0);
-  const [hasMetadata, setHasMetadata] = useState<boolean>(false);
-  
-  // Chroma Key Settings
-  const [keyColor, setKeyColor] = useState<{ r: number; g: number; b: number }>({ r: 0, g: 0, b: 0 });
-  const [tolerance, setTolerance] = useState<number>(45);
-  const [feather, setFeather] = useState<number>(15);
-  const [autoDetect, setAutoDetect] = useState<boolean>(true);
-  
-  // UI Panels
-  const [showControls, setShowControls] = useState<boolean>(false);
-  const [isPickingColor, setIsPickingColor] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
-
-    let rafId: number;
-    let autoDetectDone = false;
-
-    // Direct DOM property configuration to guarantee muted autoplay
-    video.muted = true;
-    video.playsInline = true;
-    video.autoplay = true;
-
-    // Set duration when metadata is loaded
-    const onMetadataLoaded = () => {
-      setDuration(video.duration);
-      setEndTime(video.duration);
-      setHasMetadata(true);
-    };
-
-    video.addEventListener("loadedmetadata", onMetadataLoaded);
-    if (video.readyState >= 1) {
-      onMetadataLoaded();
-    }
-
-    // Main render loop
-    const render = () => {
-      // 1. Time clamping and looping logic
-      const current = video.currentTime;
-      setCurrentTime(current);
-
-      if (!video.paused) {
-        if (current < startTime) {
-          video.currentTime = startTime;
-        } else if (current >= endTime) {
-          video.currentTime = startTime;
-        }
-      }
-
-      // Sync state with DOM
-      setIsPlaying(!video.paused);
-
-      // 2. Setup canvas sizes
-      const vw = video.videoWidth;
-      const vh = video.videoHeight;
-      if (vw && vh) {
-        if (canvas.width !== vw) {
-          canvas.width = vw;
-          canvas.height = vh;
-        }
-
-        // Initialize offscreen buffer canvas if needed
-        if (!bufferCanvasRef.current) {
-          bufferCanvasRef.current = document.createElement("canvas");
-        }
-        const buffer = bufferCanvasRef.current;
-        if (buffer.width !== vw) {
-          buffer.width = vw;
-          buffer.height = vh;
-        }
-
-        const ctx = canvas.getContext("2d");
-        const bCtx = buffer.getContext("2d");
-
-        if (ctx && bCtx) {
-          // Draw video frame to buffer canvas
-          bCtx.drawImage(video, 0, 0, vw, vh);
-
-          // Get image data
-          const imgData = bCtx.getImageData(0, 0, vw, vh);
-          const pixels = imgData.data;
-
-          // 3. Auto-detect background color from corner pixels on first frame
-          if (autoDetect && !autoDetectDone && pixels.length > 0) {
-            // Sample the 4 corners: top-left, top-right, bottom-left, bottom-right
-            const corners = [
-              0, // Top-Left
-              (vw - 1) * 4, // Top-Right
-              (vh - 1) * vw * 4, // Bottom-Left
-              (vh * vw - 1) * 4 // Bottom-Right
-            ];
-            let avgR = 0, avgG = 0, avgB = 0;
-            corners.forEach(idx => {
-              avgR += pixels[idx];
-              avgG += pixels[idx + 1];
-              avgB += pixels[idx + 2];
-            });
-            setKeyColor({
-              r: Math.round(avgR / 4),
-              g: Math.round(avgG / 4),
-              b: Math.round(avgB / 4)
-            });
-            autoDetectDone = true;
-          }
-
-          // 4. Perform Chroma-Key background removal
-          const kr = keyColor.r;
-          const kg = keyColor.g;
-          const kb = keyColor.b;
-          const tolSq = tolerance * tolerance;
-          const featherRange = feather * feather;
-
-          for (let i = 0; i < pixels.length; i += 4) {
-            const r = pixels[i];
-            const g = pixels[i + 1];
-            const b = pixels[i + 2];
-
-            // Euclidean distance in RGB color space squared
-            const distSq = (r - kr) * (r - kr) + (g - kg) * (g - kg) + (b - kb) * (b - kb);
-
-            if (distSq < tolSq) {
-              pixels[i + 3] = 0; // Fully transparent
-            } else if (distSq < tolSq + featherRange && featherRange > 0) {
-              // Smooth feathering alpha transition
-              const diff = distSq - tolSq;
-              const ratio = diff / featherRange; // 0 to 1
-              pixels[i + 3] = Math.min(pixels[i + 3], Math.round(ratio * 255));
-            }
-          }
-
-          // Write processed pixels back to the visible canvas
-          ctx.putImageData(imgData, 0, 0);
-        }
-      }
-
-      rafId = requestAnimationFrame(render);
-    };
-
-    // Attempt autoplay
-    video.play()
-      .then(() => setIsPlaying(true))
-      .catch((err) => {
-        console.warn("Autoplay blocked or video not ready:", err);
-        setIsPlaying(false);
-      });
-
-    rafId = requestAnimationFrame(render);
-
-    return () => {
-      video.removeEventListener("loadedmetadata", onMetadataLoaded);
-      cancelAnimationFrame(rafId);
-    };
-  }, [startTime, endTime, keyColor, tolerance, feather, autoDetect]);
-
-  // Click on canvas to sample color OR play/pause
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    if (isPickingColor) {
-      const buffer = bufferCanvasRef.current;
-      if (!buffer) return;
+    const img = new window.Image();
+    img.src = "/hero_character.png";
+    img.onload = () => {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor(((e.clientX - rect.left) / rect.width) * canvas.width);
-      const y = Math.floor(((e.clientY - rect.top) / rect.height) * canvas.height);
+      const w = img.width;
+      const h = img.height;
+      canvas.width = w;
+      canvas.height = h;
 
-      const bCtx = buffer.getContext("2d");
-      if (bCtx) {
-        const pixel = bCtx.getImageData(x, y, 1, 1).data;
-        setKeyColor({ r: pixel[0], g: pixel[1], b: pixel[2] });
-        setAutoDetect(false);
-        setIsPickingColor(false);
+      // Draw original image
+      ctx.drawImage(img, 0, 0);
+
+      // Get image data for pixel manipulation
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      // Helper to check if a pixel is part of the checkerboard background
+      // Checkerboard is made of white (#ffffff) and light gray (#cccccc / #e0e0e0)
+      const isBgColor = (r: number, g: number, b: number): boolean => {
+        // Pure/near white
+        if (r > 240 && g > 240 && b > 240) return true;
+        // Light gray (channels are close to each other and brightness is high)
+        const avg = (r + g + b) / 3;
+        if (avg > 180 && avg < 240 && Math.abs(r - g) < 10 && Math.abs(g - b) < 10) return true;
+        return false;
+      };
+
+      // Flood-fill BFS to remove only the connected background checkerboard.
+      // This prevents removing internal white elements like eye whites.
+      const visited = new Uint8Array(w * h);
+      const queue: number[] = [];
+
+      // Add the four corners to the queue
+      const pushPixel = (x: number, y: number) => {
+        const idx = y * w + x;
+        if (!visited[idx]) {
+          visited[idx] = 1;
+          queue.push(idx);
+        }
+      };
+
+      // Push all boundary pixels to ensure we catch the background from all edges
+      for (let x = 0; x < w; x++) {
+        pushPixel(x, 0);
+        pushPixel(x, h - 1);
       }
-    } else {
-      // Toggle play/pause
-      togglePlayback();
-    }
-  };
+      for (let y = 0; y < h; y++) {
+        pushPixel(0, y);
+        pushPixel(w - 1, y);
+      }
 
-  const togglePlayback = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      video.play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => console.error("Playback failed:", err));
-    } else {
-      video.pause();
-      setIsPlaying(false);
-    }
-  };
+      let qHead = 0;
+      while (qHead < queue.length) {
+        const idx = queue[qHead++];
+        const x = idx % w;
+        const y = Math.floor(idx / w);
+        
+        const pxIdx = idx * 4;
+        const r = data[pxIdx];
+        const g = data[pxIdx + 1];
+        const b = data[pxIdx + 2];
+
+        if (isBgColor(r, g, b)) {
+          // Clear background pixel (make transparent)
+          data[pxIdx + 3] = 0;
+
+          // Push neighbors (up, down, left, right)
+          if (x > 0) pushPixel(x - 1, y);
+          if (x < w - 1) pushPixel(x + 1, y);
+          if (y > 0) pushPixel(x, y - 1);
+          if (y < h - 1) pushPixel(x, y + 1);
+        }
+      }
+
+      // Draw clean transparent image back to canvas
+      ctx.putImageData(imgData, 0, 0);
+      setLoading(false);
+    };
+
+    img.onerror = () => {
+      console.error("Failed to load image /hero_character.png");
+      setLoading(false);
+    };
+  }, []);
 
   return (
     <div style={{
       width: "100%",
       height: "100%",
       display: "flex",
-      flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      position: "relative",
+      minHeight: "350px",
     }}>
-      {/* Hidden Video Source */}
-      <video
-        ref={videoRef}
-        src="/hero_video.mp4"
-        style={{ display: "none" }}
-        loop
-        muted
-        playsInline
-      />
-
-      {/* Render Canvas Container */}
-      <div style={{ position: "relative", cursor: isPickingColor ? "crosshair" : "pointer" }}>
-        <canvas
-          ref={canvasRef}
-          onClick={handleCanvasClick}
-          style={{
-            display: "block",
-            width: "100%",
-            maxWidth: "380px",
-            height: "auto",
-            filter: "drop-shadow(0 15px 35px var(--primary-glow-border))",
-            borderRadius: "16px",
-          }}
-        />
-
-        {/* Play Button Overlay (when paused) */}
-        {!isPlaying && (
-          <div 
-            onClick={togglePlayback}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(0, 0, 0, 0.2)",
-              borderRadius: "16px",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0,0,0,0.3)"}
-            onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,0,0,0.2)"}
-          >
-            <div style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "50%",
-              background: "var(--primary)",
-              color: "#000",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-              transform: "scale(1)",
-              transition: "transform 0.15s",
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-            >
-              <Play size={24} fill="#000" style={{ transform: "translateX(2px)" }} />
-            </div>
-          </div>
-        )}
-
-        {isPickingColor && (
-          <div style={{
-            position: "absolute",
-            top: "12px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "rgba(10, 10, 10, 0.85)",
-            backdropFilter: "blur(8px)",
-            padding: "6px 12px",
-            borderRadius: "20px",
-            fontSize: "0.75rem",
-            color: "#fff",
-            border: "1px solid rgba(255,255,255,0.15)",
-            pointerEvents: "none",
-            zIndex: 10,
-            whiteSpace: "nowrap"
-          }}>
-            Click anywhere on background to select color
-          </div>
-        )}
-      </div>
-
-      {/* Settings Panel Toggle */}
-      <button
-        onClick={() => setShowControls(!showControls)}
-        style={{
-          marginTop: "1rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          background: "rgba(255, 255, 255, 0.05)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          color: "var(--text-light)",
-          padding: "0.5rem 1rem",
-          borderRadius: "20px",
-          cursor: "pointer",
-          fontSize: "0.85rem",
-          transition: "all 0.2s",
-          backdropFilter: "blur(10px)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-          e.currentTarget.style.borderColor = "var(--primary)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-          e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
-        }}
-      >
-        {showControls ? <EyeOff size={16} /> : <Eye size={16} />}
-        {showControls ? "Hide Calibration Settings" : "Calibrate Animation & Background"}
-      </button>
-
-      {/* Dev & Calibration Controls */}
-      {showControls && (
-        <div style={{
-          marginTop: "1rem",
-          width: "100%",
-          maxWidth: "400px",
-          background: "rgba(15, 18, 20, 0.95)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: "16px",
-          padding: "1.25rem",
-          color: "#eee",
-          fontSize: "0.85rem",
-          zIndex: 10,
-          boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-        }}>
-          {/* Section 1: Playback Timing */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: "bold" }}>
-                <Scissors size={14} className="text-primary" />
-                <span>Wave Loop Range</span>
-              </div>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                {currentTime.toFixed(2)}s / {duration.toFixed(2)}s
-              </span>
-            </div>
-            
-            {/* Start Time Slider */}
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
-                <span>Start Time: {startTime.toFixed(2)}s</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max={endTime.toFixed(2)}
-                step="0.05"
-                value={startTime}
-                onChange={(e) => setStartTime(parseFloat(e.target.value))}
-                style={{ width: "100%", accentColor: "var(--primary)" }}
-              />
-            </div>
-
-            {/* End Time Slider */}
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
-                <span>End Time: {endTime.toFixed(2)}s</span>
-              </div>
-              <input
-                type="range"
-                min={startTime.toFixed(2)}
-                max={duration.toFixed(2)}
-                step="0.05"
-                value={endTime}
-                onChange={(e) => setEndTime(parseFloat(e.target.value))}
-                style={{ width: "100%", accentColor: "var(--primary)" }}
-              />
-            </div>
-          </div>
-
-          {/* Section 2: Chroma Key Controls */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: "bold" }}>
-                <Pipette size={14} className="text-primary" />
-                <span>Background Removal</span>
-              </div>
-              <button
-                onClick={() => setAutoDetect(!autoDetect)}
-                style={{
-                  background: autoDetect ? "rgba(0, 240, 120, 0.15)" : "transparent",
-                  border: "1px solid " + (autoDetect ? "var(--primary)" : "rgba(255,255,255,0.15)"),
-                  color: autoDetect ? "var(--primary)" : "#aaa",
-                  padding: "2px 8px",
-                  borderRadius: "10px",
-                  fontSize: "0.7rem",
-                  cursor: "pointer",
-                }}
-              >
-                {autoDetect ? "Auto: ON" : "Auto: OFF"}
-              </button>
-            </div>
-
-            {/* Key Color Picker Indicator */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "0.25rem 0" }}>
-              <div style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "6px",
-                background: `rgb(${keyColor.r}, ${keyColor.g}, ${keyColor.b})`,
-                border: "1px solid rgba(255,255,255,0.3)"
-              }} />
-              <button
-                onClick={() => setIsPickingColor(!isPickingColor)}
-                style={{
-                  background: isPickingColor ? "var(--primary)" : "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  color: isPickingColor ? "#000" : "#fff",
-                  padding: "4px 8px",
-                  borderRadius: "6px",
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  fontWeight: isPickingColor ? "bold" : "normal"
-                }}
-              >
-                {isPickingColor ? "Picking..." : "Click canvas to pick color"}
-              </button>
-            </div>
-
-            {/* Tolerance Slider */}
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
-                <span>Tolerance: {tolerance}</span>
-              </div>
-              <input
-                type="range"
-                min="5"
-                max="150"
-                value={tolerance}
-                onChange={(e) => setTolerance(parseInt(e.target.value))}
-                style={{ width: "100%", accentColor: "var(--primary)" }}
-              />
-            </div>
-
-            {/* Feather Slider */}
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", marginBottom: "0.25rem" }}>
-                <span>Feather/Smoothness: {feather}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="60"
-                value={feather}
-                onChange={(e) => setFeather(parseInt(e.target.value))}
-                style={{ width: "100%", accentColor: "var(--primary)" }}
-              />
-            </div>
-          </div>
-
-          {/* Section 3: Playback Action */}
-          <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.75rem" }}>
-            <button
-              onClick={togglePlayback}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                color: "#fff",
-                padding: "4px 12px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: "0.75rem"
-              }}
-            >
-              {isPlaying ? <Pause size={12} /> : <Play size={12} />}
-              {isPlaying ? "Pause" : "Play"}
-            </button>
-
-            <button
-              onClick={() => {
-                const configString = `// Hardcode these parameters inside PixelCoconutSuperhero.tsx:\nconst DEFAULT_START_TIME = ${startTime.toFixed(2)};\nconst DEFAULT_END_TIME = ${endTime.toFixed(2)};\nconst DEFAULT_KEY_COLOR = { r: ${keyColor.r}, g: ${keyColor.g}, b: ${keyColor.b} };\nconst DEFAULT_TOLERANCE = ${tolerance};\nconst DEFAULT_FEATHER = ${feather};`;
-                navigator.clipboard.writeText(configString);
-                alert("Calibration parameters copied to clipboard!");
-              }}
-              style={{
-                background: "var(--primary)",
-                border: "none",
-                color: "#000",
-                padding: "4px 12px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: "0.75rem",
-                fontWeight: "bold"
-              }}
-            >
-              Copy Settings
-            </button>
-          </div>
+      {loading && (
+        <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+          Processing image...
         </div>
       )}
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: loading ? "none" : "block",
+          width: "100%",
+          maxWidth: "420px",
+          height: "auto",
+          imageRendering: "pixelated",
+          filter: "drop-shadow(0 20px 40px var(--primary-glow-border))",
+        }}
+      />
     </div>
   );
 }
