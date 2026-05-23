@@ -2,6 +2,27 @@
 
 import Link from 'next/link';
 import { ArrowRight, Layers, Zap, Shield } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const CoconutVideoPlayer = dynamic(() => import('@/components/ui/CoconutVideoPlayer'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ 
+      width: "100%",
+      maxWidth: "520px",
+      borderRadius: "24px",
+      background: "rgba(0, 0, 0, 0.4)",
+      border: "1px solid var(--surface-border)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      aspectRatio: "1/1",
+      color: "var(--text-light)"
+    }}>
+      Loading Video...
+    </div>
+  )
+});
 
 
 export default function Home() {
@@ -23,34 +44,16 @@ export default function Home() {
       <section className="hero-section" style={{ 
         flex: 1, 
         display: 'flex', 
-        flexDirection: 'column',
         alignItems: 'center', 
         justifyContent: 'center',
-        padding: '5rem 2rem 7rem 2rem',
-        maxWidth: '850px',
+        padding: '2rem',
+        maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
-        textAlign: 'center',
-        position: 'relative'
+        gap: '4rem'
       }}>
-        {/* Glowing orb effect behind the content */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '500px',
-          height: '500px',
-          background: 'var(--primary)',
-          filter: 'blur(130px)',
-          opacity: 0.22,
-          borderRadius: '50%',
-          zIndex: 1,
-          pointerEvents: 'none'
-        }}></div>
-
-        {/* Text Content */}
-        <div className="animate-fade-in" style={{ zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* Left: Text Content */}
+        <div className="animate-fade-in" style={{ flex: 1, zIndex: 10 }}>
           <div style={{ 
             display: 'inline-block', 
             padding: '0.25rem 0.75rem', 
@@ -64,16 +67,40 @@ export default function Home() {
             Logistics Reimagined
           </div>
           <h1>Manage Your Logistics with Precision.</h1>
-          <p style={{ fontSize: '1.125rem', maxWidth: '600px', margin: '0 auto 2.5rem auto' }}>
+          <p style={{ fontSize: '1.125rem', marginBottom: '2.5rem', maxWidth: '500px' }}>
             COCOFY connects workers, delivery personnel, and managers into one seamless ecosystem. 
             Streamline your operations with our premium logistics platform.
           </p>
           
-          <div className="hero-cta-wrapper" style={{ display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="hero-cta-wrapper" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <Link href="/login" className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.125rem' }}>
               Get Started <ArrowRight size={20} />
             </Link>
           </div>
+        </div>
+
+        {/* Right: Video Container */}
+        <div className="animate-fade-in hero-3d-container" style={{ 
+          flex: 1, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          animationDelay: '0.2s',
+          position: 'relative',
+          width: '100%'
+        }}>
+          {/* Glowing orb effect behind the video player */}
+          <div style={{
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            background: 'var(--primary)',
+            filter: 'blur(100px)',
+            opacity: 0.4,
+            borderRadius: '50%'
+          }}></div>
+          
+          <CoconutVideoPlayer />
         </div>
       </section>
 
