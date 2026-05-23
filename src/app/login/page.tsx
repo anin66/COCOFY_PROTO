@@ -157,7 +157,7 @@ export default function LoginPage() {
                         padding: "0.75rem",
                         borderRadius: "8px",
                         border: `1px solid ${role === r ? "var(--primary)" : "var(--surface-border)"}`,
-                        background: role === r ? "rgba(123, 44, 191, 0.2)" : "var(--surface-2)",
+                        background: role === r ? "var(--primary-glow)" : "var(--surface-2)",
                         color: "var(--foreground)",
                         cursor: "pointer",
                         textTransform: "capitalize",

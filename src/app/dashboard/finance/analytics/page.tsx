@@ -1143,8 +1143,8 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto" }}>
         <defs>
           <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#4cc9f0" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#4cc9f0" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.02" />
           </linearGradient>
           <linearGradient id="expGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#ef233c" stopOpacity="0.2" />
@@ -1166,11 +1166,11 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
         <path d={revArea} fill="url(#revGrad)" />
         <path d={expArea} fill="url(#expGrad)" />
         {/* Lines */}
-        <path d={revLine} fill="none" stroke="#4cc9f0" strokeWidth="2.5" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 6px rgba(76,201,240,0.4))" }} />
+        <path d={revLine} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" style={{ filter: "drop-shadow(0 0 6px var(--accent-glow))" }} />
         <path d={expLine} fill="none" stroke="#ef233c" strokeWidth="2" strokeLinecap="round" strokeDasharray="6 3" />
         {/* Dots */}
         {revPoints.map((p, i) => (
-          <circle key={`r${i}`} cx={p.x} cy={p.y} r="4" fill="#4cc9f0" stroke="#0d0628" strokeWidth="2" style={{ filter: "drop-shadow(0 0 4px rgba(76,201,240,0.6))" }}>
+          <circle key={`r${i}`} cx={p.x} cy={p.y} r="4" fill="var(--accent)" stroke="var(--background)" strokeWidth="2" style={{ filter: "drop-shadow(0 0 4px var(--accent-glow-border))" }}>
             <title>{data[i].label}: {fmtFull(data[i].revenue)}</title>
           </circle>
         ))}
@@ -1221,31 +1221,31 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
   /* ============================== INSIGHT ICON ============================== */
   const insightIcon = (type: string) => {
     switch (type) {
-      case "trend": return <TrendingUp size={18} color="#4cc9f0" />;
+      case "trend": return <TrendingUp size={18} color="var(--accent)" />;
       case "warning": return <ShieldAlert size={18} color="#f59e0b" />;
       case "tip": return <Lightbulb size={18} color="#10b981" />;
-      case "forecast": return <Zap size={18} color="#a855f7" />;
-      default: return <Sparkles size={18} color="#4cc9f0" />;
+      case "forecast": return <Zap size={18} color="var(--primary)" />;
+      default: return <Sparkles size={18} color="var(--accent)" />;
     }
   };
 
   const insightColor = (type: string) => {
     switch (type) {
-      case "trend": return "rgba(76,201,240,0.12)";
+      case "trend": return "var(--accent-glow)";
       case "warning": return "rgba(245,158,11,0.12)";
       case "tip": return "rgba(16,185,129,0.12)";
-      case "forecast": return "rgba(168,85,247,0.12)";
-      default: return "rgba(76,201,240,0.12)";
+      case "forecast": return "var(--primary-glow)";
+      default: return "var(--accent-glow)";
     }
   };
 
   const insightBorder = (type: string) => {
     switch (type) {
-      case "trend": return "rgba(76,201,240,0.3)";
+      case "trend": return "var(--accent-glow-border)";
       case "warning": return "rgba(245,158,11,0.3)";
       case "tip": return "rgba(16,185,129,0.3)";
-      case "forecast": return "rgba(168,85,247,0.3)";
-      default: return "rgba(76,201,240,0.3)";
+      case "forecast": return "var(--primary-glow-border)";
+      default: return "var(--accent-glow-border)";
     }
   };
 
@@ -1336,7 +1336,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
               <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.25rem", marginBottom: "2rem" }}>
                 <KPICard label="Total Revenue" value={animatedRevenue} icon={<IndianRupee size={22} />} color="#10b981" change={revenueChange} />
                 <KPICard label="Total Expenses" value={animatedExpenses} icon={<Receipt size={22} />} color="#ef233c" />
-                <KPICard label="Net Profit" value={animatedProfit} icon={<TrendingUp size={22} />} color={netProfit >= 0 ? "#4cc9f0" : "#ef233c"} />
+                <KPICard label="Net Profit" value={animatedProfit} icon={<TrendingUp size={22} />} color={netProfit >= 0 ? "var(--accent)" : "var(--error)"} />
                 <KPICard label="Outstanding Dues" value={animatedDue} icon={<AlertTriangle size={22} />} color="#f59e0b" />
               </div>
 
@@ -1348,7 +1348,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                     <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700 }}>Revenue vs Expenses</h3>
                     <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                        <span style={{ width: 10, height: 3, borderRadius: 2, background: "#4cc9f0", display: "inline-block" }} /> Revenue
+                        <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--accent)", display: "inline-block" }} /> Revenue
                       </span>
                       <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
                         <span style={{ width: 10, height: 3, borderRadius: 2, background: "#ef233c", display: "inline-block", borderTop: "1px dashed #ef233c" }} /> Expenses
@@ -1403,7 +1403,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                           <div style={{ height: "10px", background: "rgba(255,255,255,0.04)", borderRadius: "6px", overflow: "hidden", position: "relative" }}>
                             <div style={{
                               width: `${pct}%`, height: "100%", borderRadius: "6px",
-                              background: `linear-gradient(90deg, rgba(123,44,191,0.6) 0%, rgba(76,201,240,0.6) 100%)`,
+                              background: `linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)`,
                               transition: "width 0.8s cubic-bezier(0.16,1,0.3,1)"
                             }} />
                           </div>
@@ -1443,7 +1443,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                             <div style={{ fontSize: "0.75rem", color: "var(--text-light)" }}>{w.totalJobs} jobs · {fmtFull(w.revenue)} earned</div>
                           </div>
                           <div style={{ textAlign: "right" }}>
-                            <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "#4cc9f0" }}>{w.totalTrees}</div>
+                            <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--accent)" }}>{w.totalTrees}</div>
                             <div style={{ fontSize: "0.7rem", color: "var(--text-dim)" }}>trees</div>
                           </div>
                         </div>
@@ -1485,18 +1485,18 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
               </div>
 
               {/* ----- AI INSIGHTS ----- */}
-              <div style={{ ...cardStyle, marginBottom: "2rem", border: "1px solid rgba(168,85,247,0.2)", background: "linear-gradient(135deg, rgba(168,85,247,0.05), rgba(76,201,240,0.03))" }}>
+              <div style={{ ...cardStyle, marginBottom: "2rem", border: "1px solid var(--primary-glow-border)", background: "linear-gradient(135deg, var(--primary-glow), var(--accent-glow))" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
                   <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <Brain size={20} color="#a855f7" /> AI Business Insights
-                    <span style={{ fontSize: "0.65rem", padding: "0.2rem 0.5rem", borderRadius: "6px", background: "rgba(168,85,247,0.15)", color: "#a855f7", fontWeight: 600, border: "1px solid rgba(168,85,247,0.3)" }}>
+                    <Brain size={20} color="var(--primary)" /> AI Business Insights
+                    <span style={{ fontSize: "0.65rem", padding: "0.2rem 0.5rem", borderRadius: "6px", background: "var(--primary-glow)", color: "var(--primary)", fontWeight: 600, border: "1px solid var(--primary-glow-border)" }}>
                       Powered by Gemini
                     </span>
                   </h3>
                   <button onClick={generateAIInsights} disabled={aiLoading} style={{
                     display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.5rem 1rem",
-                    borderRadius: "8px", background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.3)",
-                    color: "#a855f7", fontSize: "0.8rem", fontWeight: 600, cursor: aiLoading ? "wait" : "pointer",
+                    borderRadius: "8px", background: "var(--primary-glow)", border: "1px solid var(--primary-glow-border)",
+                    color: "var(--primary)", fontSize: "0.8rem", fontWeight: 600, cursor: aiLoading ? "wait" : "pointer",
                     transition: "all 0.2s"
                   }}>
                     {aiLoading ? <Loader size={14} className="spinner" /> : <RefreshCw size={14} />}
@@ -1582,7 +1582,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                           </div>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                          <div style={{ fontWeight: 700, fontSize: "0.95rem", color: item.profit >= 0 ? "#4cc9f0" : "#ef233c" }}>
+                          <div style={{ fontWeight: 700, fontSize: "0.95rem", color: item.profit >= 0 ? "var(--accent)" : "var(--error)" }}>
                             {item.profit >= 0 ? "+" : ""}₹{item.profit.toLocaleString()}
                           </div>
                           <div style={{ fontSize: "0.7rem", color: "var(--text-dim)" }}>Forecast Profit</div>
@@ -1790,7 +1790,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                     border: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem"
                   }}>
                     <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)" }}>Average Settlement Speed</span>
-                    <span style={{ fontWeight: 700, color: "#4cc9f0", fontSize: "0.85rem" }}>{agingDuesData.avgVelocity} Days</span>
+                    <span style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.85rem" }}>{agingDuesData.avgVelocity} Days</span>
                   </div>
 
                   <div style={{ borderTop: "1px dashed rgba(255,255,255,0.1)", paddingTop: "1rem" }}>
@@ -1888,7 +1888,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                 {/* 5. Location Profitability Analysis */}
                 <div className="margin-ranker-card" style={cardStyle}>
                   <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.1rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <MapPin size={18} color="#4cc9f0" /> Location Margin Ranker
+                    <MapPin size={18} color="var(--accent)" /> Location Margin Ranker
                   </h3>
                   <p style={{ margin: "0 0 1.25rem 0", fontSize: "0.8rem", color: "rgba(255,255,255,0.6)" }}>
                     Rank sectors by net profit margin after variable harvesting labor
@@ -1898,7 +1898,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                       <div className="ranker-table-container">
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem" }}>
                           <thead>
-                            <tr style={{ background: "rgba(76,201,240,0.08)" }}>
+                            <tr style={{ background: "var(--accent-glow)" }}>
                               <th style={{ padding: "0.5rem", textAlign: "left", color: "rgba(255,255,255,0.5)" }}>Location</th>
                               <th style={{ padding: "0.5rem", textAlign: "right", color: "rgba(255,255,255,0.5)" }}>Revenue</th>
                               <th style={{ padding: "0.5rem", textAlign: "right", color: "rgba(255,255,255,0.5)" }}>Net Profit</th>
@@ -1967,7 +1967,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                             <td style={{ padding: "0.7rem 1rem" }}>
                               <span style={{
                                 padding: "0.2rem 0.6rem", borderRadius: "6px", fontSize: "0.75rem", fontWeight: 600,
-                                background: "rgba(76,201,240,0.1)", color: "#4cc9f0", border: "1px solid rgba(76,201,240,0.25)"
+                                background: "var(--accent-glow)", color: "var(--accent)", border: "1px solid var(--accent-glow-border)"
                               }}>{exp.type}</span>
                             </td>
                             <td style={{ padding: "0.7rem 1rem", fontSize: "0.85rem", color: "rgba(255,255,255,0.7)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>{exp.description || "—"}</td>
@@ -2205,8 +2205,8 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                       borderRadius: "8px"
                     }}>
                       {/* PDF Header */}
-                      <div style={{ textAlign: "center", marginBottom: "25px", borderBottom: "3px solid #7b2cbf", paddingBottom: "15px" }}>
-                        <h1 style={{ color: "#7b2cbf", margin: "0 0 5px 0", fontSize: "24px", letterSpacing: "-0.5px" }}>COCOFY</h1>
+                      <div style={{ textAlign: "center", marginBottom: "25px", borderBottom: "3px solid #1f481e", paddingBottom: "15px" }}>
+                        <h1 style={{ color: "#1f481e", margin: "0 0 5px 0", fontSize: "24px", letterSpacing: "-0.5px" }}>COCOFY</h1>
                         <h2 style={{ margin: "0 0 5px 0", color: "#333", fontSize: "14px", fontWeight: 600, textTransform: "uppercase" }}>
                           {ledgerPeriodType} FINANCIAL STATEMENT
                         </h2>
@@ -2394,7 +2394,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                 {[
                   { label: "Revenue", value: ledgerRevenue, color: "#10b981" },
                   { label: "Expenses", value: ledgerTotalExpenses, color: "#ef233c" },
-                  { label: "Net Profit", value: ledgerRevenue - ledgerTotalExpenses, color: "#4cc9f0" },
+                  { label: "Net Profit", value: ledgerRevenue - ledgerTotalExpenses, color: "var(--accent)" },
                   { label: "Total Due", value: ledgerTotalDue, color: "#f59e0b" },
                 ].map((s) => (
                   <div key={s.label} style={{
@@ -2604,7 +2604,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                             <td style={{ padding: "0.6rem 0.75rem", fontSize: "0.8rem", textAlign: "right", color: row.credit > 0 ? "#10b981" : "rgba(255,255,255,0.3)" }}>
                               {row.credit > 0 ? `₹${row.credit.toLocaleString("en-IN")}` : "—"}
                             </td>
-                            <td style={{ padding: "0.6rem 0.75rem", fontSize: "0.85rem", fontWeight: 600, textAlign: "right", color: row.balance >= 0 ? "#4cc9f0" : "#ef233c" }}>
+                            <td style={{ padding: "0.6rem 0.75rem", fontSize: "0.85rem", fontWeight: 600, textAlign: "right", color: row.balance >= 0 ? "var(--accent)" : "var(--error)" }}>
                               ₹{row.balance.toLocaleString("en-IN")}
                             </td>
                           </tr>
@@ -2674,8 +2674,8 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
           =================================================================== */}
       <div ref={ledgerPdfRef} style={{ display: "none", background: "white", color: "black", padding: "40px", width: "900px", fontFamily: "'Segoe UI', Arial, sans-serif" }}>
         {/* PDF Header */}
-        <div style={{ textAlign: "center", marginBottom: "30px", borderBottom: "3px solid #7b2cbf", paddingBottom: "20px" }}>
-          <h1 style={{ color: "#7b2cbf", margin: "0 0 5px 0", fontSize: "28px", letterSpacing: "-0.5px" }}>COCOFY</h1>
+        <div style={{ textAlign: "center", marginBottom: "30px", borderBottom: "3px solid #1f481e", paddingBottom: "20px" }}>
+          <h1 style={{ color: "#1f481e", margin: "0 0 5px 0", fontSize: "28px", letterSpacing: "-0.5px" }}>COCOFY</h1>
           <h2 style={{ margin: "0 0 5px 0", color: "#333", fontSize: "16px", fontWeight: 600, textTransform: "uppercase" }}>{ledgerPeriodType} FINANCIAL STATEMENT</h2>
           <p style={{ margin: 0, color: "#666", fontSize: "13px" }}>Statement Period: {periodLabel}  ·  Generated: {new Date().toLocaleDateString("en-IN")}</p>
         </div>
@@ -2895,8 +2895,8 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
         }
         .kpi-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 12px 30px rgba(123,44,191,0.15);
-          border-color: rgba(123,44,191,0.3) !important;
+          box-shadow: 0 12px 30px var(--primary-glow);
+          border-color: var(--primary-glow-border) !important;
         }
         select option {
           background: var(--surface-2);

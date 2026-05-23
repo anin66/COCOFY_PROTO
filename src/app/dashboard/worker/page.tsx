@@ -352,7 +352,7 @@ export default function WorkerDashboard() {
                             : job.status === "PICKUP_STARTED"
                             ? { background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)", color: "#f59e0b" }
                             : job.status === "ARRIVED_AT_DESTINATION"
-                            ? { background: "rgba(123, 44, 191, 0.15)", border: "1px solid var(--accent)", color: "var(--accent)" }
+                            ? { background: "var(--accent-glow)", border: "1px solid var(--accent)", color: "var(--accent)" }
                             : job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED"
                             ? { background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }
                             : { background: "var(--surface-2)", border: "1px solid var(--surface-border)", color: "var(--text-light)" }),
@@ -663,8 +663,8 @@ export default function WorkerDashboard() {
           transform: translateY(-8px) scale(1.02);
           border-color: var(--accent);
           background: var(--surface-1);
-          box-shadow: 0 25px 45px -15px rgba(123, 44, 191, 0.4),
-                      0 0 30px -5px rgba(255, 0, 127, 0.15);
+          box-shadow: 0 25px 45px -15px var(--accent-glow-border),
+                      0 0 30px -5px var(--primary-glow-border);
         }
         .job-card::after {
           content: '';

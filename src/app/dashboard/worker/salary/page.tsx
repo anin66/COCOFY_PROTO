@@ -367,8 +367,8 @@ export default function WorkerSalary() {
 
                 {/* Monthly Earnings Card */}
                 <div style={{
-                  background: "linear-gradient(135deg, rgba(123, 44, 191, 0.08) 0%, rgba(76, 201, 240, 0.05) 100%)",
-                  border: "1px solid rgba(123, 44, 191, 0.2)",
+                  background: "linear-gradient(135deg, var(--primary-glow) 0%, var(--accent-glow) 100%)",
+                  border: "1px solid var(--primary-glow-border)",
                   borderRadius: "16px",
                   padding: "1.75rem",
                   display: "flex",

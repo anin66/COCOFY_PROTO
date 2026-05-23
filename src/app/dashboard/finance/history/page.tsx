@@ -181,7 +181,7 @@ export default function FinanceHistory() {
                           width: "auto"
                         }}
                         onMouseEnter={(e) => {
-                          if (generatingPdf !== payment.id) e.currentTarget.style.background = "rgba(123, 44, 191, 0.2)";
+                          if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--primary-glow)";
                         }}
                         onMouseLeave={(e) => {
                           if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--surface-2)";
@@ -315,7 +315,7 @@ export default function FinanceHistory() {
                       }}
                     >
                       <div style={{ textAlign: "center", marginBottom: "30px", borderBottom: "2px solid #eee", paddingBottom: "20px" }}>
-                        <h1 style={{ color: "#7b2cbf", margin: "0 0 10px 0", fontSize: "28px" }}>COCOFY</h1>
+                        <h1 style={{ color: "#1f481e", margin: "0 0 10px 0", fontSize: "28px" }}>COCOFY</h1>
                         <h2 style={{ margin: 0, color: "#333", fontSize: "18px" }}>OFFICIAL PAYMENT RECEIPT</h2>
                         <p style={{ margin: "5px 0 0 0", color: "#666", fontSize: "14px" }}>Date Generated: {new Date().toLocaleDateString()}</p>
                       </div>
@@ -409,7 +409,7 @@ export default function FinanceHistory() {
         }
         @keyframes cardPopIn {
           0% { transform: scale(0.8) translateY(40px); opacity: 0; box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
-          50% { transform: scale(1.05) translateY(-5px); opacity: 1; box-shadow: 0 20px 40px rgba(123, 44, 191, 0.4); border-color: var(--primary); }
+          50% { transform: scale(1.05) translateY(-5px); opacity: 1; box-shadow: 0 20px 40px var(--primary-glow-border); border-color: var(--primary); }
           75% { transform: scale(0.98) translateY(2px); }
           100% { transform: scale(1) translateY(0); box-shadow: 0 0 0 rgba(0, 0, 0, 0); border-color: var(--surface-border); }
         }
@@ -442,7 +442,7 @@ export default function FinanceHistory() {
           transform: translateY(-8px) scale(1.02);
           border-color: var(--accent);
           background: rgba(255, 255, 255, 0.03);
-          box-shadow: 0 25px 45px -15px rgba(123, 44, 191, 0.4), 
+          box-shadow: 0 25px 45px -15px var(--primary-glow-border), 
                       0 0 30px -5px rgba(255, 0, 127, 0.15);
         }
 

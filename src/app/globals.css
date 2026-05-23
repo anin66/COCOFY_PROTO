@@ -1,32 +1,32 @@
 :root {
-  --background: #09090e;
-  --foreground: #f3f3f6;
+  --background: #091209;
+  --foreground: #f1f5f0;
   
-  --primary: #7b2cbf;
-  --primary-hover: #9d4edd;
-  --secondary: #3a0ca3;
-  --accent: #4cc9f0;
+  --primary: #2e7d32;
+  --primary-hover: #388e3c;
+  --secondary: #5d4037;
+  --accent: #84cc16;
   
-  --surface: rgba(13, 6, 40, 0.6);
-  --surface-overlay: rgba(13, 6, 40, 0.5);
-  --surface-1: rgba(255, 255, 255, 0.03);
-  --surface-2: rgba(255, 255, 255, 0.08);
-  --surface-border: rgba(255, 255, 255, 0.1);
+  --surface: rgba(9, 18, 9, 0.6);
+  --surface-overlay: rgba(9, 18, 9, 0.5);
+  --surface-1: rgba(255, 255, 255, 0.02);
+  --surface-2: rgba(255, 255, 255, 0.05);
+  --surface-border: rgba(255, 255, 255, 0.08);
   --surface-blur: 16px;
   
   --error: #ef233c;
-  --success: #06d6a0;
+  --success: #10b981;
   
-  --primary-glow: rgba(123, 44, 191, 0.15);
-  --primary-glow-border: rgba(123, 44, 191, 0.3);
-  --accent-glow: rgba(76, 201, 240, 0.15);
-  --accent-glow-border: rgba(76, 201, 240, 0.3);
-  --success-glow: rgba(6, 214, 160, 0.15);
-  --success-glow-border: rgba(6, 214, 160, 0.3);
+  --primary-glow: rgba(46, 125, 50, 0.15);
+  --primary-glow-border: rgba(46, 125, 50, 0.3);
+  --accent-glow: rgba(132, 204, 22, 0.15);
+  --accent-glow-border: rgba(132, 204, 22, 0.3);
+  --success-glow: rgba(16, 185, 129, 0.15);
+  --success-glow-border: rgba(16, 185, 129, 0.3);
   
-  --text-muted: rgba(255, 255, 255, 0.7);
-  --text-light: rgba(255, 255, 255, 0.5);
-  --text-dim: rgba(255, 255, 255, 0.4);
+  --text-muted: rgba(241, 245, 240, 0.7);
+  --text-light: rgba(241, 245, 240, 0.5);
+  --text-dim: rgba(241, 245, 240, 0.4);
   
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -213,7 +213,7 @@ p {
 
 .form-input:focus, .form-select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(123, 44, 191, 0.3);
+  box-shadow: 0 0 0 2px var(--primary-glow-border);
 }
 
 .form-select option {
@@ -240,12 +240,12 @@ p {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(123, 44, 191, 0.39);
+  box-shadow: 0 4px 14px 0 var(--primary-glow-border);
 }
 
 .btn-primary:hover {
   background: linear-gradient(135deg, var(--primary-hover), var(--primary));
-  box-shadow: 0 6px 20px rgba(123, 44, 191, 0.5);
+  box-shadow: 0 6px 20px var(--primary-glow-border);
   transform: translateY(-1px);
 }
 
@@ -293,7 +293,7 @@ p {
 }
 
 .hover-row:hover {
-  background-color: rgba(123, 44, 191, 0.04) !important;
+  background-color: var(--primary-glow) !important;
 }
 
 .hover-row td {
@@ -315,38 +315,39 @@ p {
 .plan-card:hover {
   transform: translateY(-6px);
   background-color: rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 12px 30px rgba(123, 44, 191, 0.15) !important;
-  border-color: rgba(123, 44, 191, 0.4) !important;
+  box-shadow: 0 12px 30px var(--primary-glow) !important;
+  border-color: var(--primary-glow-border) !important;
 }
 
 /* ============================== LIGHT THEME SPECIFIC OVERRIDES ============================== */
 [data-theme="light"] {
-  --background: #f4f6fa;
-  --foreground: #1c1921;
-  --primary: #7c3aed;
-  --primary-hover: #6d28d9;
-  --secondary: #4f46e5;
-  --accent: #0891b2;
+  --background: #eff2e9;
+  --foreground: #212e1f;
   
-  --surface: rgba(255, 255, 255, 0.75);
-  --surface-overlay: rgba(255, 255, 255, 0.6);
-  --surface-1: rgba(0, 0, 0, 0.03);
-  --surface-2: rgba(0, 0, 0, 0.05);
-  --surface-border: rgba(0, 0, 0, 0.09);
+  --primary: #1f481e;
+  --primary-hover: #2c5f2b;
+  --secondary: #5c4033;
+  --accent: #70a830;
+  
+  --surface: #ffffff;
+  --surface-overlay: rgba(255, 255, 255, 0.95);
+  --surface-1: #f4f6f0;
+  --surface-2: #ffffff;
+  --surface-border: rgba(31, 72, 30, 0.12);
   
   --error: #dc2626;
   --success: #10b981;
   
-  --primary-glow: rgba(124, 58, 237, 0.15);
-  --primary-glow-border: rgba(124, 58, 237, 0.3);
-  --accent-glow: rgba(8, 145, 178, 0.15);
-  --accent-glow-border: rgba(8, 145, 178, 0.3);
+  --primary-glow: rgba(31, 72, 30, 0.15);
+  --primary-glow-border: rgba(31, 72, 30, 0.3);
+  --accent-glow: rgba(112, 168, 48, 0.15);
+  --accent-glow-border: rgba(112, 168, 48, 0.3);
   --success-glow: rgba(16, 185, 129, 0.15);
   --success-glow-border: rgba(16, 185, 129, 0.3);
   
-  --text-muted: rgba(28, 25, 33, 0.7);
-  --text-light: rgba(28, 25, 33, 0.5);
-  --text-dim: rgba(28, 25, 33, 0.4);
+  --text-muted: rgba(33, 46, 31, 0.7);
+  --text-light: rgba(33, 46, 31, 0.5);
+  --text-dim: rgba(33, 46, 31, 0.4);
 }
 
 /* Adjust blobs in light mode to prevent washing out components */
@@ -497,7 +498,7 @@ p {
 [data-theme="light"] button[style*="background:rgba(123,44,191,0.15)"] {
   background: var(--primary) !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(31, 72, 30, 0.3) !important;
 }
 
 /* Ensure border lines in ranking page adapt to Light Mode */
@@ -987,7 +988,7 @@ p {
   border: 1px solid var(--surface-border);
   backdrop-filter: blur(var(--surface-blur));
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 
-              0 0 15px -3px rgba(123, 44, 191, 0.1);
+              0 0 15px -3px var(--primary-glow);
   animation: toast-slide-in-right 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   position: relative;
   overflow: hidden;
@@ -997,7 +998,7 @@ p {
 .toast-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.45), 
-              0 0 20px -1px rgba(123, 44, 191, 0.15);
+              0 0 20px -1px var(--primary-glow-border);
 }
 
 .toast-card::before {
@@ -1149,7 +1150,7 @@ p {
   border: 1px solid var(--surface-border);
   border-radius: 20px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-              0 0 30px rgba(123, 44, 191, 0.05);
+              0 0 30px var(--primary-glow);
   padding: 1.75rem;
   display: flex;
   flex-direction: column;
@@ -1194,8 +1195,8 @@ p {
 }
 
 .confirm-ring-info {
-  background: rgba(76, 201, 240, 0.1);
-  border: 1px solid rgba(76, 201, 240, 0.2);
+  background: var(--accent-glow);
+  border: 1px solid var(--accent-glow-border);
 }
 .confirm-ring-info .confirm-icon {
   color: var(--accent);
@@ -1300,12 +1301,12 @@ p {
 
 .confirm-btn-info {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
-  box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+  box-shadow: 0 4px 12px var(--primary-glow-border);
 }
 
 .confirm-btn-info:hover {
   background: linear-gradient(135deg, var(--primary-hover), var(--primary));
-  box-shadow: 0 6px 16px rgba(123, 44, 191, 0.45);
+  box-shadow: 0 6px 16px var(--primary-glow-border);
 }
 
 @keyframes confirm-fade-in {

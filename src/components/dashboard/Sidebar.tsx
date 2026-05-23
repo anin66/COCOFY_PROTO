@@ -226,11 +226,11 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
                 gap: "1rem",
                 padding: "0.875rem 1rem",
                 borderRadius: "12px",
-                background: isActive ? "rgba(123, 44, 191, 0.15)" : "transparent",
+                background: isActive ? "var(--primary-glow)" : "transparent",
                 color: isActive ? "var(--primary)" : "var(--foreground)",
                 fontWeight: isActive ? 600 : 500,
                 transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                border: `1px solid ${isActive ? "rgba(123, 44, 191, 0.3)" : "transparent"}`,
+                border: `1px solid ${isActive ? "var(--primary-glow-border)" : "transparent"}`,
                 opacity: isActive ? 1 : 0.7,
                 transform: "translateX(0)"
               }}

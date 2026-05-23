@@ -433,7 +433,7 @@ export default function FinanceOverview() {
                     onClick={() => setPaymentTab(tab as any)}
                     style={{
                       flex: 1, padding: "0.75rem", borderRadius: "8px",
-                      background: paymentTab === tab ? "rgba(123, 44, 191, 0.15)" : "var(--surface-2)",
+                      background: paymentTab === tab ? "var(--primary-glow)" : "var(--surface-2)",
                       border: `1px solid ${paymentTab === tab ? "var(--primary)" : "var(--surface-border)"}`,
                       color: paymentTab === tab ? "white" : "var(--text-muted)",
                       fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", transition: "all 0.2s"
@@ -512,7 +512,7 @@ export default function FinanceOverview() {
                     <label style={{
                       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                       border: "1px dashed var(--primary)", borderRadius: "10px", padding: "1.5rem",
-                      cursor: "pointer", background: "rgba(123, 44, 191, 0.05)",
+                      cursor: "pointer", background: "var(--primary-glow)",
                       transition: "all 0.2s"
                     }}>
                       <UploadCloud size={24} color="var(--accent)" style={{ marginBottom: "0.5rem" }} />
@@ -582,7 +582,7 @@ export default function FinanceOverview() {
         }
         @keyframes cardPopIn {
           0% { transform: scale(0.8) translateY(40px); opacity: 0; box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
-          50% { transform: scale(1.05) translateY(-5px); opacity: 1; box-shadow: 0 20px 40px rgba(123, 44, 191, 0.4); border-color: var(--primary); }
+          50% { transform: scale(1.05) translateY(-5px); opacity: 1; box-shadow: 0 20px 40px var(--primary-glow-border); border-color: var(--primary); }
           75% { transform: scale(0.98) translateY(2px); }
           100% { transform: scale(1) translateY(0); box-shadow: 0 0 0 rgba(0, 0, 0, 0); border-color: var(--surface-border); }
         }
@@ -615,7 +615,7 @@ export default function FinanceOverview() {
           transform: translateY(-8px) scale(1.02);
           border-color: var(--accent);
           background: rgba(255, 255, 255, 0.03);
-          box-shadow: 0 25px 45px -15px rgba(123, 44, 191, 0.4), 
+          box-shadow: 0 25px 45px -15px var(--primary-glow-border), 
                       0 0 30px -5px rgba(255, 0, 127, 0.15);
         }
 

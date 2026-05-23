@@ -73,15 +73,15 @@ export default function WorkerLeaderboard() {
           {/* My Stats Banner */}
           {currentUid && !loading && (
             <div className="flex-stack-mobile" style={{
-              background: "linear-gradient(135deg, rgba(123, 44, 191, 0.2) 0%, rgba(76, 201, 240, 0.1) 100%)",
-              border: "1px solid rgba(123, 44, 191, 0.3)",
+              background: "linear-gradient(135deg, var(--primary-glow) 0%, var(--accent-glow) 100%)",
+              border: "1px solid var(--primary-glow-border)",
               borderRadius: "16px",
               padding: "1.5rem 2rem",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               marginBottom: "2rem",
-              boxShadow: "0 8px 32px 0 rgba(123, 44, 191, 0.1)"
+              boxShadow: "0 8px 32px 0 var(--primary-glow)"
             }}>
               <div>
                 <h4 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700 }}>Your Standing</h4>

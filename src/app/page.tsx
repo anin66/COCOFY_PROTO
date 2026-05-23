@@ -54,8 +54,8 @@ export default function Home() {
           <div style={{ 
             display: 'inline-block', 
             padding: '0.25rem 0.75rem', 
-            background: 'rgba(123, 44, 191, 0.2)', 
-            border: '1px solid rgba(123, 44, 191, 0.3)',
+            background: 'var(--primary-glow)', 
+            border: '1px solid var(--primary-glow-border)',
             borderRadius: '20px',
             fontSize: '0.875rem',
             color: 'var(--accent)',
@@ -130,7 +130,7 @@ export default function Home() {
         }}>
           {/* Card 1 */}
           <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '2rem' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(123, 44, 191, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--primary-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
               <Layers size={24} />
             </div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Manager Hub</h3>
@@ -141,7 +141,7 @@ export default function Home() {
 
           {/* Card 2 */}
           <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '2rem' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(76, 201, 240, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
               <Zap size={24} />
             </div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Worker Portal</h3>

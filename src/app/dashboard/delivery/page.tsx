@@ -374,7 +374,7 @@ export default function DeliveryDashboard() {
           transform: translateY(-8px) scale(1.02);
           border-color: var(--accent);
           background: rgba(255, 255, 255, 0.03);
-          box-shadow: 0 25px 45px -15px rgba(123, 44, 191, 0.4),
+          box-shadow: 0 25px 45px -15px var(--primary-glow-border),
                       0 0 30px -5px rgba(255, 0, 127, 0.15);
         }
         .job-card::after {

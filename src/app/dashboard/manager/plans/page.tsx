@@ -344,9 +344,9 @@ export default function ManagerPlans() {
                 onClick={() => setActiveTab("plans")}
                 style={{
                   padding: "0.6rem 1.5rem",
-                  background: activeTab === "plans" ? "rgba(123, 44, 191, 0.15)" : "transparent",
-                  color: activeTab === "plans" ? "var(--primary-hover)" : "rgba(255,255,255,0.7)",
-                  border: `1px solid ${activeTab === "plans" ? "rgba(123, 44, 191, 0.3)" : "transparent"}`,
+                  background: activeTab === "plans" ? "var(--primary-glow)" : "transparent",
+                  color: activeTab === "plans" ? "var(--primary-hover)" : "var(--text-muted)",
+                  border: `1px solid ${activeTab === "plans" ? "var(--primary-glow-border)" : "transparent"}`,
                   borderRadius: "8px",
                   fontWeight: 600,
                   fontSize: "0.9rem",
@@ -363,9 +363,9 @@ export default function ManagerPlans() {
                 onClick={() => setActiveTab("assignments")}
                 style={{
                   padding: "0.6rem 1.5rem",
-                  background: activeTab === "assignments" ? "rgba(123, 44, 191, 0.15)" : "transparent",
-                  color: activeTab === "assignments" ? "var(--primary-hover)" : "rgba(255,255,255,0.7)",
-                  border: `1px solid ${activeTab === "assignments" ? "rgba(123, 44, 191, 0.3)" : "transparent"}`,
+                  background: activeTab === "assignments" ? "var(--primary-glow)" : "transparent",
+                  color: activeTab === "assignments" ? "var(--primary-hover)" : "var(--text-muted)",
+                  border: `1px solid ${activeTab === "assignments" ? "var(--primary-glow-border)" : "transparent"}`,
                   borderRadius: "8px",
                   fontWeight: 600,
                   fontSize: "0.9rem",
@@ -396,7 +396,7 @@ export default function ManagerPlans() {
                   fontWeight: 600,
                   fontSize: "0.9rem",
                   cursor: "pointer",
-                  boxShadow: "0 4px 15px rgba(123, 44, 191, 0.3)",
+                  boxShadow: "0 4px 15px var(--primary-glow-border)",
                   transition: "opacity 0.2s"
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.opacity = "0.9"}
@@ -523,8 +523,8 @@ export default function ManagerPlans() {
 
                       {/* Tier Logic Explanation Card */}
                       <div style={{ 
-                        background: "rgba(123, 44, 191, 0.05)",
-                        border: "1px dashed rgba(123, 44, 191, 0.2)",
+                        background: "var(--primary-glow)",
+                        border: "1px dashed var(--primary-glow-border)",
                         padding: "1rem",
                         borderRadius: "10px",
                         fontSize: "0.82rem",
@@ -1153,8 +1153,8 @@ export default function ManagerPlans() {
         .plan-card:hover {
           transform: translateY(-6px) scale(1.01);
           border-color: var(--accent) !important;
-          box-shadow: 0 20px 40px -15px rgba(123, 44, 191, 0.3), 
-                      0 0 30px -5px rgba(76, 201, 240, 0.1);
+          box-shadow: 0 20px 40px -15px var(--primary-glow-border), 
+                      0 0 30px -5px var(--accent-glow);
         }
         .card-action-btn {
           width: 32px;

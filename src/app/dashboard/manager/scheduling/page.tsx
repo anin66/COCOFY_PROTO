@@ -424,7 +424,7 @@ export default function SchedulingPage() {
           .sched-job-card:hover {
             transform: translateY(-4px) scale(1.01);
             border-color: var(--accent) !important;
-            box-shadow: 0 12px 28px -8px rgba(123,44,191,0.3);
+            box-shadow: 0 12px 28px -8px var(--primary-glow-border);
           }
           
           .btn-nav-arrow {
@@ -437,7 +437,7 @@ export default function SchedulingPage() {
             cursor: pointer; transition: all 0.2s ease;
           }
           .btn-nav-arrow:hover {
-            background: rgba(123, 44, 191, 0.15) !important;
+            background: var(--primary-glow) !important;
             border-color: var(--primary) !important;
             color: var(--primary) !important;
           }
@@ -469,7 +469,7 @@ export default function SchedulingPage() {
             background: var(--primary) !important;
             color: white !important;
             border-color: var(--primary) !important;
-            box-shadow: 0 4px 20px rgba(123, 44, 191, 0.35) !important;
+            box-shadow: 0 4px 20px var(--primary-glow-border) !important;
             font-weight: 700;
           }
           .calendar-day-btn.today {
