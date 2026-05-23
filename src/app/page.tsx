@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, Layers, Zap, Shield } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
-const CoconutCanvas = dynamic(() => import('@/components/ui/CoconutCanvas'), {
+const PixelCoconutSuperhero = dynamic(() => import('@/components/ui/PixelCoconutSuperhero'), {
   ssr: false,
   loading: () => (
     <div style={{ 
@@ -17,7 +17,7 @@ const CoconutCanvas = dynamic(() => import('@/components/ui/CoconutCanvas'), {
       fontSize: '1rem',
       fontWeight: 500
     }}>
-      Loading 3D Experience...
+      Loading Superhero...
     </div>
   )
 });
@@ -107,7 +107,7 @@ export default function Home() {
             zIndex: 5,
             position: 'relative'
           }}>
-            <CoconutCanvas />
+            <PixelCoconutSuperhero />
           </div>
         </div>
       </section>
