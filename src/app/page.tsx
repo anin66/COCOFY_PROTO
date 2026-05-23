@@ -79,7 +79,7 @@ export default function Home() {
         {/* Right: 3D Element Placeholder */}
         <div className="animate-fade-in hero-3d-container" style={{ 
           flex: 1, 
-          height: '500px', 
+          height: '600px', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
