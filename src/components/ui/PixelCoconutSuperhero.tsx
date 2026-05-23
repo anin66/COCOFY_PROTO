@@ -2,164 +2,42 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-interface EyeConfig {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  cx: number;
-  cy: number;
-}
-
 export default function PixelCoconutSuperhero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const processedCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const mouseRef = useRef({ x: -9999, y: -9999 });
   const [loading, setLoading] = useState<boolean>(true);
-  
-  // Ref to hold detected eye coordinates
-  const eyesRef = useRef<{ left: EyeConfig; right: EyeConfig } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set up mouse move listener
+    // Track mouse coordinates
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
     };
     window.addEventListener("mousemove", handleMouseMove);
 
     const img = new window.Image();
-    img.src = "/hero_character.png";
+    img.src = "/hero_character_transparent.png";
     img.onload = () => {
-      const w = img.width;
-      const h = img.height;
-
-      // 1. Create offline processed canvas
-      const pc = document.createElement("canvas");
-      pc.width = w;
-      pc.height = h;
-      const pCtx = pc.getContext("2d")!;
-      pCtx.drawImage(img, 0, 0);
-
-      const imgData = pCtx.getImageData(0, 0, w, h);
-      const data = imgData.data;
-
-      // Helper to classify background grays/whites
-      const isBgColor = (r: number, g: number, b: number): boolean => {
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-        const diff = max - min;
-        const avg = (r + g + b) / 3;
-        if (diff < 35) return avg > 40;
-        if (r > 215 && g > 215 && b > 215) return true;
-        return false;
-      };
-
-      // 2. BFS flood-fill background removal
-      const visited = new Uint8Array(w * h);
-      const queue: number[] = [];
-      const pushPixel = (x: number, y: number) => {
-        const idx = y * w + x;
-        if (!visited[idx]) {
-          visited[idx] = 1;
-          queue.push(idx);
-        }
-      };
-
-      for (let x = 0; x < w; x++) {
-        pushPixel(x, 0);
-        pushPixel(x, h - 1);
-      }
-      for (let y = 0; y < h; y++) {
-        pushPixel(0, y);
-        pushPixel(w - 1, y);
-      }
-
-      let qHead = 0;
-      while (qHead < queue.length) {
-        const idx = queue[qHead++];
-        const x = idx % w;
-        const y = Math.floor(idx / w);
-        const pxIdx = idx * 4;
-        
-        if (isBgColor(data[pxIdx], data[pxIdx + 1], data[pxIdx + 2])) {
-          data[pxIdx + 3] = 0; // Make transparent
-          if (x > 0) pushPixel(x - 1, y);
-          if (x < w - 1) pushPixel(x + 1, y);
-          if (y > 0) pushPixel(x, y - 1);
-          if (y < h - 1) pushPixel(x, y + 1);
-        }
-      }
-      pCtx.putImageData(imgData, 0, 0);
-
-      // 3. Scan face region for white eye pixels to auto-calibrate eye boxes
-      // Face bounding box: x (35% to 65%), y (25% to 55%)
-      const leftEyePixels: { x: number; y: number }[] = [];
-      const rightEyePixels: { x: number; y: number }[] = [];
-
-      for (let y = Math.round(h * 0.25); y < Math.round(h * 0.55); y++) {
-        for (let x = Math.round(w * 0.35); x < Math.round(w * 0.65); x++) {
-          const idx = (y * w + x) * 4;
-          const r = data[idx];
-          const g = data[idx + 1];
-          const b = data[idx + 2];
-          const a = data[idx + 3];
-
-          // Pure white eye whites (excluding background and outline)
-          if (a > 0 && r > 248 && g > 248 && b > 248) {
-            if (x < w / 2) {
-              leftEyePixels.push({ x, y });
-            } else {
-              rightEyePixels.push({ x, y });
-            }
-          }
-        }
-      }
-
-      const getBBox = (pixels: { x: number; y: number }[]): EyeConfig => {
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        pixels.forEach((p) => {
-          if (p.x < minX) minX = p.x;
-          if (p.x > maxX) maxX = p.x;
-          if (p.y < minY) minY = p.y;
-          if (p.y > maxY) maxY = p.y;
-        });
-        return {
-          minX,
-          maxX,
-          minY,
-          maxY,
-          cx: (minX + maxX) / 2,
-          cy: (minY + maxY) / 2,
-        };
-      };
-
-      if (leftEyePixels.length > 0 && rightEyePixels.length > 0) {
-        const leftBBox = getBBox(leftEyePixels);
-        const rightBBox = getBBox(rightEyePixels);
-        eyesRef.current = { left: leftBBox, right: rightBBox };
-
-        // 4. Fill original eye whites with pure white on the base processed canvas
-        // This paints over the static black pupils, preparing the canvas for dynamic pupils
-        pCtx.fillStyle = "#ffffff";
-        leftEyePixels.forEach(p => pCtx.fillRect(p.x, p.y, 1, 1));
-        rightEyePixels.forEach(p => pCtx.fillRect(p.x, p.y, 1, 1));
-      }
-
-      processedCanvasRef.current = pc;
+      imgRef.current = img;
       setLoading(false);
     };
 
-    // 5. 60 FPS animation loop to render character and dynamic pupils
+    img.onerror = () => {
+      console.error("Failed to load /hero_character_transparent.png");
+      setLoading(false);
+    };
+
+    // 60 FPS animation loop
     let rafId: number;
     const animate = () => {
       const canvas = canvasRef.current;
-      const pc = processedCanvasRef.current;
-      const eyes = eyesRef.current;
+      const pc = imgRef.current;
 
       if (canvas && pc) {
+        // Setup matching width/height
         if (canvas.width !== pc.width) {
           canvas.width = pc.width;
           canvas.height = pc.height;
@@ -168,45 +46,46 @@ export default function PixelCoconutSuperhero() {
         const ctx = canvas.getContext("2d")!;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Draw the character body (without static pupils)
+        // 1. Draw the pre-processed character body (with solid white eyes)
         ctx.drawImage(pc, 0, 0);
 
-        if (eyes) {
-          const rect = canvas.getBoundingClientRect();
-          const displayScale = rect.width / canvas.width;
+        // 2. Draw dynamic cursor-tracking pupils
+        const rect = canvas.getBoundingClientRect();
+        const displayScale = rect.width / canvas.width;
+        
+        const mx = mouseRef.current.x;
+        const my = mouseRef.current.y;
+
+        const drawPupil = (cx: number, cy: number, minX: number, maxX: number, minY: number, maxY: number) => {
+          const screenX = rect.left + cx * displayScale;
+          const screenY = rect.top + cy * displayScale;
           
-          // Get mouse relative coordinates
-          const mx = mouseRef.current.x;
-          const my = mouseRef.current.y;
+          const dx = mx - screenX;
+          const dy = my - screenY;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-          const drawPupil = (eye: EyeConfig) => {
-            const screenX = rect.left + eye.cx * displayScale;
-            const screenY = rect.top + eye.cy * displayScale;
-            
-            const dx = mx - screenX;
-            const dy = my - screenY;
-            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          // Pupil dimensions (scales nicely with pixel art look)
+          const pw = 14;
+          const ph = 22;
 
-            // Pupil size relative to the eye socket size
-            const pw = (eye.maxX - eye.minX) * 0.35;
-            const ph = (eye.maxY - eye.minY) * 0.70;
+          // Maximum amount pupil can travel inside the eye socket
+          const maxShiftX = (maxX - minX) * 0.20;
+          const maxShiftY = (maxY - minY) * 0.15;
 
-            // Maximum range the pupil can shift inside the socket
-            const maxShiftX = (eye.maxX - eye.minX) * 0.22;
-            const maxShiftY = (eye.maxY - eye.minY) * 0.15;
+          // Shift coordinates towards cursor position
+          const ox = (dx / dist) * maxShiftX;
+          const oy = (dy / dist) * maxShiftY;
 
-            // Calculate offset direction towards mouse
-            const ox = (dx / dist) * maxShiftX;
-            const oy = (dy / dist) * maxShiftY;
+          // Draw the pupil
+          ctx.fillStyle = "#111710"; // Dark pixel color matching the outlines
+          ctx.fillRect(cx - pw / 2 + ox, cy - ph / 2 + oy, pw, ph);
+        };
 
-            // Draw pupil
-            ctx.fillStyle = "#111710"; // Dark pixel color matching the outline
-            ctx.fillRect(eye.cx - pw / 2 + ox, eye.cy - ph / 2 + oy, pw, ph);
-          };
+        // Left Eye (cx=380, cy=222, BBox bounds: x[335..425], y[180..265])
+        drawPupil(380, 222, 335, 425, 180, 265);
 
-          drawPupil(eyes.left);
-          drawPupil(eyes.right);
-        }
+        // Right Eye (cx=647, cy=230, BBox bounds: x[600..695], y[180..265])
+        drawPupil(647, 230, 600, 695, 180, 265);
       }
 
       rafId = requestAnimationFrame(animate);
@@ -231,7 +110,7 @@ export default function PixelCoconutSuperhero() {
     }}>
       {loading && (
         <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-          Processing image and calibrating eye tracking...
+          Loading transparent character...
         </div>
       )}
       <canvas
