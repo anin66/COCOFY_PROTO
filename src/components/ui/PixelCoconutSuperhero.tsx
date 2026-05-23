@@ -2,66 +2,73 @@
 
 import React, { useState, useEffect, useRef } from "react";
 
-// Pixel art maps where:
-// 'G' = Body forest green
-// 'L' = Highlights lime green
-// 'B' = Mask / Cape wood brown
-// 'K' = Outline dark green-black
+// Pixel art maps based on the reference "Coconut-Man" sprite sheet:
+// 'G' = Body forest green (var(--primary))
+// 'D' = Dark green vertical stripes (#144a13)
+// 'T' = Tan/brown husk cap on head (#dfc19c)
+// 'C' = Cape green (var(--accent) - bright lime green)
+// 'Y' = Yellow/orange gloves & boots (#ffa000)
+// 'R' = Red emblem & boot stripe details (#d01c1c)
+// 'B' = Belt brown (#8a5229)
+// 'O' = Buckle gold outline (#ffca28)
+// 'P' = Pink cheeks (#ff9494)
+// 'K' = Outline dark green-black (#111710)
 // '.' = Transparent
 
 const capeMap = [
-  "....KKKK..",
-  "...KBBBBK.",
-  "..KBBBBBK.",
-  ".KBBBBBBK.",
-  ".KBBBBBBK.",
-  "KBBBBBBBK.",
-  "KBBBBBBK..",
-  "KBBBBBBK..",
-  "KBBBBBK...",
-  "KBBBBK....",
-  "KKKKK....."
+  "....KKKK.",
+  "...KCCCCK",
+  "..KCCCCCK",
+  ".KCCCCCCK",
+  ".KCCCCCCK",
+  "KCCCCCCK.",
+  "KCCCCCCK.",
+  "KCCCCCK..",
+  "KCCCCK...",
+  "KKKKK...."
 ];
 
 const leftArmMap = [
-  "..KKK",
-  ".KGGK",
+  "KKKKK",
+  "KGGGK",
   "KGGK.",
-  "KGK..",
-  "KGK..",
-  "KGGK.",
+  "KYYK.", // Yellow glove resting on hip
+  "KYYK.",
   ".KKK."
 ];
 
 const bodyMap = [
-  ".....KKKKKK.....",
-  "....KGGGGGGK....",
-  "...KGGGGGGGGK...",
-  "..KGGGGGGGGGGK..",
-  ".KGGGGGGGGGGGGK.",
-  "KGGGGGGGGGGGGGGK",
-  "KGBBBBBBBBBBBBGK", // Mask starts
-  "KGBBBBBBBBBBBBGK",
-  "KGBBBBBBBBBBBBGK",
-  "KGBBBBBBBBBBBBGK",
-  "KGBBBBBBBBBBBBGK", // Mask ends
-  "KGGGGKKKKKGGGGGK", // Logo border top
-  "KGGGKLLLLLKGGGGK", // Logo C top
-  "KGGGKLKKKKKGGGGK", // Logo C mid
-  "KGGGKLLLLLKGGGGK", // Logo C bottom
-  "KGGGGKKKKKGGGGGK", // Logo border bottom
-  ".KGGGGGGGGGGGGK.",
-  "..KGGGGGGGGGGK..",
-  "...KGGGGGGGGK...",
-  "....KKKKKKKK...."
+  ".....KKK........", // Y=2: Sprout top bend
+  "....KGGGK.......", // Y=3
+  "....KGGGK.......", // Y=4
+  "....KGGGK.......", // Y=5
+  "....KGGGK.......", // Y=6
+  "....KGGK........", // Y=7: Sprout stem base
+  "....KGKKKKKK....", // Y=8: Cap top
+  "...KKGTTTTTTK...", // Y=9: Tan cap
+  "..KKGGTTTTTTTK..", // Y=10
+  ".KGGKTTTTTTTTTK.", // Y=11
+  "KGGGGTTTTTTTTTTK", // Y=12
+  "KGGGGGGGGGGGGGGK", // Y=13
+  "KGGGGGGGDDGGGGGK", // Y=14 (vertical stripes)
+  "KGGPGGGGDDGGGPgK", // Y=15 (pink cheeks at index 3 & 12)
+  "KGGGGGGKKDGGGGGK", // Y=16 (smirk mouth)
+  "KGGGGGGGDDGGGGGK", // Y=17
+  "KGGGGGGGDDGGGGGK", // Y=18
+  "KGBBBBBBBBBBBBGK", // Y=19 (belt)
+  "KGBBBBOOOBBBBBGK", // Y=20 (buckle border)
+  "KGBBBBOROBBBBBGK", // Y=21 (buckle red C logo)
+  "KGBBBBOOOBBBBBGK", // Y=22
+  ".KGGGGGGGGGGGGK.", // Y=23
+  "..KKKKKKKKKKKK.."  // Y=24
 ];
 
 const legsMap = [
   ".KKK......KKK.",
   ".KGGK....KGGK.",
-  ".KGGK....KGGK.",
-  ".KBBK....KBBK.",
-  "KBBBKK..KBBBKK",
+  ".KYYK....KYYK.", // Yellow boots top
+  ".KRRK....KRRK.", // Red stripe
+  "KYYYKK..KYYYKK", // Yellow boots base
   "KKKKKK..KKKKKK"
 ];
 
@@ -72,16 +79,22 @@ const rightArmMap = [
   ".KGGGGK.",
   ".KGGGGK.",
   "..KGGGGK",
-  "...KGGGK",
-  "...KLLLK", // Lime glove
+  "...KYYYK", // Yellow glove
+  "...KYYYK",
   "...KKKKK"
 ];
 
 const colorMap = {
-  K: "#0f140f",          // Fixed dark outline matching both light/dark theme backgrounds
-  G: "var(--primary)",   // Dynamic theme primary green
-  L: "var(--accent)",    // Dynamic theme accent lime green
-  B: "var(--secondary)", // Dynamic theme secondary wood brown
+  K: "#111710",          // Dark green-black outline
+  G: "var(--primary)",   // Main green skin
+  D: "#144a13",          // Dark green stripes
+  T: "#dfc19c",          // Tan head cap
+  C: "var(--accent)",    // Bright lime green cape
+  Y: "#ffa000",          // Yellow gloves & boots
+  R: "#d01c1c",          // Red buckle C & boot accents
+  B: "#8a5229",          // Belt brown
+  O: "#ffca28",          // Buckle gold outline
+  P: "#ff9494",          // Pink cheeks
 };
 
 export default function PixelCoconutSuperhero() {
@@ -93,9 +106,8 @@ export default function PixelCoconutSuperhero() {
       if (!containerRef.current) return;
 
       const rect = containerRef.current.getBoundingClientRect();
-      // Center coordinates of the eyes relative to the viewport
       const eyeCenterX = rect.left + rect.width / 2;
-      const eyeCenterY = rect.top + rect.height * 0.4; // Eyes are roughly at 40% height of character
+      const eyeCenterY = rect.top + rect.height * 0.43; // Eyes center relative to top of character
 
       const dx = e.clientX - eyeCenterX;
       const dy = e.clientY - eyeCenterY;
@@ -124,7 +136,7 @@ export default function PixelCoconutSuperhero() {
               key={`${x}-${y}`}
               x={startX + x}
               y={startY + y}
-              width={1.05} // Subtle overlap to prevent visual grid lines between adjacent rects
+              width={1.05}
               height={1.05}
               fill={colorMap[char as keyof typeof colorMap]}
             />
@@ -193,47 +205,49 @@ export default function PixelCoconutSuperhero() {
         </defs>
 
         <g className="character-root">
-          {/* 1. Flowing Cape (placed behind body) */}
+          {/* 1. Flowing Green/Lime Cape (placed behind body) */}
           <g className="animate-cape">
-            {renderPixels(capeMap, 4, 8)}
+            {renderPixels(capeMap, 4, 9)}
           </g>
 
-          {/* 2. Legs & Boots */}
-          {renderPixels(legsMap, 9, 21)}
+          {/* 2. Legs & Boots (Yellow with Red accents) */}
+          {renderPixels(legsMap, 9, 22)}
 
-          {/* 3. Static Left Arm (resting on hip) */}
-          {renderPixels(leftArmMap, 4, 11)}
+          {/* 3. Static Left Arm (resting on hip with Yellow glove) */}
+          {renderPixels(leftArmMap, 4, 13)}
 
-          {/* 4. Body & Head (with Mask and chest Emblem) */}
-          {renderPixels(bodyMap, 8, 4)}
+          {/* 4. Body & Head (with tan head cap, sprout, chest logo, vertical stripes, cheeks, smirk) */}
+          {renderPixels(bodyMap, 8, 2)}
 
-          {/* 5. Eye Whites (cutouts in the mask area) */}
-          {/* Left Eye */}
-          <rect x={11} y={10} width={2} height={2} fill="#ffffff" />
-          {/* Right Eye */}
-          <rect x={16} y={10} width={2} height={2} fill="#ffffff" />
+          {/* 5. Eyebrows (thick heroic black lines) */}
+          <rect x={11} y={11} width={3} height={1} fill="#111710" />
+          <rect x={18} y={11} width={3} height={1} fill="#111710" />
 
-          {/* 6. Pupils that track cursor position */}
+          {/* 6. Eye Whites */}
+          <rect x={11} y={12} width={3} height={3} fill="#ffffff" />
+          <rect x={18} y={12} width={3} height={3} fill="#ffffff" />
+
+          {/* 7. Pupils that track cursor position (vertical rects matching style sheet) */}
           {/* Left Pupil */}
           <rect
-            x={11.5 + eyeOffset.x}
-            y={10.5 + eyeOffset.y}
-            width={0.9}
-            height={0.9}
-            fill="#0f140f"
+            x={12 + eyeOffset.x}
+            y={12.5 + eyeOffset.y}
+            width={1}
+            height={1.5}
+            fill="#111710"
           />
           {/* Right Pupil */}
           <rect
-            x={16.5 + eyeOffset.x}
-            y={10.5 + eyeOffset.y}
-            width={0.9}
-            height={0.9}
-            fill="#0f140f"
+            x={19 + eyeOffset.x}
+            y={12.5 + eyeOffset.y}
+            width={1}
+            height={1.5}
+            fill="#111710"
           />
 
-          {/* 7. Animated Waving Right Arm (placed in front of body) */}
+          {/* 8. Animated Waving Right Arm (placed in front of body) */}
           <g className="animate-arm">
-            {renderPixels(rightArmMap, 22, 8)}
+            {renderPixels(rightArmMap, 22, 9)}
           </g>
         </g>
       </svg>
