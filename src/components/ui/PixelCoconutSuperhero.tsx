@@ -95,6 +95,7 @@ const colorMap = {
   B: "#8a5229",          // Belt brown
   O: "#ffca28",          // Buckle gold outline
   P: "#ff9494",          // Pink cheeks
+  g: "var(--primary)",   // Fallback for minor typo in grid map row Y=15
 };
 
 export default function PixelCoconutSuperhero() {
