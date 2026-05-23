@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 
 const VIDEOS = [
-  "/videos/coco_1.mp4",
-  "/videos/coco_2.mp4",
-  "/videos/coco_3.mp4",
-  "/videos/coco_4.mp4"
+  "/videos/coco_1.webm",
+  "/videos/coco_2.webm",
+  "/videos/coco_3.webm",
+  "/videos/coco_4.webm"
 ];
 
 export default function CoconutVideoPlayer() {
