@@ -1,125 +1,225 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 
-// Pixel-perfect maps extracted from the reference "Coconut-Man" sprite sheet (img2.png)
-// 'G' = Body forest green (var(--primary))
-// 'D' = Dark green vertical stripes (rgba(0,0,0,0.18))
-// 'T' = Tan/brown husk cap cutout (#dfc19c)
-// 'Y' = Yellow/orange gloves, buckle outline, and boots (#ffa000)
-// 'R' = Red buckle center & boot details (#d01c1c)
-// 'B' = Belt brown (var(--secondary))
-// 'P' = Pink cheeks (#ff9494)
-// 'W' = Eye whites (#ffffff)
-// 'K' = Outline black (#111710)
-// '.' = Transparent / Background
+// ─── Source image extraction constants ────────────────────────────────────────
+// img2.png: 625×488px, character extracted at:
+//   startX=78, startY=1, blockW=16.4, cols=29, rows=26
+const SRC_X = 78;
+const SRC_Y = 1;
+const BLOCK = 16.4;
+const COLS = 29;
+const ROWS = 26;
+const SRC_W = Math.ceil(COLS * BLOCK);  // 476
+const SRC_H = Math.ceil(ROWS * BLOCK);  // 427
 
-const bodyMap = [
-  ".........KKK.................", // Row 0
-  "........KGGGK................", // Row 1
-  "........KGGGK................", // Row 2
-  "........KGGGK................", // Row 3
-  "........KGGGK................", // Row 4
-  "........KGGK.................", // Row 5
-  "........KGKKKKKK.............", // Row 6
-  "....KKKKKGTTTTTTK............", // Row 7
-  "...KGGKKGGTTTTTTTK...........", // Row 8
-  "..KGGKGKKKTTTTKKKT...........", // Row 9
-  ".KGGKGGKKKTTTTKKKTT..........", // Row 10
-  "KKKKKGGWWWGGGGWWWGGK.........", // Row 11
-  "KGGGKGGWWWGGGGWWWGGK.........", // Row 12
-  "KGGKKGGPGGGGGGGGGPGK.........", // Row 13
-  "KYYKKGGGGGGKKGGGGGGK.........", // Row 14
-  "KYYKKGGGGGGGGGGGGGGK.........", // Row 15
-  "KKKKKGGGGGGGGGGGGGGK.........", // Row 16
-  "....KGBBBBBBBBBBBBGK.........", // Row 17
-  "....KGBBBBYYYBBBBBGK.........", // Row 18
-  "....KGBBBBYRYBBBBBGK.........", // Row 19
-  "....KGBBBBYYYBBBBBGK.........", // Row 20
-  ".....KGGGGGGGGGGGGK..........", // Row 21
-  "......KKKKKKKKKKKK..........."  // Row 22
-];
+// Right waving arm bounds (grid coords within character region)
+const ARM_GX = 18; // arm starts at column 18
+const ARM_GY = 6;  // arm starts at row 6
+const ARM_GW = 11; // 11 columns wide
+const ARM_GH = 8;  // 8 rows tall
 
-const legsMap = [
-  "......KRRK....KRRK...........", // Row 0
-  "......YYYK....YYYKK..........", // Row 1
-  "......KKKK....KKKKK.........."  // Row 2
-];
+// Eye positions (grid coords)
+const L_EYE_GX = 7;
+const L_EYE_GY = 11;
+const EYE_GW = 3;
+const EYE_GH = 2;
+const R_EYE_GX = 14;
+const R_EYE_GY = 11;
 
-const rightArmMap = [
-  "..KKK......", // Row 0
-  "KKGKGKKK...", // Row 1
-  "KGGGGGGK...", // Row 2
-  "KKGGGGGGGK.", // Row 3
-  ".KKGGGGYYK.", // Row 4
-  "......YYY.K", // Row 5
-  "......KYKK.", // Row 6
-  "......KK..."  // Row 7
-];
+// Pupil size (1 grid unit)
+const PUPIL_GW = 1;
+const PUPIL_GH = 2;
 
-const colorMap = {
-  K: "#111710",          // Black outline
-  G: "var(--primary)",   // Main skin green
-  D: "rgba(0,0,0,0.18)", // Dark green stripes shading
-  T: "#dfc19c",          // Tan head slice
-  Y: "#ffa000",          // Yellow gloves & boots
-  R: "#d01c1c",          // Red emblem & boot details
-  B: "var(--secondary)", // Belt brown
-  P: "#ff9494",          // Pink cheeks
-  W: "#ffffff",          // Eye whites
-};
+// Background color check - light grayish-green background of the sprite card
+function isBackground(r: number, g: number, b: number): boolean {
+  // All background variants are high-luminance greenish-gray
+  // They have: r > 185, g > 195, b > 185, and roughly r ≈ b < g
+  return (
+    r > 185 && g > 195 && b > 185 &&
+    Math.abs(r - b) < 25 &&
+    g >= r &&
+    g >= b
+  );
+}
 
 export default function PixelCoconutSuperhero() {
-  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
+  // Pre-processed offscreen canvases
+  const bodyCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const armCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-      const rect = containerRef.current.getBoundingClientRect();
-      const eyeCenterX = rect.left + rect.width * (12 / 29);
-      const eyeCenterY = rect.top + rect.height * (11.5 / 26);
+  // Animation state
+  const mousePosRef = useRef({ x: 0, y: 0 });
+  const wavePhaseRef = useRef(0);
+  const floatPhaseRef = useRef(0);
+  const rafRef = useRef<number>(0);
+  const loadedRef = useRef(false);
 
-      const dx = e.clientX - eyeCenterX;
-      const dy = e.clientY - eyeCenterY;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  // Pre-process the image: separate body and arm, remove background
+  const preprocessImage = useCallback((img: HTMLImageElement) => {
+    // ── Full character region ──────────────────────────────────────────────
+    const fullCanvas = document.createElement("canvas");
+    fullCanvas.width = SRC_W;
+    fullCanvas.height = SRC_H;
+    const fullCtx = fullCanvas.getContext("2d")!;
+    fullCtx.drawImage(img, SRC_X, SRC_Y, SRC_W, SRC_H, 0, 0, SRC_W, SRC_H);
+    const fullData = fullCtx.getImageData(0, 0, SRC_W, SRC_H);
 
-      // Limit travel offset for pupils inside eye sockets
-      const maxOffsetX = 0.7;
-      const maxOffsetY = 0.3;
+    // Remove background from the full image
+    for (let i = 0; i < fullData.data.length; i += 4) {
+      if (isBackground(fullData.data[i], fullData.data[i + 1], fullData.data[i + 2])) {
+        fullData.data[i + 3] = 0;
+      }
+    }
+    fullCtx.putImageData(fullData, 0, 0);
 
-      setEyeOffset({
-        x: (dx / dist) * maxOffsetX,
-        y: (dy / dist) * maxOffsetY
-      });
-    };
+    // ── Body canvas (full character minus arm region) ──────────────────────
+    const bodyCanvas = document.createElement("canvas");
+    bodyCanvas.width = SRC_W;
+    bodyCanvas.height = SRC_H;
+    const bodyCtx = bodyCanvas.getContext("2d")!;
+    bodyCtx.drawImage(fullCanvas, 0, 0);
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    // Clear the arm area from the body canvas
+    const armPxX = Math.round(ARM_GX * BLOCK);
+    const armPxY = Math.round(ARM_GY * BLOCK);
+    const armPxW = Math.round(ARM_GW * BLOCK);
+    const armPxH = Math.round(ARM_GH * BLOCK);
+    bodyCtx.clearRect(armPxX, armPxY, armPxW, armPxH);
+
+    // Also clear the eye whites so we can draw dynamic pupils on top
+    const lEyePxX = Math.round(L_EYE_GX * BLOCK);
+    const lEyePxY = Math.round(L_EYE_GY * BLOCK);
+    const eyePxW = Math.round(EYE_GW * BLOCK);
+    const eyePxH = Math.round(EYE_GH * BLOCK);
+    const rEyePxX = Math.round(R_EYE_GX * BLOCK);
+    // Don't clear eyes - just let pupils draw on top
+
+    bodyCanvasRef.current = bodyCanvas;
+
+    // ── Arm canvas (just the arm region) ──────────────────────────────────
+    const armCanvas = document.createElement("canvas");
+    armCanvas.width = armPxW;
+    armCanvas.height = armPxH;
+    const armCtx = armCanvas.getContext("2d")!;
+    armCtx.drawImage(
+      fullCanvas,
+      armPxX, armPxY, armPxW, armPxH,
+      0, 0, armPxW, armPxH
+    );
+    armCanvasRef.current = armCanvas;
+
+    loadedRef.current = true;
   }, []);
 
-  const renderPixels = (map: string[], startX: number, startY: number) => {
-    const rects: React.JSX.Element[] = [];
-    map.forEach((row, y) => {
-      for (let x = 0; x < row.length; x++) {
-        const char = row[x];
-        if (char !== "." && colorMap[char as keyof typeof colorMap]) {
-          rects.push(
-            <rect
-              key={`${x}-${y}`}
-              x={startX + x}
-              y={startY + y}
-              width={1.03}
-              height={1.03}
-              fill={colorMap[char as keyof typeof colorMap]}
-            />
-          );
-        }
-      }
-    });
-    return rects;
-  };
+  const drawFrame = useCallback(() => {
+    const canvas = canvasRef.current;
+    const bodyCanvas = bodyCanvasRef.current;
+    const armCanvas = armCanvasRef.current;
+    if (!canvas || !bodyCanvas || !armCanvas || !loadedRef.current) {
+      rafRef.current = requestAnimationFrame(drawFrame);
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const SCALE = W / SRC_W;
+    const block = BLOCK * SCALE;
+
+    // Animation phases
+    const wave = Math.sin(wavePhaseRef.current) * (14 * Math.PI / 180);
+    const floatY = Math.sin(floatPhaseRef.current) * 6; // pixels of float
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = false;
+
+    ctx.save();
+
+    // Float animation
+    ctx.translate(0, floatY);
+
+    // ── 1. Draw body ──────────────────────────────────────────────────────
+    ctx.drawImage(bodyCanvas, 0, 0, SRC_W, SRC_H, 0, 0, W, H);
+
+    // ── 2. Draw animated waving arm ───────────────────────────────────────
+    const armDispX = ARM_GX * block;
+    const armDispY = ARM_GY * block;
+    const armDispW = ARM_GW * block;
+    const armDispH = ARM_GH * block;
+
+    ctx.save();
+    // Pivot at the shoulder: top-left of arm area
+    ctx.translate(armDispX, armDispY);
+    ctx.rotate(wave);
+    ctx.drawImage(armCanvas, 0, 0, armCanvas.width, armCanvas.height, 0, 0, armDispW, armDispH);
+    ctx.restore();
+
+    // ── 3. Draw cursor-tracking pupils ────────────────────────────────────
+    const rect = canvas.getBoundingClientRect();
+    const mx = mousePosRef.current.x;
+    const my = mousePosRef.current.y;
+
+    // Left eye pupil
+    const lCx = (L_EYE_GX + EYE_GW / 2) * block;
+    const lCy = (L_EYE_GY + EYE_GH / 2) * block;
+    const lDx = mx - (rect.left + lCx);
+    const lDy = my - (rect.top + lCy + floatY);
+    const lDist = Math.sqrt(lDx * lDx + lDy * lDy) || 1;
+    const lOx = (lDx / lDist) * block * 0.45;
+    const lOy = (lDy / lDist) * block * 0.25;
+
+    // Right eye pupil
+    const rCx = (R_EYE_GX + EYE_GW / 2) * block;
+    const rCy = (R_EYE_GY + EYE_GH / 2) * block;
+    const rDx = mx - (rect.left + rCx);
+    const rDy = my - (rect.top + rCy + floatY);
+    const rDist = Math.sqrt(rDx * rDx + rDy * rDy) || 1;
+    const rOx = (rDx / rDist) * block * 0.45;
+    const rOy = (rDy / rDist) * block * 0.25;
+
+    const pupilW = PUPIL_GW * block;
+    const pupilH = PUPIL_GH * block;
+
+    ctx.fillStyle = "#111710";
+    // Left pupil
+    ctx.fillRect(lCx - pupilW / 2 + lOx, lCy - pupilH / 2 + lOy, pupilW, pupilH);
+    // Right pupil
+    ctx.fillRect(rCx - pupilW / 2 + rOx, rCy - pupilH / 2 + rOy, pupilW, pupilH);
+
+    ctx.restore();
+
+    // Advance animation phases
+    wavePhaseRef.current += 0.055;
+    floatPhaseRef.current += 0.025;
+
+    rafRef.current = requestAnimationFrame(drawFrame);
+  }, []);
+
+  useEffect(() => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.src = "/img2.png";
+    img.onload = () => {
+      preprocessImage(img);
+      rafRef.current = requestAnimationFrame(drawFrame);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [preprocessImage, drawFrame]);
 
   return (
     <div
@@ -130,76 +230,22 @@ export default function PixelCoconutSuperhero() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        position: "relative",
-        overflow: "visible",
-        minHeight: "350px"
+        minHeight: "350px",
       }}
     >
-      <svg
-        viewBox="0 0 29 26"
+      <canvas
+        ref={canvasRef}
+        width={SRC_W}
+        height={SRC_H}
         style={{
           width: "100%",
           height: "100%",
-          maxWidth: "380px",
+          maxWidth: "400px",
           maxHeight: "380px",
-          filter: "drop-shadow(0 15px 30px var(--primary-glow-border))",
           imageRendering: "pixelated",
-          overflow: "visible"
+          filter: "drop-shadow(0 15px 30px var(--primary-glow-border))",
         }}
-      >
-        <defs>
-          <style>{`
-            @keyframes pixel-wave {
-              0% { transform: rotate(0deg); }
-              50% { transform: rotate(-14deg); }
-              100% { transform: rotate(0deg); }
-            }
-            @keyframes pixel-float {
-              0% { transform: translateY(0px); }
-              50% { transform: translateY(-6px); }
-              100% { transform: translateY(0px); }
-            }
-            .character-root {
-              animation: pixel-float 4s ease-in-out infinite;
-            }
-            .animate-arm {
-              animation: pixel-wave 1.2s ease-in-out infinite;
-              transform-origin: 18.5px 8.5px;
-            }
-          `}</style>
-        </defs>
-
-        <g className="character-root">
-          {/* 1. Legs and boots */}
-          {renderPixels(legsMap, 0, 23)}
-
-          {/* 2. Main body, head, face structure & static left arm */}
-          {renderPixels(bodyMap, 0, 0)}
-
-          {/* 3. Pupils that track cursor position */}
-          {/* Left Eye Pupil */}
-          <rect
-            x={8 + eyeOffset.x}
-            y={11 + eyeOffset.y}
-            width={1}
-            height={2}
-            fill="#111710"
-          />
-          {/* Right Eye Pupil */}
-          <rect
-            x={15 + eyeOffset.x}
-            y={11 + eyeOffset.y}
-            width={1}
-            height={2}
-            fill="#111710"
-          />
-
-          {/* 4. Animated Waving Right Arm (positioned at shoulder x=18, y=6) */}
-          <g className="animate-arm">
-            {renderPixels(rightArmMap, 18, 6)}
-          </g>
-        </g>
-      </svg>
+      />
     </div>
   );
 }
