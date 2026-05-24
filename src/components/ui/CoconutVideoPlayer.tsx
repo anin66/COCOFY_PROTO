@@ -83,6 +83,7 @@ export default function CoconutVideoPlayer() {
               opacity: idx === activeIdx ? 1 : 0,
               pointerEvents: idx === activeIdx ? "auto" : "none",
               transition: "opacity 0.2s ease-in-out",
+              transform: "scale(0.8)",
             }}
           />
         ))
@@ -112,6 +113,7 @@ export default function CoconutVideoPlayer() {
               opacity: idx === activeIdx ? 1 : 0,
               pointerEvents: idx === activeIdx ? "auto" : "none",
               transition: "opacity 0.2s ease-in-out",
+              transform: "scale(0.8)",
             }}
           />
         ))
