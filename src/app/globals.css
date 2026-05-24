@@ -1389,5 +1389,26 @@ footer,
   }
 }
 
+/* Widescreen Mascot Video Player Canvas Styles */
+.coconut-player-canvas {
+  width: 850px;
+  height: 478px; /* 16:9 ratio of 850px width */
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background: transparent;
+}
+
+@media (max-width: 768px) {
+  .coconut-player-canvas {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16/9 !important;
+    position: relative !important;
+  }
+}
+
 
 

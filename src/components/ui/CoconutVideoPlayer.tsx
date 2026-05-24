@@ -64,14 +64,7 @@ export default function CoconutVideoPlayer() {
   }, []);
 
   return (
-    <div style={{
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
-      aspectRatio: "16/9", // Widescreen aspect ratio matching original videos prevents character clipping
-    }}>
+    <div className="coconut-player-canvas">
       {isSafari ? (
         // Safari Fallback: Render high-clarity 24fps GIFs
         GIFS.map((src, idx) => (
