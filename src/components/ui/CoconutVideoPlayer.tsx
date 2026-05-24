@@ -66,7 +66,7 @@ export default function CoconutVideoPlayer() {
   return (
     <div style={{
       width: "100%",
-      maxWidth: "520px",
+      maxWidth: "640px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
