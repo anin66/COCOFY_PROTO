@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const GIFS = [
   "/videos/coco_1.gif",
@@ -9,13 +9,49 @@ const GIFS = [
   "/videos/coco_4.gif"
 ];
 
+const VIDEOS = [
+  "/videos/coco_1.webm",
+  "/videos/coco_2.webm",
+  "/videos/coco_3.webm",
+  "/videos/coco_4.webm"
+];
+
 export default function CoconutVideoPlayer() {
   const [activeIdx, setActiveIdx] = useState<number>(0);
+  const [isSafari, setIsSafari] = useState<boolean>(false);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  // Detect Safari client-side to render fallback hq GIFs
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    const isSafariUA = ua.includes("safari") && !ua.includes("chrome") && !ua.includes("android");
+    setIsSafari(isSafariUA);
+  }, []);
+
+  // Ensure all videos play concurrently in the background for zero-lag transition
+  useEffect(() => {
+    if (isSafari) return;
+
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        // Enforce DOM-level muting required by modern browsers to allow autoplay
+        video.muted = true;
+        video.defaultMuted = true;
+        
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.log("Autoplay failed or was interrupted:", err);
+          });
+        }
+      }
+    });
+  }, [isSafari]);
 
   useEffect(() => {
-    // Every 8 seconds, we transition to another random GIF without repeat.
-    // Starting with index 0 on load allows coco_1.gif to render immediately and
-    // gives the browser 8 seconds to preload coco_2, coco_3, and coco_4 in the background.
+    // Every 8 seconds, we transition to another random character animation without repeat.
+    // Starting with index 0 on load allows the first video to render immediately and
+    // gives the browser 8 seconds to preload subsequent assets in the background.
     const interval = setInterval(() => {
       setActiveIdx((prevIdx) => {
         const candidates = [0, 1, 2, 3].filter(idx => idx !== prevIdx);
@@ -37,28 +73,57 @@ export default function CoconutVideoPlayer() {
       position: "relative",
       aspectRatio: "1/1", // Square aspect ratio fits the character animations perfectly
     }}>
-      {/* Render all 4 GIFs concurrently in the DOM with position: absolute and opacity control.
-          This guarantees the browser fetches and decodes all GIFs immediately on load,
-          resulting in instant, zero-lag transitions when switching. */}
-      {GIFS.map((src, idx) => (
-        <img
-          key={src}
-          src={src}
-          alt="Coconut Character Animation"
-          style={{
-            position: idx === activeIdx ? "relative" : "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            background: "transparent",
-            opacity: idx === activeIdx ? 1 : 0,
-            pointerEvents: idx === activeIdx ? "auto" : "none",
-            transition: "opacity 0.2s ease-in-out",
-          }}
-        />
-      ))}
+      {isSafari ? (
+        // Safari Fallback: Render high-clarity 24fps GIFs
+        GIFS.map((src, idx) => (
+          <img
+            key={src}
+            src={src}
+            alt="Coconut Character Animation"
+            style={{
+              position: idx === activeIdx ? "relative" : "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              background: "transparent",
+              opacity: idx === activeIdx ? 1 : 0,
+              pointerEvents: idx === activeIdx ? "auto" : "none",
+              transition: "opacity 0.2s ease-in-out",
+            }}
+          />
+        ))
+      ) : (
+        // Non-Safari (Chrome, Firefox, Edge, etc.): Render high-clarity 24fps transparent WebM videos
+        VIDEOS.map((src, idx) => (
+          <video
+            key={src}
+            ref={(el) => {
+              videoRefs.current[idx] = el;
+            }}
+            src={src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls={false}
+            preload="auto"
+            style={{
+              position: idx === activeIdx ? "relative" : "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              background: "transparent",
+              opacity: idx === activeIdx ? 1 : 0,
+              pointerEvents: idx === activeIdx ? "auto" : "none",
+              transition: "opacity 0.2s ease-in-out",
+            }}
+          />
+        ))
+      )}
     </div>
   );
 }
