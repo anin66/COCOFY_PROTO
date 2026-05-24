@@ -1,53 +1,36 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
-const VIDEOS = [
-  "/videos/coco_1.webm",
-  "/videos/coco_2.webm",
-  "/videos/coco_3.webm",
-  "/videos/coco_4.webm"
+const GIFS = [
+  "/videos/coco_1.gif",
+  "/videos/coco_2.gif",
+  "/videos/coco_3.gif",
+  "/videos/coco_4.gif"
 ];
 
 export default function CoconutVideoPlayer() {
   const [activeIdx, setActiveIdx] = useState<number>(0);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  const playNextVideo = (endedIdx: number) => {
-    // Exclude the current index to prevent consecutive repetition
-    const candidates = [0, 1, 2, 3].filter(idx => idx !== endedIdx);
-    const nextIdx = candidates[Math.floor(Math.random() * candidates.length)];
-    
-    // Reset the finished video to the beginning
-    const endedVideo = videoRefs.current[endedIdx];
-    if (endedVideo) {
-      endedVideo.currentTime = 0;
-    }
-    
-    setActiveIdx(nextIdx);
-  };
-
-  // Play the active video immediately whenever activeIdx changes, and pause others
+  // Initialize with a random index on mount (client-side only to prevent hydration mismatch)
   useEffect(() => {
-    videoRefs.current.forEach((video, idx) => {
-      if (video) {
-        // Enforce DOM-level muting required by modern browsers to allow autoplay
-        video.muted = true;
-        video.defaultMuted = true;
-        
-        if (idx === activeIdx) {
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch((err) => {
-              console.log("Autoplay failed or was interrupted:", err);
-            });
-          }
-        } else {
-          video.pause();
-        }
-      }
-    });
-  }, [activeIdx]);
+    const randomIndex = Math.floor(Math.random() * GIFS.length);
+    setActiveIdx(randomIndex);
+  }, []);
+
+  useEffect(() => {
+    // Set up an interval of 8 seconds (matching the 8.0s duration of the animations)
+    // Every 8 seconds, we transition to another random GIF without repeat
+    const interval = setInterval(() => {
+      setActiveIdx((prevIdx) => {
+        const candidates = [0, 1, 2, 3].filter(idx => idx !== prevIdx);
+        const nextIdx = candidates[Math.floor(Math.random() * candidates.length)];
+        return nextIdx;
+      });
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div style={{
@@ -57,25 +40,16 @@ export default function CoconutVideoPlayer() {
       alignItems: "center",
       justifyContent: "center",
       position: "relative",
-      aspectRatio: "1/1", // Square aspect ratio fits the character videos perfectly
+      aspectRatio: "1/1", // Square aspect ratio fits the character animations perfectly
     }}>
-      {VIDEOS.map((src, idx) => (
-        <video
+      {/* Render all 4 GIFs concurrently in the DOM.
+          This enforces immediate background loading/caching by the browser,
+          resulting in instant zero-lag switching when display state changes. */}
+      {GIFS.map((src, idx) => (
+        <img
           key={src}
-          ref={(el) => {
-            videoRefs.current[idx] = el;
-            if (el) {
-              el.muted = true;
-              el.defaultMuted = true;
-            }
-          }}
           src={src}
-          autoPlay={idx === 0} // Native autoplay on first video for SSR zero-lag
-          muted
-          playsInline
-          controls={false}
-          onEnded={() => playNextVideo(idx)}
-          preload="auto" // Enforce browser preloading of all videos in the background
+          alt="Coconut Character Animation"
           style={{
             width: "100%",
             height: "100%",
