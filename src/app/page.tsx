@@ -25,7 +25,7 @@ export default function Home() {
         flex: 1, 
         display: 'flex', 
         alignItems: 'center', 
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         padding: '2rem',
         maxWidth: '1200px',
         margin: '0 auto',

@@ -628,7 +628,7 @@ p {
 
 /* ============================== MOBILE RESPONSIVENESS OVERRIDES ============================== */
 
-@media (max-width: 1024px) {
+@media (max-width: 1150px) {
   /* Typography adjust */
   h1 {
     font-size: clamp(1.8rem, 8vw, 2.5rem) !important;
