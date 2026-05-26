@@ -7,6 +7,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { gsap } from 'gsap';
 import { ArrowRight, Sun, Moon } from 'lucide-react';
 
@@ -21,10 +25,29 @@ function LogoMark() {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   
   const [isMobile, setIsMobile] = useState(false);
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            router.push(`/dashboard/${userData.role}`);
+          }
+        } catch (err) {
+          console.error("Error auto-login redirecting:", err);
+        }
+      }
+    });
+    return () => unsub();
+  }, [router]);
   
   // Separate states for dark and light cache buffers
   const [darkFramesReady, setDarkFramesReady] = useState(false);
