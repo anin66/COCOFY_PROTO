@@ -141,7 +141,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 3.5rem;
+  font-size: clamp(2.2rem, 4.5vw, 3.5rem);
   line-height: 1.1;
   background: linear-gradient(135deg, #fff, #a0a0b0);
   -webkit-background-clip: text;
@@ -628,7 +628,7 @@ p {
 
 /* ============================== MOBILE RESPONSIVENESS OVERRIDES ============================== */
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   /* Typography adjust */
   h1 {
     font-size: clamp(1.8rem, 8vw, 2.5rem) !important;

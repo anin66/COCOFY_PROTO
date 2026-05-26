@@ -30,7 +30,7 @@ export default function Home() {
         maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
-        gap: '4rem'
+        gap: 'clamp(2rem, 5vw, 4rem)'
       }}>
         {/* Left: Text Content */}
         <div className="animate-fade-in" style={{ flex: 1, zIndex: 10 }}>
