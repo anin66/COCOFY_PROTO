@@ -1471,31 +1471,51 @@ footer,
   text-align: center;
 }
 
-/* From Uiverse.io by alexmaracinaru */ 
+/* From Uiverse.io by alexmaracinaru + Glassmorphism Adaptations */ 
 .cta {
   border: none;
-  background: none;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+  padding: 1.25rem 2.75rem;
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cta:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 255, 255, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+}
+
+.cta:active {
+  transform: scale(0.98) translateY(0);
 }
 
 .cta span {
-  padding-bottom: 7px;
-  letter-spacing: 4px;
-  font-size: 14px;
+  padding-bottom: 4px;
+  letter-spacing: 5px;
+  font-size: 16px;
   padding-right: 15px;
   text-transform: uppercase;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
 }
 
 .cta svg {
-  transform: translateX(-8px);
+  transform: translateX(-4px);
   transition: all 0.3s ease;
 }
 
 .cta:hover svg {
-  transform: translateX(0);
+  transform: translateX(4px);
 }
 
 .cta:active svg {
@@ -1505,7 +1525,7 @@ footer,
 .hover-underline-animation {
   position: relative;
   color: #ffffff;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 .hover-underline-animation:after {

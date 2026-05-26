@@ -289,7 +289,7 @@ export default function Home() {
           <span className="hover-underline-animation">
             Get started
           </span>
-          <svg viewBox="0 0 46 16" height="10" width="15" xmlns="http://www.w3.org/2000/svg" id="cta-arrow-horizontal">
+          <svg viewBox="0 0 46 16" height="12" width="18" xmlns="http://www.w3.org/2000/svg" id="cta-arrow-horizontal">
             <path 
               transform="translate(30)" 
               d="M8,0,6.545,1.455l5.506,5.506H0V9H12.052L6.545,14.506,8,16l8-8Z" 
