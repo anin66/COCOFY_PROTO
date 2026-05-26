@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { ConfirmProvider } from "@/context/ConfirmContext";
+import SpotlightTracker from "@/components/ui/SpotlightTracker";
 
 export const metadata: Metadata = {
   title: "COCOFY | Logistics Management",
@@ -28,6 +29,7 @@ export default function RootLayout({
         }} />
       </head>
       <body className="font-sans">
+        <SpotlightTracker />
         <div className="blob-container">
           <div className="blob blob-1"></div>
           <div className="blob blob-2"></div>

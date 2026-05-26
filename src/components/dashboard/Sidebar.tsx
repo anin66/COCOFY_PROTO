@@ -165,22 +165,23 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
       >
         {/* Logo & Close Button */}
         <div style={{ marginBottom: "3rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", width: "100%" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{
-              width: "32px",
-              height: "32px",
-              background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-              borderRadius: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: "bold",
-              fontSize: "1.2rem",
-              color: "white"
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              backgroundColor: "var(--secondary)",
+              animation: "pulse 2.5s infinite"
+            }} />
+            <h1 style={{ 
+              fontSize: "1.25rem", 
+              margin: 0, 
+              fontFamily: "var(--font-display)", 
+              fontWeight: 600, 
+              textTransform: "uppercase",
+              letterSpacing: "0.22em",
+              color: "var(--foreground)" 
             }}>
-              C
-            </div>
-            <h1 style={{ fontSize: "1.5rem", margin: 0, fontWeight: 700, letterSpacing: "-0.02em" }}>
               Cocofy
             </h1>
           </div>
@@ -226,28 +227,30 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
                 gap: "1rem",
                 padding: "0.875rem 1rem",
                 borderRadius: "12px",
-                background: isActive ? "var(--primary-glow)" : "transparent",
-                color: isActive ? "var(--primary)" : "var(--foreground)",
+                background: isActive ? "var(--surface-2)" : "transparent",
+                color: isActive ? "var(--secondary)" : "var(--foreground)",
                 fontWeight: isActive ? 600 : 500,
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                border: `1px solid ${isActive ? "var(--primary-glow-border)" : "transparent"}`,
-                opacity: isActive ? 1 : 0.7,
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                border: `1px solid ${isActive ? "var(--accent-glow-border)" : "transparent"}`,
+                opacity: isActive ? 1 : 0.75,
                 transform: "translateX(0)"
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.color = "var(--primary)";
+                  e.currentTarget.style.color = "var(--foreground)";
                   e.currentTarget.style.opacity = "1";
-                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.transform = "translateX(6px)";
                   e.currentTarget.style.background = "var(--surface-1)";
+                  e.currentTarget.style.borderColor = "var(--surface-border)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
                   e.currentTarget.style.color = "var(--foreground)";
-                  e.currentTarget.style.opacity = "0.7";
+                  e.currentTarget.style.opacity = "0.75";
                   e.currentTarget.style.transform = "translateX(0)";
                   e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "transparent";
                 }
               }}
             >

@@ -78,7 +78,8 @@ export default function TopBar({ title }: TopBarProps) {
         justifyContent: "space-between",
         padding: "1.5rem 2rem",
         background: "var(--surface-overlay)",
-        backdropFilter: "blur(12px)",
+        backdropFilter: "blur(var(--surface-blur))",
+        WebkitBackdropFilter: "blur(var(--surface-blur))",
         borderBottom: "1px solid var(--surface-border)",
         position: "sticky",
         top: 0,
@@ -106,7 +107,15 @@ export default function TopBar({ title }: TopBarProps) {
         >
           <Menu size={24} />
         </button>
-        <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 600, color: "var(--foreground)" }}>{title}</h2>
+        <h2 style={{ 
+          margin: 0, 
+          fontSize: "1.25rem", 
+          fontFamily: "var(--font-display)", 
+          fontWeight: 600, 
+          textTransform: "uppercase", 
+          letterSpacing: "0.08em",
+          color: "var(--foreground)" 
+        }}>{title}</h2>
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
