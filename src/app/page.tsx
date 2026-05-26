@@ -273,43 +273,26 @@ export default function Home() {
         </h1>
       </div>
 
-      {/* 3. Navigation Bar */}
-      <nav 
-        id="top-nav-bar"
-        className="fixed top-5 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap"
+      {/* 3. Center Get Started Button */}
+      <div 
+        id="center-cta-container"
+        className={`fixed left-1/2 -translate-x-1/2 z-20 transition-all duration-1000 delay-200 ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        }`}
+        style={{ top: '62%' }}
       >
-        <div className="liquid-glass flex items-center gap-6 rounded px-4 py-2.5">
-          <LogoMark />
-          <div className="flex items-center gap-5">
-            {NAV_LINKS.map((link) => (
-              <a
-                id={`nav-link-${link.toLowerCase()}`}
-                key={link}
-                href={`#${link.toLowerCase()}`}
-                className="text-sm font-body font-light text-white/70 hover:text-white transition-colors duration-200"
-              >
-                {link}
-              </a>
-            ))}
-          </div>
-          <div className="flex items-center gap-3 ml-4">
-            <Link
-              id="nav-link-signin"
-              href="/login"
-              className="text-sm font-body font-light text-white/70 hover:text-white transition-colors duration-200"
-            >
-              Sign in
-            </Link>
-            <Link
-              id="nav-action-try"
-              href="/login"
-              className="liquid-glass-strong text-sm font-body font-medium text-white rounded px-4 py-1.5 transition-all duration-200 hover:scale-[1.04] hover:shadow-[0_0_16px_2px_rgba(255,255,255,0.12)] active:scale-[0.97]"
-            >
-              Try it free
-            </Link>
-          </div>
-        </div>
-      </nav>
+        <Link 
+          id="get-started-center-button"
+          href="/login"
+          className="group relative bg-white text-black text-sm font-body font-medium rounded px-10 py-4 overflow-hidden active:scale-[0.97] transition-all duration-200 shadow-[0_0_0_0_rgba(255,255,255,0)] hover:shadow-[0_0_32px_6px_rgba(255,255,255,0.3)] hover:scale-[1.04] flex items-center gap-2 cursor-pointer"
+        >
+          <span className="relative z-10 flex items-center gap-1.5 text-base font-semibold tracking-wider uppercase">
+            Get started
+            <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />
+          </span>
+          <span className="absolute inset-0 bg-gradient-to-b from-white to-white/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+        </Link>
+      </div>
 
       {/* 4. Bottom row HUD */}
       <div 
@@ -322,21 +305,6 @@ export default function Home() {
         <p className="text-sm font-body font-light text-white/75 max-w-[250px] leading-relaxed">
           COCOFY connects managers, workers, and field teams into one seamless, high-performance ecosystem.
         </p>
-
-        {/* Center Buttons */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 flex items-center gap-3">
-          <Link 
-            id="get-started-button"
-            href="/login"
-            className="group relative bg-white text-black text-sm font-body font-medium rounded px-8 py-3.5 overflow-hidden active:scale-[0.97] transition-all duration-200 shadow-[0_0_0_0_rgba(255,255,255,0)] hover:shadow-[0_0_24px_4px_rgba(255,255,255,0.25)] hover:scale-[1.03] flex items-center gap-2 cursor-pointer"
-          >
-            <span className="relative z-10 flex items-center gap-1.5">
-              Get started
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </span>
-            <span className="absolute inset-0 bg-gradient-to-b from-white to-white/85 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-          </Link>
-        </div>
 
         {/* Right Side Blurb */}
         <p className="text-sm font-body font-light text-white/75 max-w-[250px] leading-relaxed text-right">
