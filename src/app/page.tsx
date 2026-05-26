@@ -377,11 +377,7 @@ export default function Home() {
         {/* Dynamic vignette/ambient overlay covering the background */}
         <div 
           id="vignette-overlay" 
-          className={`absolute inset-0 transition-all duration-1000 pointer-events-none z-10 ${
-            theme === 'dark'
-              ? 'bg-gradient-to-t from-black via-transparent to-black/45'
-              : 'bg-transparent'
-          }`} 
+          className="absolute inset-0 transition-all duration-1000 pointer-events-none z-10 bg-transparent" 
         />
       </div>
 
