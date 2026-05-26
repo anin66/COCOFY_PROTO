@@ -5,11 +5,15 @@ import { useState, useEffect } from "react";
 export default function SpotlightTracker() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
     // Disable on touch viewports for performance
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isTouchDevice) return;
+    if (isTouchDevice) {
+      setIsTouch(true);
+      return;
+    }
 
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
@@ -33,6 +37,8 @@ export default function SpotlightTracker() {
       document.body.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
+
+  if (isTouch) return null;
 
   return (
     <div 

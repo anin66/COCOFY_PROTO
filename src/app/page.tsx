@@ -24,6 +24,8 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   
+  const [isMobile, setIsMobile] = useState(false);
+  
   // Separate states for dark and light cache buffers
   const [darkFramesReady, setDarkFramesReady] = useState(false);
   const [lightFramesReady, setLightFramesReady] = useState(false);
@@ -45,6 +47,14 @@ export default function Home() {
     setMounted(true);
     const activeTheme = (document.documentElement.getAttribute('data-theme') || 'dark') as 'dark' | 'light';
     setTheme(activeTheme);
+
+    const checkMobile = () => {
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      setIsMobile(window.innerWidth <= 1150 || isTouch);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const toggleTheme = () => {
@@ -161,18 +171,20 @@ export default function Home() {
 
   // Capture effect for dark video (starts immediately)
   useEffect(() => {
+    if (isMobile) return;
     const video = darkVideoRef.current;
     if (!video) return;
     return setupCapture(video, darkFramesRef, setDarkFramesReady, setDarkProgress);
-  }, []);
+  }, [isMobile]);
 
   // Capture effect for light video (runs sequentially after dark is ready, OR if theme is light)
   useEffect(() => {
+    if (isMobile) return;
     if (!darkFramesReady && theme !== 'light') return;
     const video = lightVideoRef.current;
     if (!video) return;
     return setupCapture(video, lightFramesRef, setLightFramesReady, setLightProgress);
-  }, [darkFramesReady, theme]);
+  }, [darkFramesReady, theme, isMobile]);
 
   // Reusable function to set up render loop
   const setupRender = (canvas: HTMLCanvasElement, frames: HTMLCanvasElement[]) => {
@@ -232,6 +244,7 @@ export default function Home() {
 
   // Effect 3: Parallax mouse tracking
   useEffect(() => {
+    if (isMobile) return;
     let currentX = 0;
     let currentY = 0;
     let targetX = 0;
@@ -264,7 +277,7 @@ export default function Home() {
       window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [isMobile]);
 
   const activeFramesReady = theme === 'dark' ? darkFramesReady : lightFramesReady;
   const activeProgress = theme === 'dark' ? darkProgress : lightProgress;
@@ -384,10 +397,10 @@ export default function Home() {
       {/* 2. Hero title */}
       <div 
         id="hero-title-container"
-        className={`fixed left-0 right-0 z-20 w-full px-4 text-center transition-all duration-1000 ${
+        className={isMobile ? "relative mx-auto mt-16 mb-8 w-full px-4 text-center z-20 transition-opacity duration-1000" : `fixed left-0 right-0 z-20 w-full px-4 text-center transition-all duration-1000 ${
           mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`}
-        style={{ top: '126px' }}
+        style={isMobile ? undefined : { top: '126px' }}
       >
         <span className="hero-subtitle">
           LOGISTICS REIMAGINED
@@ -400,10 +413,10 @@ export default function Home() {
       {/* 3. Center Get Started Button */}
       <div 
         id="center-cta-container"
-        className={`fixed left-1/2 -translate-x-1/2 z-20 transition-all duration-1000 delay-200 ${
+        className={isMobile ? "relative mx-auto my-8 flex justify-center w-fit z-20 transition-opacity duration-1000 delay-200" : `fixed left-1/2 -translate-x-1/2 z-20 transition-all duration-1000 delay-200 ${
           mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`}
-        style={{ top: '62%' }}
+        style={isMobile ? undefined : { top: '62%' }}
       >
         <Link 
           id="get-started-center-button"
@@ -426,7 +439,7 @@ export default function Home() {
       {/* 4. Bottom row HUD */}
       <div 
         id="hud-bottom-row"
-        className={`fixed bottom-12 left-0 right-0 px-10 flex items-end justify-between z-20 transition-all duration-1000 delay-300 ${
+        className={isMobile ? "relative w-full px-4 flex flex-col items-center gap-6 z-20 transition-opacity duration-1000 delay-300" : `fixed bottom-12 left-0 right-0 px-10 flex items-end justify-between z-20 transition-all duration-1000 delay-300 ${
           mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`}
       >
@@ -442,30 +455,32 @@ export default function Home() {
       </div>
 
       {/* Frame Loading State Indicator at VERY Bottom */}
-      <div 
-        id="loading-progress-bar"
-        className="fixed bottom-0 left-0 w-full z-30 flex flex-col items-center pointer-events-none"
-      >
+      {!isMobile && (
         <div 
-          className={`w-full max-w-xs mb-4 bg-white/5 border border-white/10 rounded px-3 py-1.5 backdrop-blur-md flex items-center justify-between transition-all duration-500 text-[11px] font-mono tracking-wider text-white/50 ${
-            activeFramesReady ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100'
-          }`}
+          id="loading-progress-bar"
+          className="fixed bottom-0 left-0 w-full z-30 flex flex-col items-center pointer-events-none"
         >
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-ping" />
-            <span>CACHING {theme.toUpperCase()} FRAME BUFFERS</span>
-          </div>
-          <span className="text-white/80 font-semibold">{activeProgress}%</span>
-        </div>
-        
-        {/* Subtle persistent loading bar inside the screen border */}
-        <div className="w-full bg-white/5 h-0.5 relative overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-sky-400 via-white to-indigo-400 transition-all duration-100 ease-out" 
-            style={{ width: `${activeFramesReady ? 100 : activeProgress}%` }}
-          />
+            className={`w-full max-w-xs mb-4 bg-white/5 border border-white/10 rounded px-3 py-1.5 backdrop-blur-md flex items-center justify-between transition-all duration-500 text-[11px] font-mono tracking-wider text-white/50 ${
+              activeFramesReady ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-ping" />
+              <span>CACHING {theme.toUpperCase()} FRAME BUFFERS</span>
+            </div>
+            <span className="text-white/80 font-semibold">{activeProgress}%</span>
+          </div>
+          
+          {/* Subtle persistent loading bar inside the screen border */}
+          <div className="w-full bg-white/5 h-0.5 relative overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-sky-400 via-white to-indigo-400 transition-all duration-100 ease-out" 
+              style={{ width: `${activeFramesReady ? 100 : activeProgress}%` }}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
