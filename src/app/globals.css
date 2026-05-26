@@ -421,8 +421,8 @@ p {
 
 /* Adjust blobs in light mode to prevent washing out components */
 [data-theme="light"] .blob {
-  opacity: 0.06;
-  mix-blend-mode: multiply;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
 }
 
 /* Override inline text and background colors specifically for Light Mode */
@@ -1700,6 +1700,74 @@ footer,
 
 .earthy-glass-card:hover .sheen-glow {
   transform: rotate(30deg) translate(30%, 30%);
+}
+
+/* Premium Job Card Glassmorphic style */
+.job-card {
+  background: var(--surface-2) !important;
+  backdrop-filter: blur(var(--surface-blur)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--surface-blur)) saturate(180%) !important;
+  border: 1px solid var(--surface-border) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+.job-card:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  border-color: var(--accent-glow-border) !important;
+  background-color: var(--surface-overlay) !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45), 0 0 25px var(--accent-glow), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.job-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.015 !important;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] .job-card::before {
+  opacity: 0.008 !important;
+}
+
+.job-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.job-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.job-card:hover::after {
+  left: 150%;
+  transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.icon-hover-effect {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
+}
+
+.job-card:hover .icon-hover-effect {
+  transform: scale(1.22) rotate(6deg) !important;
+  color: var(--accent) !important;
 }
 
 
