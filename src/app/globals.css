@@ -666,14 +666,10 @@ p {
     width: 100% !important;
   }
   .hero-3d-container {
-    height: 280px !important;
-    min-height: 250px !important;
+    height: auto !important;
+    min-height: auto !important;
     width: 100% !important;
     margin: 0 auto !important;
-  }
-  .hero-canvas-wrapper {
-    min-height: 260px !important;
-    width: 100% !important;
   }
 
   /* Sidebar Drawer styling rules */
@@ -1389,26 +1385,7 @@ footer,
   }
 }
 
-/* Widescreen Mascot Video Player Canvas Styles */
-.coconut-player-canvas {
-  width: 850px;
-  height: 478px; /* 16:9 ratio of 850px width */
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  background: transparent;
-}
 
-@media (max-width: 768px) {
-  .coconut-player-canvas {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 16/9 !important;
-    position: relative !important;
-  }
-}
 
 
 
