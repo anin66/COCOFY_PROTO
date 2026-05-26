@@ -284,21 +284,18 @@ export default function Home() {
         <Link 
           id="get-started-center-button"
           href="/login"
-          className="group relative bg-white text-sm font-body font-medium rounded px-10 py-4 overflow-hidden active:scale-[0.97] transition-all duration-200 shadow-[0_0_0_0_rgba(255,255,255,0)] hover:shadow-[0_0_32px_6px_rgba(255,255,255,0.3)] hover:scale-[1.04] flex items-center gap-2 cursor-pointer"
-          style={{ color: '#000000' }}
+          className="cta"
         >
-          <span 
-            className="relative z-10 flex items-center gap-1.5 text-base font-semibold tracking-wider uppercase"
-            style={{ color: '#000000' }}
-          >
+          <span className="hover-underline-animation">
             Get started
-            <ArrowRight 
-              className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" 
-              color="#000000"
-              style={{ stroke: '#000000' }}
-            />
           </span>
-          <span className="absolute inset-0 bg-gradient-to-b from-white to-white/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <svg viewBox="0 0 46 16" height="10" width="15" xmlns="http://www.w3.org/2000/svg" id="cta-arrow-horizontal">
+            <path 
+              transform="translate(30)" 
+              d="M8,0,6.545,1.455l5.506,5.506H0V9H12.052L6.545,14.506,8,16l8-8Z" 
+              fill="#ffffff"
+            ></path>
+          </svg>
         </Link>
       </div>
 
