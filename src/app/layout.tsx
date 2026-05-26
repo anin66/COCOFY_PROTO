@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { ConfirmProvider } from "@/context/ConfirmContext";
-
-const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "COCOFY | Logistics Management",
@@ -30,7 +27,7 @@ export default function RootLayout({
           `
         }} />
       </head>
-      <body className={outfit.className}>
+      <body className="font-sans">
         <div className="blob-container">
           <div className="blob blob-1"></div>
           <div className="blob blob-2"></div>
