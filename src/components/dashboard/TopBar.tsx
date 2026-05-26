@@ -124,6 +124,18 @@ export default function TopBar({ title }: TopBarProps) {
             display: flex !important;
           }
         }
+        @media (max-width: 768px) {
+          .topbar-button-text {
+            display: none !important;
+          }
+          .dashboard-topbar button:has(.topbar-button-text) {
+            padding: 0.4rem 0.5rem !important;
+            gap: 0 !important;
+          }
+          .dashboard-topbar {
+            padding: 1rem 1rem !important;
+          }
+        }
       `}} />
 
       <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
@@ -153,7 +165,7 @@ export default function TopBar({ title }: TopBarProps) {
             background: isActive ? "#2ecc71" : "var(--error)",
             boxShadow: isActive ? "0 0 8px #2ecc71" : "none"
           }} />
-          {isActive ? "Active" : "Offline"}
+          <span className="topbar-button-text">{isActive ? "Active" : "Offline"}</span>
         </button>
 
         {/* Push Status Diagnostics Button */}
@@ -177,12 +189,12 @@ export default function TopBar({ title }: TopBarProps) {
           {debugState?.swState === "registered-successfully" ? (
             <>
               <ShieldCheck size={14} />
-              <span>Push Active</span>
+              <span className="topbar-button-text">Push Active</span>
             </>
           ) : (
             <>
               <ShieldAlert size={14} />
-              <span>Push Status</span>
+              <span className="topbar-button-text">Push Status</span>
             </>
           )}
         </button>
