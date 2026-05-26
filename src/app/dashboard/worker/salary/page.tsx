@@ -598,7 +598,7 @@ export default function WorkerSalary() {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 1150px) {
           .salary-page-container {
             padding: 1rem !important;
           }

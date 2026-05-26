@@ -688,7 +688,7 @@ export default function WorkerDashboard() {
           color: #ff007f !important;
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 1150px) {
           .worker-page-container {
             padding: 1rem !important;
           }

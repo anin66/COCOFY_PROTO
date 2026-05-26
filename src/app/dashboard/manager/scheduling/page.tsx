@@ -497,7 +497,7 @@ export default function SchedulingPage() {
             gap: 4px;
           }
           
-          @media (max-width: 768px) {
+          @media (max-width: 1150px) {
             .sched-page-container {
               padding: 0.5rem !important;
               gap: 0.75rem !important;

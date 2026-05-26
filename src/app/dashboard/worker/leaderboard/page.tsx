@@ -212,7 +212,7 @@ export default function WorkerLeaderboard() {
           background: rgba(255,255,255,0.02) !important;
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 1150px) {
           .leaderboard-page-container {
             padding: 1rem !important;
           }

@@ -206,7 +206,7 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
         </div>
 
         <style dangerouslySetInnerHTML={{__html: `
-          @media (max-width: 768px) {
+          @media (max-width: 1150px) {
             .sidebar-close-btn {
               display: flex !important;
             }

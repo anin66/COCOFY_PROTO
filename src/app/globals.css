@@ -1770,6 +1770,52 @@ footer,
   color: var(--accent) !important;
 }
 
+/* Landing Page Mobile Responsiveness */
+@media (max-width: 768px) {
+  #root-viewport {
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 2rem 1rem !important;
+    min-height: 100vh !important;
+  }
+  
+  #hero-title-container {
+    position: relative !important;
+    top: auto !important;
+    margin-top: 4rem !important;
+    margin-bottom: 2rem !important;
+  }
+  
+  #center-cta-container {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin-bottom: 4rem !important;
+  }
+  
+  #hud-bottom-row {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    padding: 0 1rem !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
+  }
+  
+  .hud-blurb {
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+}
+
+
 
 
 

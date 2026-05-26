@@ -119,7 +119,7 @@ export default function TopBar({ title }: TopBarProps) {
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
-        @media (max-width: 768px) {
+        @media (max-width: 1150px) {
           .mobile-menu-toggle {
             display: flex !important;
           }

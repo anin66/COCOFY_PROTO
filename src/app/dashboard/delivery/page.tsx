@@ -399,7 +399,7 @@ export default function DeliveryDashboard() {
           color: #ff007f !important;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1150px) {
           .flex-stack-mobile {
             flex-direction: column !important;
             align-items: stretch !important;
