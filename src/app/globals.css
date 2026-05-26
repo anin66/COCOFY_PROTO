@@ -587,10 +587,17 @@ p {
 }
 
 /* Heading text color gradient in Light Mode */
-[data-theme="light"] h1 {
+[data-theme="light"] h1:not(.hero-title) {
   background: linear-gradient(135deg, var(--foreground), #4b5563);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .hero-title {
+  background: linear-gradient(to bottom, #ffffff 30%, #a2bfa0 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.45));
 }
 
 /* Spinner colors */
