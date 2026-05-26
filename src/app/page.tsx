@@ -370,7 +370,7 @@ export default function Home() {
           className={`absolute inset-0 transition-all duration-1000 z-10 pointer-events-none ${
             theme === 'dark' 
               ? 'bg-black/35' 
-              : 'bg-white/45 backdrop-blur-[1px]'
+              : 'bg-transparent'
           }`} 
         />
         
@@ -380,7 +380,7 @@ export default function Home() {
           className={`absolute inset-0 transition-all duration-1000 pointer-events-none z-10 ${
             theme === 'dark'
               ? 'bg-gradient-to-t from-black via-transparent to-black/45'
-              : 'bg-gradient-to-t from-[#eff2e9]/40 via-transparent to-[#eff2e9]/30'
+              : 'bg-transparent'
           }`} 
         />
       </div>
