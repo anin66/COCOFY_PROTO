@@ -177,10 +177,28 @@ export async function POST(request: Request) {
       }, {}) : {},
       android: {
         priority: "high" as const,
+        notification: {
+          title,
+          body,
+          icon: "/favicon.ico",
+          color: "#b5825d",
+          sound: "default",
+        },
       },
       apns: {
         headers: {
           "apns-priority": "10",
+        },
+        payload: {
+          aps: {
+            alert: {
+              title,
+              body,
+            },
+            sound: "default",
+            badge: 1,
+            "content-available": 1,
+          },
         },
       },
       webpush: {

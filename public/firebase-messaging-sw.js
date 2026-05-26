@@ -99,28 +99,4 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Try to initialize Firebase compat SDK in a try-catch block so that:
-// 1. getToken() on the client-side can successfully retrieve FCM tokens.
-// 2. Network failures or startup delays in background contexts don't crash the service worker.
-try {
-  importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
-  importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
-
-  firebase.initializeApp({
-    apiKey: "AIzaSyAAeC7_aNrMBsaoBYNZs9jnQvpCc9x04kU",
-    authDomain: "cocofy-f3cab.firebaseapp.com",
-    projectId: "cocofy-f3cab",
-    storageBucket: "cocofy-f3cab.firebasestorage.app",
-    messagingSenderId: "33629571209",
-    appId: "1:33629571209:web:c9b9e37aab0ba91bdd1e58"
-  });
-
-  const messaging = firebase.messaging();
-
-  // Register background messaging handler for compatibility (though native push listener handles display)
-  messaging.onBackgroundMessage((payload) => {
-    console.log('[Service Worker] Firebase SDK onBackgroundMessage invoked (should be blocked by stopImmediatePropagation):', payload);
-  });
-} catch (error) {
-  console.warn('[Service Worker] Firebase initialization error (service worker still running):', error);
-}
+// Native Service Worker handles push messages entirely without external SDK dependencies for peak reliability
