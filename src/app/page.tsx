@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, Layers, Zap, Shield } from 'lucide-react';
-import CoconutVideoPlayer from '@/components/ui/CoconutVideoPlayer';
+import DashboardPreview from '@/components/ui/DashboardPreview';
 
 
 export default function Home() {
@@ -59,7 +59,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: Video Container */}
+        {/* Right: Dashboard Preview Container */}
         <div className="animate-fade-in hero-3d-container" style={{ 
           flex: 1, 
           display: 'flex', 
@@ -69,18 +69,18 @@ export default function Home() {
           position: 'relative',
           width: '100%'
         }}>
-          {/* Glowing orb effect behind the video player */}
+          {/* Glowing orb effect behind the dashboard preview */}
           <div style={{
             position: 'absolute',
             width: '300px',
             height: '300px',
             background: 'var(--primary)',
             filter: 'blur(100px)',
-            opacity: 0.4,
+            opacity: 0.3,
             borderRadius: '50%'
           }}></div>
           
-          <CoconutVideoPlayer />
+          <DashboardPreview />
         </div>
       </section>
 
