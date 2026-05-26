@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Mail, Lock, User, Phone, Calendar, KeyRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
 type Role = "worker" | "delivery" | "manager" | "finance";
@@ -13,6 +13,7 @@ type Role = "worker" | "delivery" | "manager" | "finance";
 export default function LoginPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
+
   const [role, setRole] = useState<Role>("worker");
   
   // Form State
@@ -24,6 +25,27 @@ export default function LoginPage() {
   const [securityCode, setSecurityCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setLoading(true);
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            router.push(`/dashboard/${userData.role}`);
+          }
+        } catch (err) {
+          console.error("Error during auto-login redirect:", err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+    return () => unsub();
+  }, [router]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
