@@ -36,8 +36,8 @@
   --surface-overlay: rgba(18, 53, 34, 0.5);
   --surface-1: rgba(18, 53, 34, 0.25);
   --surface-2: rgba(18, 53, 34, 0.35);
-  --surface-border: rgba(79, 110, 82, 0.28);
-  --surface-blur: 24px;
+  --surface-border: rgba(255, 255, 255, 0.14);
+  --surface-blur: 32px;
   
   --error: #dc2626;
   --success: #10b981;
@@ -196,24 +196,24 @@ p {
 
 .glass-panel {
   background: var(--surface-1);
-  backdrop-filter: blur(var(--surface-blur));
-  -webkit-backdrop-filter: blur(var(--surface-blur));
+  backdrop-filter: blur(var(--surface-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--surface-blur)) saturate(180%);
   border: 1px solid var(--surface-border);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.45), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
 }
 
 .glass-card {
   background: var(--surface-2);
-  backdrop-filter: blur(var(--surface-blur));
-  -webkit-backdrop-filter: blur(var(--surface-blur));
+  backdrop-filter: blur(var(--surface-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--surface-blur)) saturate(180%);
   border: 1px solid var(--surface-border);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.15);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
@@ -225,8 +225,28 @@ p {
 .glass-card:hover {
   transform: translateY(-5px);
   background-color: var(--surface-overlay);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 0 20px var(--accent-glow);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.45), 0 0 25px var(--accent-glow), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25);
   border-color: var(--accent-glow-border);
+}
+
+.glass-panel::before, .glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] .glass-panel::before, 
+[data-theme="light"] .glass-card::before {
+  opacity: 0.008;
+}
+
+.glass-panel > *, .glass-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Forms */
@@ -375,10 +395,10 @@ p {
   
   --surface: rgba(255, 255, 255, 0.4);
   --surface-overlay: rgba(255, 255, 255, 0.55);
-  --surface-1: rgba(255, 255, 255, 0.3);
-  --surface-2: rgba(255, 255, 255, 0.45);
-  --surface-border: rgba(30, 53, 34, 0.12);
-  --surface-blur: 24px;
+  --surface-1: rgba(255, 255, 255, 0.35);
+  --surface-2: rgba(255, 255, 255, 0.48);
+  --surface-border: rgba(255, 255, 255, 0.35);
+  --surface-blur: 32px;
   
   --error: #dc2626;
   --success: #10b981;
