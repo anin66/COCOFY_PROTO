@@ -364,8 +364,25 @@ export default function Home() {
           />
         )}
         
-        {/* Subtle vignette/ambient glow covering the background */}
-        <div id="vignette-overlay" className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none z-10" />
+        {/* Dynamic theme-specific color washing overlay to make text highly readable */}
+        <div 
+          id="theme-overlay" 
+          className={`absolute inset-0 transition-all duration-1000 z-10 pointer-events-none ${
+            theme === 'dark' 
+              ? 'bg-black/35' 
+              : 'bg-white/45 backdrop-blur-[1px]'
+          }`} 
+        />
+        
+        {/* Dynamic vignette/ambient overlay covering the background */}
+        <div 
+          id="vignette-overlay" 
+          className={`absolute inset-0 transition-all duration-1000 pointer-events-none z-10 ${
+            theme === 'dark'
+              ? 'bg-gradient-to-t from-black via-transparent to-black/45'
+              : 'bg-gradient-to-t from-[#eff2e9]/40 via-transparent to-[#eff2e9]/30'
+          }`} 
+        />
       </div>
 
       {/* 2. Hero title */}
@@ -376,7 +393,7 @@ export default function Home() {
         }`}
         style={{ top: '126px' }}
       >
-        <span className="text-xs uppercase tracking-[0.3em] text-white/50 block mb-3 font-semibold font-body">
+        <span className="hero-subtitle">
           LOGISTICS REIMAGINED
         </span>
         <h1 className="hero-title select-none">
@@ -418,12 +435,12 @@ export default function Home() {
         }`}
       >
         {/* Left Side Blurb */}
-        <p className="text-sm font-body font-light text-white/75 max-w-[250px] leading-relaxed">
+        <p className="hud-blurb">
           COCOFY connects managers, workers, and field teams into one seamless, high-performance ecosystem.
         </p>
 
         {/* Right Side Blurb */}
-        <p className="text-sm font-body font-light text-white/75 max-w-[250px] leading-relaxed text-right">
+        <p className="hud-blurb text-right">
           Streamline your supply chain, track runs in real time, and monitor cash flow ledger statistics.
         </p>
       </div>
