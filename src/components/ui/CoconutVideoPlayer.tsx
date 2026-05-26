@@ -28,25 +28,29 @@ export default function CoconutVideoPlayer() {
     setIsSafari(isSafariUA);
   }, []);
 
-  // Ensure all videos play concurrently in the background for zero-lag transition
+  // Manage play/pause state based on active index to avoid decoding multiple streams concurrently
   useEffect(() => {
     if (isSafari) return;
 
-    videoRefs.current.forEach((video) => {
+    videoRefs.current.forEach((video, idx) => {
       if (video) {
-        // Enforce DOM-level muting required by modern browsers to allow autoplay
-        video.muted = true;
-        video.defaultMuted = true;
-        
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.log("Autoplay failed or was interrupted:", err);
-          });
+        if (idx === activeIdx) {
+          // Enforce DOM-level muting required by modern browsers to allow autoplay
+          video.muted = true;
+          video.defaultMuted = true;
+          
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              console.log("Play failed for active video:", err);
+            });
+          }
+        } else {
+          video.pause();
         }
       }
     });
-  }, [isSafari]);
+  }, [activeIdx, isSafari]);
 
   useEffect(() => {
     // Every 8 seconds, we transition to another random character animation without repeat.
