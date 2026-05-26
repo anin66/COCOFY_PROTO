@@ -123,6 +123,9 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
         localStorage.removeItem("fcm_registered_token_preview");
       }
 
+      localStorage.removeItem("user_logged_in");
+      localStorage.removeItem("user_role");
+
       // 3. Perform Firebase sign out
       await signOut(auth);
       router.push("/login");

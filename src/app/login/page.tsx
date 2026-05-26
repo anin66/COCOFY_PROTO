@@ -68,9 +68,13 @@ export default function LoginPage() {
         const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          localStorage.setItem("user_logged_in", "true");
+          localStorage.setItem("user_role", userData.role);
           router.push(`/dashboard/${userData.role}`);
         } else {
           // Fallback
+          localStorage.setItem("user_logged_in", "true");
+          localStorage.setItem("user_role", "worker");
           router.push("/dashboard/worker");
         }
       } else {
@@ -97,6 +101,8 @@ export default function LoginPage() {
         });
         console.log("User profile saved to Firestore! Redirecting...");
 
+        localStorage.setItem("user_logged_in", "true");
+        localStorage.setItem("user_role", role);
         router.push(`/dashboard/${role}`);
       }
     } catch (err: any) {

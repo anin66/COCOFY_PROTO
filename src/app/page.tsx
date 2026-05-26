@@ -28,10 +28,10 @@ export default function Home() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  
   const [isMobile, setIsMobile] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // Auto-redirect if already logged in
+  // Auto-redirect sync if already logged in (fallback or initial load update)
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -39,11 +39,16 @@ export default function Home() {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            localStorage.setItem("user_logged_in", "true");
+            localStorage.setItem("user_role", userData.role);
             router.push(`/dashboard/${userData.role}`);
           }
         } catch (err) {
           console.error("Error auto-login redirecting:", err);
         }
+      } else {
+        localStorage.removeItem("user_logged_in");
+        localStorage.removeItem("user_role");
       }
     });
     return () => unsub();
@@ -65,8 +70,17 @@ export default function Home() {
   const darkFramesRef = useRef<HTMLCanvasElement[]>([]);
   const lightFramesRef = useRef<HTMLCanvasElement[]>([]);
 
-  // Effect 0: Mount fade-in and read theme from document attributes
+  // Effect 0: Mount fade-in, check local session, and check theme
   useEffect(() => {
+    // 1. Sync Check localStorage session first
+    const loggedIn = localStorage.getItem("user_logged_in") === "true";
+    const role = localStorage.getItem("user_role");
+    if (loggedIn && role) {
+      setIsRedirecting(true);
+      router.replace(`/dashboard/${role}`);
+      return;
+    }
+
     setMounted(true);
     const activeTheme = (document.documentElement.getAttribute('data-theme') || 'dark') as 'dark' | 'light';
     setTheme(activeTheme);
@@ -78,7 +92,7 @@ export default function Home() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [router]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -304,6 +318,14 @@ export default function Home() {
 
   const activeFramesReady = theme === 'dark' ? darkFramesReady : lightFramesReady;
   const activeProgress = theme === 'dark' ? darkProgress : lightProgress;
+
+  if (isRedirecting || !mounted) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "3px", borderColor: "rgba(255,255,255,0.1)", borderTopColor: "white" }} />
+      </div>
+    );
+  }
 
   return (
     <div id="root-viewport" className="min-h-screen bg-black text-white font-body overflow-x-hidden relative select-none">
