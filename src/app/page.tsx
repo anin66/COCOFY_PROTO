@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ArrowRight } from 'lucide-react';
 
-const NAV_LINKS = ['Gallery', 'Styles', 'API', 'Pricing', 'Blog'];
+const NAV_LINKS = ['Platform', 'Solutions', 'Fleet', 'Pricing', 'Contact'];
 const VIDEO_SRC = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260511_080827_a9e5ad52-b6ee-4e79-b393-d936f179cfd7.mp4';
 
 function LogoMark() {
@@ -266,10 +266,10 @@ export default function Home() {
         style={{ top: '126px' }}
       >
         <span className="text-xs uppercase tracking-[0.3em] text-white/50 block mb-3 font-semibold font-body">
-          Now Looping Boomerang Canvas
+          LOGISTICS REIMAGINED
         </span>
         <h1 className="hero-title select-none">
-          MicroVisuals
+          COCOFY
         </h1>
       </div>
 
@@ -319,36 +319,28 @@ export default function Home() {
         }`}
       >
         {/* Left Side Blurb */}
-        <p className="text-sm font-body font-light text-white/75 max-w-[220px] leading-relaxed">
-          Forma's AI understands context, composition, and style like a creative director would.
+        <p className="text-sm font-body font-light text-white/75 max-w-[250px] leading-relaxed">
+          COCOFY connects managers, workers, and field teams into one seamless, high-performance ecosystem.
         </p>
 
         {/* Center Buttons */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-0 flex items-center gap-3">
           <Link 
-            id="start-generating-button"
+            id="get-started-button"
             href="/login"
-            className="group relative bg-white text-black text-sm font-body font-medium rounded px-6 py-3 overflow-hidden active:scale-[0.97] transition-all duration-200 shadow-[0_0_0_0_rgba(255,255,255,0)] hover:shadow-[0_0_24px_4px_rgba(255,255,255,0.25)] hover:scale-[1.03] flex items-center gap-2 cursor-pointer"
+            className="group relative bg-white text-black text-sm font-body font-medium rounded px-8 py-3.5 overflow-hidden active:scale-[0.97] transition-all duration-200 shadow-[0_0_0_0_rgba(255,255,255,0)] hover:shadow-[0_0_24px_4px_rgba(255,255,255,0.25)] hover:scale-[1.03] flex items-center gap-2 cursor-pointer"
           >
             <span className="relative z-10 flex items-center gap-1.5">
-              Start generating
+              Get started
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </span>
             <span className="absolute inset-0 bg-gradient-to-b from-white to-white/85 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           </Link>
-          
-          <Link 
-            id="see-templates-button"
-            href="/login"
-            className="liquid-glass group text-white text-sm font-body font-medium rounded px-6 py-3 active:scale-[0.97] transition-all duration-200 hover:scale-[1.03] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_0_20px_2px_rgba(255,255,255,0.07)] flex items-center gap-1 cursor-pointer"
-          >
-            <span>See templates</span>
-          </Link>
         </div>
 
         {/* Right Side Blurb */}
-        <p className="text-sm font-body font-light text-white/75 max-w-[220px] leading-relaxed text-right">
-          Describe what you see in your head — get images that actually match.
+        <p className="text-sm font-body font-light text-white/75 max-w-[250px] leading-relaxed text-right">
+          Streamline your supply chain, track runs in real time, and monitor cash flow ledger statistics.
         </p>
       </div>
 
