@@ -1546,6 +1546,50 @@ footer,
   transform-origin: bottom left;
 }
 
+/* Light theme overrides for the landing page elements */
+[data-theme="light"] .hero-title {
+  color: var(--foreground);
+}
+
+[data-theme="light"] .cta {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .cta:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12), 0 0 24px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .hover-underline-animation {
+  color: var(--foreground);
+}
+
+[data-theme="light"] .hover-underline-animation:after {
+  background-color: var(--foreground);
+}
+
+[data-theme="light"] #theme-toggle-switch {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--foreground);
+}
+
+[data-theme="light"] #theme-toggle-switch:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] #hud-bottom-row p {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="light"] #hero-title-container span {
+  color: var(--text-light) !important;
+}
+
 
 
 

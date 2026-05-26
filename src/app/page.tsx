@@ -8,10 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { gsap } from 'gsap';
-import { ArrowRight } from 'lucide-react';
-
-const NAV_LINKS = ['Platform', 'Solutions', 'Fleet', 'Pricing', 'Contact'];
-const VIDEO_SRC = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260511_080827_a9e5ad52-b6ee-4e79-b393-d936f179cfd7.mp4';
+import { ArrowRight, Sun, Moon } from 'lucide-react';
 
 function LogoMark() {
   return (
@@ -25,24 +22,45 @@ function LogoMark() {
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
-  const [framesReady, setFramesReady] = useState(false);
-  const [captureProgress, setCaptureProgress] = useState(0);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  
+  // Separate states for dark and light cache buffers
+  const [darkFramesReady, setDarkFramesReady] = useState(false);
+  const [lightFramesReady, setLightFramesReady] = useState(false);
+  const [darkProgress, setDarkProgress] = useState(0);
+  const [lightProgress, setLightProgress] = useState(0);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const darkVideoRef = useRef<HTMLVideoElement>(null);
+  const lightVideoRef = useRef<HTMLVideoElement>(null);
   const videoBgRef = useRef<HTMLDivElement>(null);
-  const displayCanvasRef = useRef<HTMLCanvasElement>(null);
-  const framesRef = useRef<HTMLCanvasElement[]>([]);
+  
+  const darkCanvasRef = useRef<HTMLCanvasElement>(null);
+  const lightCanvasRef = useRef<HTMLCanvasElement>(null);
+  
+  const darkFramesRef = useRef<HTMLCanvasElement[]>([]);
+  const lightFramesRef = useRef<HTMLCanvasElement[]>([]);
 
-  // Effect 0: Mount fade-in
+  // Effect 0: Mount fade-in and read theme from document attributes
   useEffect(() => {
     setMounted(true);
+    const activeTheme = (document.documentElement.getAttribute('data-theme') || 'dark') as 'dark' | 'light';
+    setTheme(activeTheme);
   }, []);
 
-  // Effect 1: Frame capture (boomerang setup)
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
+  // Reusable function to set up frame capturing logic
+  const setupCapture = (
+    video: HTMLVideoElement, 
+    framesRef: React.MutableRefObject<HTMLCanvasElement[]>, 
+    setReady: (ready: boolean) => void, 
+    setProgress: (progress: number) => void
+  ) => {
     let capturing = true;
     let lastTime = -1;
     const MAX_WIDTH = 960;
@@ -64,9 +82,8 @@ export default function Home() {
       const currentTime = video.currentTime;
       const duration = video.duration || 1;
 
-      // Update capture progress percentage for a polished visual loader
       const progress = Math.min(100, Math.round((currentTime / duration) * 100));
-      setCaptureProgress(progress);
+      setProgress(progress);
 
       if (readyState < 2) {
         scheduleNextCapture();
@@ -119,21 +136,18 @@ export default function Home() {
     const onEnded = () => {
       capturing = false;
       framesRef.current = frames;
-      setFramesReady(true);
+      setReady(true);
     };
     video.addEventListener('ended', onEnded);
 
-    // If metadata ready state indicates it can start immediately
     if (video.readyState >= 1) {
       onLoaded();
     }
 
     return () => {
       capturing = false;
-      if (video) {
-        video.removeEventListener('loadedmetadata', onLoaded);
-        video.removeEventListener('ended', onEnded);
-      }
+      video.removeEventListener('loadedmetadata', onLoaded);
+      video.removeEventListener('ended', onEnded);
       if (frameId !== null) {
         const anyVideo = video as any;
         if (anyVideo && 'cancelVideoFrameCallback' in anyVideo && typeof anyVideo.cancelVideoFrameCallback === 'function') {
@@ -143,16 +157,25 @@ export default function Home() {
         }
       }
     };
+  };
+
+  // Capture effect for dark video (starts immediately)
+  useEffect(() => {
+    const video = darkVideoRef.current;
+    if (!video) return;
+    return setupCapture(video, darkFramesRef, setDarkFramesReady, setDarkProgress);
   }, []);
 
-  // Effect 2: Boomerang render
+  // Capture effect for light video (runs sequentially after dark is ready, OR if theme is light)
   useEffect(() => {
-    if (!framesReady || framesRef.current.length <= 1) return;
+    if (!darkFramesReady && theme !== 'light') return;
+    const video = lightVideoRef.current;
+    if (!video) return;
+    return setupCapture(video, lightFramesRef, setLightFramesReady, setLightProgress);
+  }, [darkFramesReady, theme]);
 
-    const canvas = displayCanvasRef.current;
-    if (!canvas) return;
-
-    const frames = framesRef.current;
+  // Reusable function to set up render loop
+  const setupRender = (canvas: HTMLCanvasElement, frames: HTMLCanvasElement[]) => {
     canvas.width = frames[0].width;
     canvas.height = frames[0].height;
 
@@ -189,7 +212,23 @@ export default function Home() {
     return () => {
       cancelAnimationFrame(rafId);
     };
-  }, [framesReady]);
+  };
+
+  // Render loop for dark video
+  useEffect(() => {
+    if (!darkFramesReady || darkFramesRef.current.length <= 1) return;
+    const canvas = darkCanvasRef.current;
+    if (!canvas) return;
+    return setupRender(canvas, darkFramesRef.current);
+  }, [darkFramesReady]);
+
+  // Render loop for light video
+  useEffect(() => {
+    if (!lightFramesReady || lightFramesRef.current.length <= 1) return;
+    const canvas = lightCanvasRef.current;
+    if (!canvas) return;
+    return setupRender(canvas, lightFramesRef.current);
+  }, [lightFramesReady]);
 
   // Effect 3: Parallax mouse tracking
   useEffect(() => {
@@ -227,34 +266,106 @@ export default function Home() {
     };
   }, []);
 
+  const activeFramesReady = theme === 'dark' ? darkFramesReady : lightFramesReady;
+  const activeProgress = theme === 'dark' ? darkProgress : lightProgress;
+
   return (
     <div id="root-viewport" className="min-h-screen bg-black text-white font-body overflow-x-hidden relative select-none">
+      {/* Theme Toggle Switch */}
+      <button
+        id="theme-toggle-switch"
+        onClick={toggleTheme}
+        className="fixed top-6 right-8 z-50 p-3 rounded-full cursor-pointer transition-all duration-300 bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95 shadow-lg flex items-center justify-center group"
+        aria-label="Toggle theme"
+      >
+        <div className="relative w-6 h-6">
+          <Moon 
+            className={`w-6 h-6 absolute inset-0 text-sky-300 transition-all duration-500 ease-out transform ${
+              theme === 'dark' ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-90'
+            }`}
+          />
+          <Sun 
+            className={`w-6 h-6 absolute inset-0 text-amber-400 transition-all duration-500 ease-out transform ${
+              theme === 'light' ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 rotate-90'
+            }`}
+          />
+        </div>
+      </button>
+
       {/* 1. Video background layer */}
       <div 
         id="video-parallax-container"
         ref={videoBgRef} 
         className="fixed top-0 left-0 w-full h-full z-0 scale-[1.08] origin-center pointer-events-none"
       >
+        {/* Hidden video buffers for frame capturing */}
         <video
-          id="hero-video-backend"
-          ref={videoRef}
-          src={VIDEO_SRC}
+          id="hero-video-dark-backend"
+          ref={darkVideoRef}
+          src="/dark_video.mp4"
           muted
           playsInline
           preload="auto"
           crossOrigin="anonymous"
-          className="w-full h-full object-cover"
-          style={{ display: framesReady ? 'none' : 'block' }}
+          className="hidden"
+        />
+        <video
+          id="hero-video-light-backend"
+          ref={lightVideoRef}
+          src="/light_video.mp4"
+          muted
+          playsInline
+          preload="auto"
+          crossOrigin="anonymous"
+          className="hidden"
+        />
+
+        {/* Display Canvases */}
+        <canvas 
+          id="hero-boomerang-canvas-dark"
+          ref={darkCanvasRef} 
+          className="w-full h-full object-cover absolute inset-0 transition-opacity duration-1000 ease-in-out" 
+          style={{ 
+            display: darkFramesReady ? 'block' : 'none',
+            opacity: theme === 'dark' ? 1 : 0,
+            zIndex: theme === 'dark' ? 2 : 1
+          }}
         />
         <canvas 
-          id="hero-boomerang-canvas"
-          ref={displayCanvasRef} 
-          className="w-full h-full object-cover" 
-          style={{ display: framesReady ? 'block' : 'none' }}
+          id="hero-boomerang-canvas-light"
+          ref={lightCanvasRef} 
+          className="w-full h-full object-cover absolute inset-0 transition-opacity duration-1000 ease-in-out" 
+          style={{ 
+            display: lightFramesReady ? 'block' : 'none',
+            opacity: theme === 'light' ? 1 : 0,
+            zIndex: theme === 'light' ? 2 : 1
+          }}
         />
         
+        {/* Fallback raw video players (while loading) */}
+        {!darkFramesReady && theme === 'dark' && (
+          <video
+            src="/dark_video.mp4"
+            muted
+            playsInline
+            autoPlay
+            loop
+            className="w-full h-full object-cover absolute inset-0"
+          />
+        )}
+        {!lightFramesReady && theme === 'light' && (
+          <video
+            src="/light_video.mp4"
+            muted
+            playsInline
+            autoPlay
+            loop
+            className="w-full h-full object-cover absolute inset-0"
+          />
+        )}
+        
         {/* Subtle vignette/ambient glow covering the background */}
-        <div id="vignette-overlay" className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none" />
+        <div id="vignette-overlay" className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none z-10" />
       </div>
 
       {/* 2. Hero title */}
@@ -293,7 +404,7 @@ export default function Home() {
             <path 
               transform="translate(30)" 
               d="M8,0,6.545,1.455l5.506,5.506H0V9H12.052L6.545,14.506,8,16l8-8Z" 
-              fill="#ffffff"
+              fill="currentColor"
             ></path>
           </svg>
         </Link>
@@ -324,21 +435,21 @@ export default function Home() {
       >
         <div 
           className={`w-full max-w-xs mb-4 bg-white/5 border border-white/10 rounded px-3 py-1.5 backdrop-blur-md flex items-center justify-between transition-all duration-500 text-[11px] font-mono tracking-wider text-white/50 ${
-            framesReady ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100'
+            activeFramesReady ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100'
           }`}
         >
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-ping" />
-            <span>CACHING FRAME BUFFERS</span>
+            <span>CACHING {theme.toUpperCase()} FRAME BUFFERS</span>
           </div>
-          <span className="text-white/80 font-semibold">{captureProgress}%</span>
+          <span className="text-white/80 font-semibold">{activeProgress}%</span>
         </div>
         
         {/* Subtle persistent loading bar inside the screen border */}
         <div className="w-full bg-white/5 h-0.5 relative overflow-hidden">
           <div 
             className="h-full bg-gradient-to-r from-sky-400 via-white to-indigo-400 transition-all duration-100 ease-out" 
-            style={{ width: `${framesReady ? 100 : captureProgress}%` }}
+            style={{ width: `${activeFramesReady ? 100 : activeProgress}%` }}
           />
         </div>
       </div>
