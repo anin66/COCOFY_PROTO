@@ -11,6 +11,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useToast } from "@/context/ToastContext";
 import { triggerPushNotification } from "@/lib/notifications";
 import { SkeletonCard } from "@/components/ui/Skeleton";
+import { useLocationTracker } from "@/hooks/useLocationTracker";
+
 
 interface AssignedWorker {
   uid: string;
@@ -47,6 +49,13 @@ export default function WorkerDashboard() {
   const [rejectJobId, setRejectJobId] = useState<string | null>(null);
   const [harvestCounts, setHarvestCounts] = useState<Record<string, number>>({});
 
+  // Start background location tracker with adaptive timing
+  useLocationTracker({
+    uid: currentUid,
+    role: "worker",
+  });
+
+
   // Get current user and redirect if not a worker
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -58,12 +67,17 @@ export default function WorkerDashboard() {
           const role = data.role || "worker";
           setUserName(data.name || "Worker");
           setUserRole(role);
+          // Sync localStorage!
+          localStorage.setItem("user_logged_in", "true");
+          localStorage.setItem("user_role", role);
           // Redirect non-workers to their correct dashboard
           if (role !== "worker") {
             router.replace(`/dashboard/${role}`);
           }
         }
       } else {
+        localStorage.removeItem("user_logged_in");
+        localStorage.removeItem("user_role");
         router.replace("/login");
       }
     });

@@ -18,6 +18,15 @@ import AssignTeamModal from "@/components/dashboard/AssignTeamModal";
 import AssignDeliveryModal from "@/components/dashboard/AssignDeliveryModal";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { useToast } from "@/context/ToastContext";
+import DeliveryTrackingMap from "@/components/dashboard/DeliveryTrackingMap";
+
+interface WorkerLocation {
+  uid: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}
 
 interface AssignedWorker {
   uid: string;
@@ -47,7 +56,10 @@ interface Job {
   time?: string;
   assignedWorkers?: AssignedWorker[];
   assignedDelivery?: AssignedDelivery | null;
+  harvestLocation?: { address: string; latitude: number; longitude: number } | null;
+  deliveryLocation?: { latitude: number; longitude: number; heading?: number } | null;
 }
+
 
 export default function ManagerDashboard() {
   const { showToast } = useToast();
@@ -66,11 +78,16 @@ export default function ManagerDashboard() {
           const role = data.role || "manager";
           setCurrentUserName(data.name || "Manager");
           setCurrentUserRole(role);
+          // Sync localStorage!
+          localStorage.setItem("user_logged_in", "true");
+          localStorage.setItem("user_role", role);
           if (role !== "manager") {
             router.replace(`/dashboard/${role}`);
           }
         }
       } else {
+        localStorage.removeItem("user_logged_in");
+        localStorage.removeItem("user_role");
         router.replace("/login");
       }
     });
@@ -109,6 +126,74 @@ export default function ManagerDashboard() {
   const [assignTeamWorkersRequired, setAssignTeamWorkersRequired] = useState(1);
   const [assignTeamExcludeUids, setAssignTeamExcludeUids] = useState<string[]>([]);
   const [assignDeliveryJobId, setAssignDeliveryJobId] = useState<string | null>(null);
+
+  // Live Map Tracking states
+  const [trackingJob, setTrackingJob] = useState<Job | null>(null);
+  const [trackingWorkers, setTrackingWorkers] = useState<WorkerLocation[]>([]);
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
+  const [isTrackingModalClosing, setIsTrackingModalClosing] = useState(false);
+
+  // Keep tracking job updated with latest coordinates from the jobs list listener
+  useEffect(() => {
+    if (trackingJob) {
+      const latest = jobs.find((j) => j.id === trackingJob.id);
+      if (latest) {
+        setTrackingJob(latest);
+      }
+    }
+  }, [jobs, trackingJob?.id]);
+
+  // Fetch stay locations of workers assigned to the job being tracked
+  useEffect(() => {
+    if (!trackingJob) {
+      setTrackingWorkers([]);
+      return;
+    }
+
+    const fetchWorkerStays = async () => {
+      const acceptedWorkers = trackingJob.assignedWorkers?.filter((w) => w.status === "accepted") || [];
+      const workerStays: WorkerLocation[] = [];
+
+      for (let worker of acceptedWorkers) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", worker.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.stayLocation) {
+              workerStays.push({
+                uid: worker.uid,
+                name: userData.name || worker.name,
+                latitude: userData.stayLocation.latitude,
+                longitude: userData.stayLocation.longitude,
+                address: userData.stayLocation.address,
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching worker stay info:", err);
+        }
+      }
+
+      setTrackingWorkers(workerStays);
+    };
+
+    fetchWorkerStays();
+  }, [trackingJob?.id, trackingJob?.assignedWorkers]);
+
+  const handleTrackJob = (job: Job) => {
+    setTrackingJob(job);
+    setIsTrackingModalOpen(true);
+  };
+
+  const closeTrackingModal = () => {
+    setIsTrackingModalClosing(true);
+    setTimeout(() => {
+      setIsTrackingModalOpen(false);
+      setIsTrackingModalClosing(false);
+      setTrackingJob(null);
+    }, 350);
+  };
+
 
   // Confirm Job Details Modal states
   const [confirmingJob, setConfirmingJob] = useState<Job | null>(null);
@@ -810,6 +895,25 @@ export default function ManagerDashboard() {
                     >
                       <Truck size={18} />
                       Assign Delivery
+                    </button>
+                  )}
+
+                  {(job.status === "PICKUP_STARTED" || job.status === "ACTIVE" || job.status === "ARRIVED_AT_DESTINATION" || job.status === "DELIVERY_PENDING") && (
+                    <button 
+                      onClick={() => handleTrackJob(job)}
+                      disabled={job.status === "DELIVERY_PENDING"}
+                      style={{
+                        width: "100%", padding: "0.875rem",
+                        background: job.status === "DELIVERY_PENDING" ? "var(--surface-3)" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        color: job.status === "DELIVERY_PENDING" ? "var(--text-light)" : "white",
+                        border: "none", borderRadius: "12px",
+                        fontWeight: 600, cursor: job.status === "DELIVERY_PENDING" ? "not-allowed" : "pointer",
+                        transition: "all 0.2s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                      }}
+                    >
+                      <MapPin size={18} />
+                      {job.status === "DELIVERY_PENDING" ? "Awaiting Delivery Boy..." : "Track Live Delivery"}
                     </button>
                   )}
 
@@ -1724,6 +1828,100 @@ export default function ManagerDashboard() {
             onClose={() => setAssignDeliveryJobId(null)}
             onAssigned={() => setAssignDeliveryJobId(null)}
           />
+        )}
+
+        {/* Live Delivery Tracking Map Modal */}
+        {isTrackingModalOpen && trackingJob && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: isTrackingModalClosing ? "rgba(0, 0, 0, 0)" : "rgba(0, 0, 0, 0.6)",
+            backdropFilter: isTrackingModalClosing ? "blur(0px)" : "blur(4px)",
+            transition: "all 0.4s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "1rem"
+          }}>
+            <div 
+              className={isTrackingModalClosing ? "modal-closing" : "modal-opening"}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--surface-border)",
+                borderRadius: "20px",
+                width: "100%",
+                maxWidth: "750px",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                overflow: "hidden"
+              }}
+            >
+              {/* Header */}
+              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <MapPin size={24} color="var(--accent)" />
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>Live Tracking: {trackingJob.customerName}</h2>
+                    <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-light)" }}>
+                      Status: <strong style={{ color: "var(--accent)" }}>{trackingJob.status.replace("_", " ")}</strong>
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={closeTrackingModal}
+                  style={{ background: "none", border: "none", color: "var(--text-light)", cursor: "pointer" }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Map body */}
+              <div style={{ padding: "1.5rem 2rem" }}>
+                <DeliveryTrackingMap
+                  deliveryLocation={
+                    trackingJob.deliveryLocation
+                      ? {
+                          latitude: trackingJob.deliveryLocation.latitude,
+                          longitude: trackingJob.deliveryLocation.longitude,
+                          heading: trackingJob.deliveryLocation.heading,
+                        }
+                      : null
+                  }
+                  workerStayLocations={trackingWorkers}
+                  harvestLocation={trackingJob.harvestLocation}
+                  height="400px"
+                />
+              </div>
+
+              {/* Footer */}
+              <div style={{ 
+                padding: "1.25rem 2rem", 
+                background: "var(--surface-2)", 
+                display: "flex", 
+                justifyContent: "space-between", 
+                alignItems: "center",
+                borderTop: "1px solid var(--surface-border)" 
+              }}>
+                <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                  <span>Assigned Driver: <strong>{trackingJob.assignedDelivery?.name || "Unassigned"}</strong></span>
+                </div>
+                <button 
+                  onClick={closeTrackingModal}
+                  style={{
+                    padding: "0.6rem 1.5rem",
+                    background: "var(--surface-border)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  Close Tracking
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         <style dangerouslySetInnerHTML={{__html: `

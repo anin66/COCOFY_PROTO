@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, doc, updateDoc, getDoc } from "firebase/firestore";
 import { useToast } from "@/context/ToastContext";
 import { triggerPushNotification } from "@/lib/notifications";
+import { parseCoordinates } from "@/lib/locationUtils";
 
 interface DeliveryUser {
   uid: string;
@@ -30,6 +31,8 @@ export default function AssignDeliveryModal({
   const [loading, setLoading] = useState(true);
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [harvestAddress, setHarvestAddress] = useState("");
+  const [harvestCoordsInput, setHarvestCoordsInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -60,7 +63,25 @@ export default function AssignDeliveryModal({
   }, []);
 
   const handleAssign = async () => {
-    if (!selectedUid) return;
+    if (!selectedUid) {
+      showToast("Please select a delivery boy.", "warning");
+      return;
+    }
+    if (!harvestAddress.trim()) {
+      showToast("Please enter the harvest location name/address.", "warning");
+      return;
+    }
+    if (!harvestCoordsInput.trim()) {
+      showToast("Please enter the harvest location coordinates or maps link.", "warning");
+      return;
+    }
+
+    const parsedCoords = parseCoordinates(harvestCoordsInput);
+    if (!parsedCoords) {
+      showToast("Could not parse coordinates. Format should be: lat,lng or a Google Maps link.", "error");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const chosen = deliveryBoys.find((d) => d.uid === selectedUid)!;
@@ -81,6 +102,11 @@ export default function AssignDeliveryModal({
           uid: chosen.uid,
           name: chosen.name,
           status: "pending",
+        },
+        harvestLocation: {
+          address: harvestAddress.trim(),
+          latitude: parsedCoords.latitude,
+          longitude: parsedCoords.longitude,
         },
         status: "DELIVERY_PENDING",
       }).then(() => {
@@ -107,6 +133,7 @@ export default function AssignDeliveryModal({
     setIsClosing(true);
     setTimeout(() => onClose(), 350);
   };
+
 
   const filtered = deliveryBoys.filter(
     (d) =>
@@ -193,8 +220,61 @@ export default function AssignDeliveryModal({
           </button>
         </div>
 
+        {/* Harvest Location Fields */}
+        <div style={{ padding: "1rem 2rem 0.75rem", flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.75rem", borderBottom: "1px dashed var(--surface-border)" }}>
+          <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "2px" }}>
+            Harvest Destination Details
+          </div>
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>
+                Location Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Block C Orchard"
+                value={harvestAddress}
+                onChange={(e) => setHarvestAddress(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--surface-border)",
+                  color: "var(--foreground)",
+                  padding: "0.6rem 0.75rem",
+                  borderRadius: "8px",
+                  outline: "none",
+                  fontFamily: "inherit",
+                  fontSize: "0.82rem",
+                }}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>
+                Coordinates or Maps Link
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 9.9312, 76.2673"
+                value={harvestCoordsInput}
+                onChange={(e) => setHarvestCoordsInput(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--surface-border)",
+                  color: "var(--foreground)",
+                  padding: "0.6rem 0.75rem",
+                  borderRadius: "8px",
+                  outline: "none",
+                  fontFamily: "inherit",
+                  fontSize: "0.82rem",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Search */}
-        <div style={{ padding: "1rem 2rem 0.75rem", flexShrink: 0 }}>
+        <div style={{ padding: "1rem 2rem 0.5rem", flexShrink: 0 }}>
           <div style={{ position: "relative" }}>
             <Search
               size={16}

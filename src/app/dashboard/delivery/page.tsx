@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { useToast } from "@/context/ToastContext";
@@ -10,6 +11,16 @@ import { collection, onSnapshot, doc, updateDoc, getDoc } from "firebase/firesto
 import { onAuthStateChanged } from "firebase/auth";
 import { triggerPushNotification } from "@/lib/notifications";
 import { SkeletonCard } from "@/components/ui/Skeleton";
+import { useLocationTracker } from "@/hooks/useLocationTracker";
+import DeliveryTrackingMap from "@/components/dashboard/DeliveryTrackingMap";
+
+interface WorkerLocation {
+  uid: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+}
 
 interface Job {
   id: string;
@@ -23,29 +34,97 @@ interface Job {
   status: string;
   time?: string;
   assignedDelivery?: { uid: string; name: string; status: "pending" | "confirmed" } | null;
+  assignedWorkers?: { uid: string; name: string; status: string }[];
+  harvestLocation?: { address: string; latitude: number; longitude: number } | null;
+  deliveryLocation?: { latitude: number; longitude: number; heading?: number } | null;
 }
 
 export default function DeliveryDashboard() {
+  const router = useRouter();
   const { showToast } = useToast();
   const [currentUid, setCurrentUid] = useState<string | null>(null);
   const [userName, setUserName] = useState("Delivery");
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmingJobId, setConfirmingJobId] = useState<string | null>(null);
+  const [activeJobWorkers, setActiveJobWorkers] = useState<WorkerLocation[]>([]);
 
-  // Get current user
+  // Find active job that delivery boy is currently picking up or transporting
+  const activeJob = myJobs.find((job) => job.status === "PICKUP_STARTED" || job.status === "ACTIVE");
+
+  // Run the location tracker hook
+  useLocationTracker({
+    uid: currentUid,
+    role: "delivery",
+    activeJobId: activeJob?.id || null,
+  });
+
+  // Fetch stay locations of workers assigned to the active job
+  useEffect(() => {
+    if (!activeJob) {
+      setActiveJobWorkers([]);
+      return;
+    }
+
+    const fetchWorkerStays = async () => {
+      const acceptedWorkers = activeJob.assignedWorkers?.filter((w) => w.status === "accepted") || [];
+      const workerStays: WorkerLocation[] = [];
+
+      for (let worker of acceptedWorkers) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", worker.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.stayLocation) {
+              workerStays.push({
+                uid: worker.uid,
+                name: userData.name || worker.name,
+                latitude: userData.stayLocation.latitude,
+                longitude: userData.stayLocation.longitude,
+                address: userData.stayLocation.address,
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching worker stay location:", err);
+        }
+      }
+
+      setActiveJobWorkers(workerStays);
+    };
+
+    fetchWorkerStays();
+  }, [activeJob?.id, activeJob?.assignedWorkers]);
+
+
+  // Get current user and redirect if not delivery
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUid(user.uid);
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
-          setUserName(userDoc.data().name || "Delivery");
+          const data = userDoc.data();
+          const role = data.role || "delivery";
+          setUserName(data.name || "Delivery");
+          
+          // Sync localStorage!
+          localStorage.setItem("user_logged_in", "true");
+          localStorage.setItem("user_role", role);
+
+          // Redirect non-deliveries to their correct dashboard
+          if (role !== "delivery") {
+            router.replace(`/dashboard/${role}`);
+          }
         }
+      } else {
+        localStorage.removeItem("user_logged_in");
+        localStorage.removeItem("user_role");
+        router.replace("/login");
       }
     });
     return () => unsub();
-  }, []);
+  }, [router]);
 
   // Real-time listener for jobs assigned to me
   useEffect(() => {
@@ -336,20 +415,36 @@ export default function DeliveryDashboard() {
                     )}
 
                     {isConfirmed && job.status === "PICKUP_STARTED" && (
-                      <button
-                        onClick={() => handleArrive(job.id)}
-                        style={{
-                          width: "100%", padding: "0.875rem",
-                          background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                          color: "white", border: "none", borderRadius: "12px",
-                          fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                          transition: "opacity 0.2s",
-                        }}
-                      >
-                        <MapPin size={18} />
-                        Arrived at Destination
-                      </button>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                        <DeliveryTrackingMap
+                          deliveryLocation={
+                            job.deliveryLocation
+                              ? {
+                                  latitude: job.deliveryLocation.latitude,
+                                  longitude: job.deliveryLocation.longitude,
+                                  heading: job.deliveryLocation.heading,
+                                }
+                              : null
+                          }
+                          workerStayLocations={activeJobWorkers}
+                          harvestLocation={job.harvestLocation}
+                          height="280px"
+                        />
+                        <button
+                          onClick={() => handleArrive(job.id)}
+                          style={{
+                            width: "100%", padding: "0.875rem",
+                            background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                            color: "white", border: "none", borderRadius: "12px",
+                            fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                            transition: "opacity 0.2s",
+                          }}
+                        >
+                          <MapPin size={18} />
+                          Arrived at Destination
+                        </button>
+                      </div>
                     )}
                   </div>
                 );
