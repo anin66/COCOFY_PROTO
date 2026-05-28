@@ -115,6 +115,8 @@ export default function DeliveryTrackingMap({
     const map = mapRef.current;
     if (!map) return;
 
+    let active = true;
+
     // Clear previous worker markers
     workerMarkersRef.current.forEach((m) => m.remove());
     workerMarkersRef.current = [];
@@ -245,6 +247,7 @@ export default function DeliveryTrackingMap({
         return;
       }
 
+      if (!active) return;
       setRouteLoading(true);
 
       const coordsStr = waypoints.map((pt) => `${pt[0]},${pt[1]}`).join(";");
@@ -253,6 +256,8 @@ export default function DeliveryTrackingMap({
       try {
         const res = await fetch(url);
         const data = await res.json();
+        
+        if (!active) return;
 
         if (data.routes && data.routes.length > 0) {
           const routeGeoJSON = data.routes[0].geometry;
@@ -310,7 +315,15 @@ export default function DeliveryTrackingMap({
       } catch (err) {
         console.error("Error fetching routing details:", err);
       } finally {
-        setRouteLoading(false);
+        if (active) {
+          setRouteLoading(false);
+        }
+      }
+    };
+
+    const handleStyleLoad = () => {
+      if (active) {
+        fetchRoute();
       }
     };
 
@@ -318,8 +331,13 @@ export default function DeliveryTrackingMap({
     if (map.isStyleLoaded()) {
       fetchRoute();
     } else {
-      map.once("style.load", fetchRoute);
+      map.once("style.load", handleStyleLoad);
     }
+
+    return () => {
+      active = false;
+      map.off("style.load", handleStyleLoad);
+    };
   }, [deliveryLocation, workerStayLocations, harvestLocation]);
 
   return (
