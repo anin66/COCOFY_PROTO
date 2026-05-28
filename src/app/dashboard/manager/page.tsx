@@ -444,6 +444,26 @@ export default function ManagerDashboard() {
       const jobRef = doc(db, "jobs", confirmingJob.id);
       await updateDoc(jobRef, updateData);
       showToast("Job confirmed successfully.", "success");
+
+      // Send automated WhatsApp confirmation in background
+      fetch("/api/send-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId: confirmingJob.id })
+      }).then(async (res) => {
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.mock) {
+            console.log("Mock WhatsApp message sent:", resData.url);
+          } else {
+            showToast("Automated WhatsApp notification sent to customer.", "success");
+          }
+        } else {
+          console.error("Failed to send WhatsApp notification");
+        }
+      }).catch(err => {
+        console.error("Error sending WhatsApp notification:", err);
+      });
     } catch (error) {
       console.error("Error confirming job:", error);
       showToast("Failed to confirm job.", "error");
