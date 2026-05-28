@@ -63,13 +63,47 @@ export default function WorkersDirectory() {
       return;
     }
 
-    const parsed = parseCoordinates(stayCoordsInput);
+    let parsed = parseCoordinates(stayCoordsInput);
+
+    setSavingStay(true);
+
     if (!parsed) {
-      showToast("Could not parse coordinates. Format: lat,lng.", "error");
+      if (stayCoordsInput.trim().startsWith("http")) {
+        try {
+          const res = await fetch("/api/resolve-coordinates", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: stayCoordsInput.trim() }),
+          });
+          if (res.ok) {
+            parsed = await res.json();
+          } else {
+            const errData = await res.json();
+            showToast(errData.error || "Failed to resolve Maps URL.", "error");
+            setSavingStay(false);
+            return;
+          }
+        } catch (err) {
+          console.error("Error resolving Maps link:", err);
+          showToast("Network error trying to resolve Maps link.", "error");
+          setSavingStay(false);
+          return;
+        }
+      } else {
+        showToast("Could not parse coordinates. Format: lat,lng or Google Maps link.", "error");
+        setSavingStay(false);
+        return;
+      }
+    }
+
+    if (!parsed) {
+      showToast("Could not parse coordinates. Format: lat,lng or Google Maps link.", "error");
+      setSavingStay(false);
       return;
     }
 
-    setSavingStay(true);
     try {
       const userRef = doc(db, "users", editingWorker.uid);
       const stayLocation = {
