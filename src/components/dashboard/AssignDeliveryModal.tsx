@@ -76,13 +76,48 @@ export default function AssignDeliveryModal({
       return;
     }
 
-    const parsedCoords = parseCoordinates(harvestCoordsInput);
+    let parsedCoords = parseCoordinates(harvestCoordsInput);
+
+    setSubmitting(true);
+
+    // If local parsing fails, check if input is a URL and resolve it on the server
+    if (!parsedCoords) {
+      if (harvestCoordsInput.trim().startsWith("http")) {
+        try {
+          const res = await fetch("/api/resolve-coordinates", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: harvestCoordsInput.trim() }),
+          });
+          if (res.ok) {
+            parsedCoords = await res.json();
+          } else {
+            const errData = await res.json();
+            showToast(errData.error || "Failed to resolve Maps URL.", "error");
+            setSubmitting(false);
+            return;
+          }
+        } catch (err) {
+          console.error("Error resolving Maps link:", err);
+          showToast("Network error trying to resolve Maps link.", "error");
+          setSubmitting(false);
+          return;
+        }
+      } else {
+        showToast("Could not parse coordinates. Format should be: lat,lng or a Google Maps link.", "error");
+        setSubmitting(false);
+        return;
+      }
+    }
+
     if (!parsedCoords) {
       showToast("Could not parse coordinates. Format should be: lat,lng or a Google Maps link.", "error");
+      setSubmitting(false);
       return;
     }
 
-    setSubmitting(true);
     try {
       const chosen = deliveryBoys.find((d) => d.uid === selectedUid)!;
       const jobRef = doc(db, "jobs", jobId);
