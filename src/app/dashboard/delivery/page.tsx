@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { useToast } from "@/context/ToastContext";
-import { Search, Briefcase, Phone, MapPin, Calendar, TreePine, Users, Clock, CheckCircle, Truck } from "lucide-react";
+import { Search, Briefcase, Phone, MapPin, Calendar, TreePine, Users, Clock, CheckCircle, Truck, Navigation, ExternalLink } from "lucide-react";
 import { db, auth } from "@/lib/firebase";
 import { collection, onSnapshot, doc, updateDoc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { triggerPushNotification } from "@/lib/notifications";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
-import DeliveryTrackingMap from "@/components/dashboard/DeliveryTrackingMap";
+import { groupWorkerLocations } from "@/lib/locationUtils";
 
 interface WorkerLocation {
   uid: string;
@@ -422,20 +422,156 @@ export default function DeliveryDashboard() {
 
                     {isConfirmed && job.status === "PICKUP_STARTED" && (
                       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                        <DeliveryTrackingMap
-                          deliveryLocation={
-                            job.deliveryLocation
-                              ? {
-                                  latitude: job.deliveryLocation.latitude,
-                                  longitude: job.deliveryLocation.longitude,
-                                  heading: job.deliveryLocation.heading,
-                                }
-                              : null
+                        {(() => {
+                          const groupedStops = groupWorkerLocations(activeJobWorkers);
+                          
+                          // Unified Google Maps Route Link
+                          let gmapsRouteUrl = "https://www.google.com/maps/dir/?api=1";
+                          if (job.harvestLocation) {
+                            gmapsRouteUrl += `&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`;
                           }
-                          workerStayLocations={activeJobWorkers}
-                          harvestLocation={job.harvestLocation}
-                          height="280px"
-                        />
+                          if (groupedStops.length > 0) {
+                            const waypointsStr = groupedStops
+                              .map((stop) => `${stop.latitude},${stop.longitude}`)
+                              .join("|");
+                            gmapsRouteUrl += `&waypoints=${encodeURIComponent(waypointsStr)}`;
+                          }
+
+                          return (
+                            <div style={{
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid var(--surface-border)",
+                              borderRadius: "16px",
+                              padding: "1.25rem",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "1rem"
+                            }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "0.75rem" }}>
+                                <Navigation size={18} color="var(--accent)" />
+                                <h4 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 600, color: "var(--foreground)" }}>Navigation & Stops</h4>
+                              </div>
+
+                              <a
+                                href={gmapsRouteUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: "0.5rem",
+                                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                  color: "white",
+                                  textDecoration: "none",
+                                  padding: "0.85rem",
+                                  borderRadius: "10px",
+                                  fontWeight: 600,
+                                  fontSize: "0.92rem",
+                                  textAlign: "center",
+                                  boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
+                                  transition: "transform 0.2s, opacity 0.2s"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                              >
+                                <ExternalLink size={16} />
+                                Start Google Maps Route
+                              </a>
+
+                              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.25rem" }}>
+                                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Individual Stops</span>
+                                
+                                {/* Worker Stops */}
+                                {groupedStops.map((stop, idx) => {
+                                  const stopUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}`;
+                                  return (
+                                    <div key={idx} style={{ 
+                                      display: "flex", 
+                                      justifyContent: "space-between", 
+                                      alignItems: "center",
+                                      background: "rgba(255,255,255,0.02)",
+                                      padding: "0.6rem 0.8rem",
+                                      borderRadius: "8px",
+                                      border: "1px solid rgba(255,255,255,0.05)"
+                                    }}>
+                                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxWidth: "70%" }}>
+                                        <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-light)" }}>
+                                          Pickup Stop {groupedStops.length > 1 ? `#${idx + 1}` : ""}
+                                        </span>
+                                        <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={stop.address || "Worker Stay Location"}>
+                                          {stop.address || "Worker Stay Location"} ({stop.names.join(", ")})
+                                        </span>
+                                      </div>
+                                      <a
+                                        href={stopUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                          background: "rgba(255, 153, 0, 0.1)",
+                                          color: "var(--accent)",
+                                          border: "1px solid rgba(255, 153, 0, 0.2)",
+                                          padding: "4px 10px",
+                                          borderRadius: "6px",
+                                          fontSize: "0.75rem",
+                                          fontWeight: 600,
+                                          textDecoration: "none",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "4px"
+                                        }}
+                                      >
+                                        Navigate <ExternalLink size={12} />
+                                      </a>
+                                    </div>
+                                  );
+                                })}
+
+                                {/* Harvest Destination Stop */}
+                                {job.harvestLocation && (
+                                  <div style={{ 
+                                    display: "flex", 
+                                    justifyContent: "space-between", 
+                                    alignItems: "center",
+                                    background: "rgba(255,255,255,0.02)",
+                                    padding: "0.6rem 0.8rem",
+                                    borderRadius: "8px",
+                                    border: "1px solid rgba(255,255,255,0.05)"
+                                  }}>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxWidth: "70%" }}>
+                                      <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-light)" }}>
+                                        Harvest Destination
+                                      </span>
+                                      <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={job.harvestLocation.address || "Harvest Location"}>
+                                        {job.harvestLocation.address || "Harvest Location"}
+                                      </span>
+                                    </div>
+                                    <a
+                                      href={`https://www.google.com/maps/dir/?api=1&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{
+                                        background: "rgba(16, 185, 129, 0.1)",
+                                        color: "#34d399",
+                                        border: "1px solid rgba(16, 185, 129, 0.2)",
+                                        padding: "4px 10px",
+                                        borderRadius: "6px",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 600,
+                                        textDecoration: "none",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "4px"
+                                      }}
+                                    >
+                                      Navigate <ExternalLink size={12} />
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
                         <button
                           onClick={() => handleArrive(job.id)}
                           style={{
