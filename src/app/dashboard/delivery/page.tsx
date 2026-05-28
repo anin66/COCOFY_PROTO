@@ -59,7 +59,7 @@ export default function DeliveryDashboard() {
     activeJobId: activeJob?.id || null,
   });
 
-  // Fetch stay locations of workers assigned to the active job
+  // Fetch stay or live locations of workers assigned to the active job
   useEffect(() => {
     if (!activeJob) {
       setActiveJobWorkers([]);
@@ -67,26 +67,32 @@ export default function DeliveryDashboard() {
     }
 
     const fetchWorkerStays = async () => {
-      const acceptedWorkers = activeJob.assignedWorkers?.filter((w) => w.status === "accepted") || [];
+      // Get all assigned workers (including pending responses)
+      const assignedWorkers = activeJob.assignedWorkers || [];
       const workerStays: WorkerLocation[] = [];
 
-      for (let worker of acceptedWorkers) {
+      for (let worker of assignedWorkers) {
         try {
           const userDoc = await getDoc(doc(db, "users", worker.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            if (userData.stayLocation) {
+            // Use allocated stayLocation, fall back to auto-fetched lastLocation
+            const lat = userData.stayLocation?.latitude || userData.lastLocation?.latitude;
+            const lng = userData.stayLocation?.longitude || userData.lastLocation?.longitude;
+            const address = userData.stayLocation?.address || "Worker (Live Location)";
+
+            if (lat && lng) {
               workerStays.push({
                 uid: worker.uid,
                 name: userData.name || worker.name,
-                latitude: userData.stayLocation.latitude,
-                longitude: userData.stayLocation.longitude,
-                address: userData.stayLocation.address,
+                latitude: lat,
+                longitude: lng,
+                address: address,
               });
             }
           }
         } catch (err) {
-          console.error("Error fetching worker stay location:", err);
+          console.error("Error fetching worker stay/live location:", err);
         }
       }
 

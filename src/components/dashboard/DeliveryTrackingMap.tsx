@@ -4,8 +4,8 @@ import { groupWorkerLocations } from "@/lib/locationUtils";
 import { Truck, Users, TreePine, MapPin } from "lucide-react";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-// Set Mapbox token
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+const rawToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+mapboxgl.accessToken = rawToken.replace(/^["']|["']$/g, "");
 
 interface Location {
   latitude: number;
@@ -95,7 +95,7 @@ export default function DeliveryTrackingMap({
     // Use Mapbox Dark Navigation style to match premium COCOFY aesthetics
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/navigation-dark-v1",
+      style: "mapbox://styles/mapbox/dark-v11",
       center: [76.2673, 9.9312], // Default Cochin
       zoom: 12,
       attributionControl: false,
