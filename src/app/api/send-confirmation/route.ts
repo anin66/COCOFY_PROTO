@@ -124,22 +124,16 @@ export async function POST(request: Request) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromPhone = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886";
-    const contentSid = process.env.TWILIO_WHATSAPP_CONTENT_SID || "HX5b62575e6e4ff6129ad7c8efe1f983e";
 
-    // Setup template variables:
-    // {{1}} = Date (e.g. 12/1)
-    // {{2}} = Time + Link (e.g. 3 PM. Choose location: https://...)
+    // Construct the exact matching sandbox template text:
+    // "Your appointment is coming up on {{1}} at {{2}}. If you need to change it, please reply back and let us know."
     const dateParam = harvestDate;
     const timeAndLinkParam = `${harvestTime}. Choose location: ${secureUrl}`;
-    
-    const contentVariables = JSON.stringify({
-      "1": dateParam,
-      "2": timeAndLinkParam
-    });
+    const bodyText = `Your appointment is coming up on ${dateParam} at ${timeAndLinkParam}. If you need to change it, please reply back and let us know.`;
 
     // 3. Send message via Twilio
     if (!accountSid || !authToken) {
-      console.log(`[MOCK WHATSAPP] To: ${toPhone}, From: ${fromPhone}, ContentSid: ${contentSid}, Variables: ${contentVariables}`);
+      console.log(`[MOCK WHATSAPP] To: ${toPhone}, From: ${fromPhone}, Body: ${bodyText}`);
       return NextResponse.json({
         success: true,
         mock: true,
@@ -152,8 +146,7 @@ export async function POST(request: Request) {
     const params = new URLSearchParams();
     params.append("To", toPhone);
     params.append("From", fromPhone);
-    params.append("ContentSid", contentSid);
-    params.append("ContentVariables", contentVariables);
+    params.append("Body", bodyText);
 
     const authHeader = "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 
