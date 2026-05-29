@@ -125,11 +125,12 @@ export async function POST(request: Request) {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromPhone = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886";
 
-    // Construct the exact matching sandbox template text:
-    // "Your appointment is coming up on {{1}} at {{2}}. If you need to change it, please reply back and let us know."
-    const dateParam = harvestDate;
-    const timeAndLinkParam = `${harvestTime}. Choose location: ${secureUrl}`;
-    const bodyText = `Your appointment is coming up on ${dateParam} at ${timeAndLinkParam}. If you need to change it, please reply back and let us know.`;
+    const bodyText = `Your appointment is coming up on ${dateParam} at ${harvestTime}.
+
+Please choose your precise location by clicking the link below:
+${secureUrl}
+
+If you need to change it, please reply back and let us know.`;
 
     // 3. Send message via Twilio
     if (!accountSid || !authToken) {
