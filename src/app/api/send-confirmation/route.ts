@@ -163,7 +163,7 @@ If you need to change it, please reply back and let us know.`;
 
     const authHeader = "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 
-    const twilioRes = await fetch(
+    let twilioRes = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
       {
         method: "POST",
@@ -175,7 +175,36 @@ If you need to change it, please reply back and let us know.`;
       }
     );
 
-    const twilioData = await twilioRes.json();
+    let twilioData = await twilioRes.json();
+
+    // If template send failed (e.g. template not approved yet) and ContentSid was used, 
+    // fall back to sending a freeform message so it still delivers during open conversational windows
+    if (!twilioRes.ok && contentSid) {
+      console.warn("Template delivery failed. Retrying with freeform message fallback:", twilioData);
+      
+      const fallbackParams = new URLSearchParams();
+      fallbackParams.append("To", toPhone);
+      fallbackParams.append("From", fromPhone);
+      fallbackParams.append("Body", bodyText);
+
+      const fallbackRes = await fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": authHeader,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: fallbackParams.toString(),
+        }
+      );
+      
+      const fallbackData = await fallbackRes.json();
+      if (fallbackRes.ok) {
+        twilioRes = fallbackRes;
+        twilioData = fallbackData;
+      }
+    }
 
     if (!twilioRes.ok) {
       console.error("Twilio API Error response:", twilioData);
