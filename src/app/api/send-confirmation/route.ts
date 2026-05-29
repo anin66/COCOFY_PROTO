@@ -144,10 +144,22 @@ If you need to change it, please reply back and let us know.`;
       });
     }
 
+    const contentSid = process.env.TWILIO_WHATSAPP_CONTENT_SID;
+
     const params = new URLSearchParams();
     params.append("To", toPhone);
     params.append("From", fromPhone);
-    params.append("Body", bodyText);
+    
+    if (contentSid) {
+      params.append("ContentSid", contentSid);
+      params.append("ContentVariables", JSON.stringify({
+        "1": harvestDate,
+        "2": harvestTime,
+        "3": secureUrl
+      }));
+    } else {
+      params.append("Body", bodyText);
+    }
 
     const authHeader = "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 
