@@ -46,9 +46,6 @@ export default function Home() {
         } catch (err) {
           console.error("Error auto-login redirecting:", err);
         }
-      } else {
-        localStorage.removeItem("user_logged_in");
-        localStorage.removeItem("user_role");
       }
     });
     return () => unsub();

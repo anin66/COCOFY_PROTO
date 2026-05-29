@@ -35,6 +35,8 @@ export default function LoginPage() {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            localStorage.setItem("user_logged_in", "true");
+            localStorage.setItem("user_role", userData.role);
             router.push(`/dashboard/${userData.role}`);
           }
         } catch (err) {
@@ -42,6 +44,9 @@ export default function LoginPage() {
         } finally {
           setLoading(false);
         }
+      } else {
+        localStorage.removeItem("user_logged_in");
+        localStorage.removeItem("user_role");
       }
     });
     return () => unsub();

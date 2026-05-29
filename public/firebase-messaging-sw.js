@@ -13,67 +13,63 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('push', (event) => {
   console.log('[Service Worker] Native Push Event Received:', event);
 
-  let payload = {};
-  if (event.data) {
-    try {
-      payload = event.data.json();
-    } catch (e) {
-      console.warn('[Service Worker] Push data is not JSON, parsing as text:', e);
+  event.waitUntil((async () => {
+    let payload = {};
+    if (event.data) {
       try {
-        payload = { notification: { title: 'Cocofy Update', body: event.data.text() } };
-      } catch (err) {
-        payload = {};
+        payload = event.data.json();
+      } catch (e) {
+        console.warn('[Service Worker] Push data is not JSON, parsing as text:', e);
+        try {
+          payload = { notification: { title: 'Cocofy Update', body: event.data.text() } };
+        } catch (err) {
+          payload = {};
+        }
       }
     }
-  }
 
-  console.log('[Service Worker] Parsed payload:', payload);
+    console.log('[Service Worker] Parsed payload:', payload);
 
-  // Extract title and body from various possible locations in the JSON payload
-  const title = payload.notification?.title || 
-                payload.data?.title || 
-                payload.data?.['gcm.notification.title'] || 
-                payload.title || 
-                'Cocofy Notification';
+    // Extract title and body from various possible locations in the JSON payload
+    const title = payload.notification?.title || 
+                  payload.data?.title || 
+                  payload.data?.['gcm.notification.title'] || 
+                  payload.title || 
+                  'Cocofy Notification';
 
-  const body = payload.notification?.body || 
-               payload.data?.body || 
-               payload.data?.['gcm.notification.body'] || 
-               payload.body || 
-               'You have a new update.';
+    const body = payload.notification?.body || 
+                 payload.data?.body || 
+                 payload.data?.['gcm.notification.body'] || 
+                 payload.body || 
+                 'You have a new update.';
 
-  const icon = payload.notification?.icon || payload.data?.icon || '/favicon.ico';
-  const badge = payload.notification?.badge || payload.data?.badge || '/favicon.ico';
-  const vibrate = payload.notification?.vibrate || [200, 100, 200];
-  
-  // Extract custom click-action link or fallback to dashboard
-  const link = payload.fcmOptions?.link || 
-               payload.notification?.click_action || 
-               payload.data?.link || 
-               payload.data?.click_action || 
-               '/dashboard';
+    const icon = payload.notification?.icon || payload.data?.icon || '/favicon.ico';
+    const badge = payload.notification?.badge || payload.data?.badge || '/favicon.ico';
+    const vibrate = payload.notification?.vibrate || [200, 100, 200];
+    
+    // Extract custom click-action link or fallback to dashboard
+    const link = payload.fcmOptions?.link || 
+                 payload.notification?.click_action || 
+                 payload.data?.link || 
+                 payload.data?.click_action || 
+                 '/dashboard';
 
-  const options = {
-    body: body,
-    icon: icon,
-    badge: badge,
-    vibrate: vibrate,
-    data: {
-      link: link,
-      ...(payload.data || {})
-    },
-    tag: payload.data?.tag || 'cocofy-notification-tag',
-    renotify: true,
-    requireInteraction: false
-  };
+    const options = {
+      body: body,
+      icon: icon,
+      badge: badge,
+      vibrate: vibrate,
+      data: {
+        link: link,
+        ...(payload.data || {})
+      },
+      tag: payload.data?.tag || 'cocofy-notification-tag',
+      renotify: true,
+      requireInteraction: false
+    };
 
-  // We are handling the notification natively. Stop propagation so Firebase doesn't trigger
-  // a duplicate or raise an error inside the background message handler.
-  event.stopImmediatePropagation();
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+    await self.registration.showNotification(title, options);
+  })());
 });
 
 // Native notification click handler

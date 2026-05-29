@@ -60,12 +60,17 @@ export default function FinanceOverview() {
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        localStorage.removeItem("user_logged_in");
+        localStorage.removeItem("user_role");
         router.replace("/login");
         return;
       }
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
-        const role = userDoc.data().role || "";
+        const role = userDoc.data().role || "finance";
+        // Sync localStorage!
+        localStorage.setItem("user_logged_in", "true");
+        localStorage.setItem("user_role", role);
         if (!role.toUpperCase().includes("FINANCE")) {
           router.replace(`/dashboard/${role.toLowerCase()}`);
         } else {
