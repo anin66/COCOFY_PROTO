@@ -144,164 +144,165 @@ export default function FinanceHistory() {
                 return (
                   <div key={payment.id} 
                     className="job-card"
-                  >
-                    <div className="job-card-inner">
-                      {/* Front Side */}
-                      <div className="job-card-front" style={{ padding: "1.5rem" }}>
-                        {/* Header Row */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                            <div style={{
-                              display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                              background: "rgba(16, 185, 129, 0.15)", 
-                              padding: "0.3rem 0.6rem", width: "max-content",
-                              borderRadius: "100px", border: "1px solid #10b981",
-                              fontSize: "0.7rem", fontWeight: 700,
-                              letterSpacing: "0.05em", color: "#10b981",
-                            }}>
-                              <CheckCircle size={12} />
-                              FULLY PAID
-                            </div>
-                            <h4 style={{ fontSize: "1.5rem", margin: 0, fontWeight: 700 }}>{job.customerName}</h4>
-                          </div>
+                    style={{
+                    padding: "1.5rem",
+                    borderRadius: "16px",
+                    display: "flex",
+                    flexDirection: "column"
+                  }}>
+                    {/* Header Row */}
+                    <div className="flex-stack-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                        <div style={{
+                          display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                          background: "rgba(16, 185, 129, 0.15)", 
+                          padding: "0.3rem 0.6rem", width: "max-content",
+                          borderRadius: "100px", border: "1px solid #10b981",
+                          fontSize: "0.7rem", fontWeight: 700,
+                          letterSpacing: "0.05em", color: "#10b981",
+                        }}>
+                          <CheckCircle size={12} />
+                          FULLY PAID
                         </div>
-
-                        <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginBottom: "1.5rem", fontSize: "0.85rem", color: "rgba(255,255,255,0.8)" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <Phone size={16} color="var(--accent)" className="icon-hover-effect" /> {job.phone}
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <MapPin size={16} color="var(--accent)" className="icon-hover-effect" /> {job.location}
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <Calendar size={16} color="var(--accent)" className="icon-hover-effect" /> {job.date}
-                          </div>
-                        </div>
-
-                        <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
-                          {/* Left Col: Work Details */}
-                          <div>
-                            <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <TreePine size={16} /> Work Summary
-                            </div>
-                            <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "10px", padding: "1rem", border: "1px solid rgba(255,255,255,0.05)" }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.85rem" }}>
-                                <span style={{ color: "rgba(255,255,255,0.5)" }}>Trees Requested:</span>
-                                <span style={{ fontWeight: 500 }}>{job.trees}</span>
-                              </div>
-                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.85rem" }}>
-                                <span style={{ color: "rgba(255,255,255,0.5)" }}>Price Per Tree:</span>
-                                <span style={{ fontWeight: 500 }}>{job.pricePerTree}</span>
-                              </div>
-                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.85rem" }}>
-                                <span style={{ color: "rgba(255,255,255,0.5)" }}>Harvested Trees:</span>
-                                <span style={{ color: "#10b981", fontWeight: 600 }}>{payment.totalAmount / parseInt(job.pricePerTree.replace(/[^0-9]/g, ""))}</span>
-                              </div>
-                              <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed rgba(255,255,255,0.1)", paddingTop: "0.5rem", marginTop: "0.25rem", fontSize: "1rem" }}>
-                                <span style={{ color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>Total Paid:</span>
-                                <span style={{ color: "#10b981", fontWeight: 700 }}>₹{payment.totalAmount.toLocaleString()}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Team */}
-                          <div>
-                            <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <Users size={16} /> Team
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                              {job.assignedWorkers?.filter((w: any) => w.status === "accepted").map((w: any, idx: number) => (
-                                <div key={idx} style={{
-                                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                                  padding: "0.5rem 0.75rem", borderRadius: "8px",
-                                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)"
-                                }}>
-                                  <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.82rem", fontWeight: 500 }}>{w.name}</span>
-                                  <span style={{ color: "#10b981", fontSize: "0.8rem", fontWeight: 600 }}>{w.harvestedTrees} trees</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
+                        <h4 style={{ fontSize: "1.5rem", margin: 0, fontWeight: 700 }}>{job.customerName}</h4>
                       </div>
+                      
+                      <button 
+                        onClick={() => handleDownloadReceipt(payment.id, job.customerName)}
+                        disabled={generatingPdf === payment.id}
+                        style={{
+                          padding: "0.6rem 1.2rem",
+                          background: generatingPdf === payment.id ? "var(--surface-border)" : "var(--surface-2)",
+                          color: "white", border: "1px solid var(--primary)", borderRadius: "8px",
+                          fontWeight: 600, cursor: generatingPdf === payment.id ? "not-allowed" : "pointer",
+                          transition: "all 0.2s ease",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                          fontSize: "0.85rem",
+                          width: "auto"
+                        }}
+                        onMouseEnter={(e) => {
+                          if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--primary-glow)";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--surface-2)";
+                        }}
+                      >
+                        {generatingPdf === payment.id ? (
+                          <>
+                            <div className="spinner" style={{ width: "14px", height: "14px", borderWidth: "2px" }} />
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <>
+                            <Download size={16} />
+                            Download Receipt
+                          </>
+                        )}
+                      </button>
+                    </div>
 
-                      {/* Back Side */}
-                      <div className="job-card-back" style={{ padding: "1.5rem", justifyContent: "space-between" }}>
-                        {/* Transactions */}
-                        <div>
-                          <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <HistoryIcon size={16} /> Transaction Breakdown
-                          </div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                            {payment.transactions?.map((tx: any, idx: number) => (
-                              <div key={idx} style={{ 
-                                background: "rgba(0,0,0,0.2)", borderRadius: "10px", padding: "1rem", 
-                                border: "1px solid rgba(255,255,255,0.05)" 
-                              }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                    <span style={{ 
-                                      background: tx.method === "GPAY" ? "rgba(59, 130, 246, 0.15)" : "rgba(16, 185, 129, 0.15)",
-                                      color: tx.method === "GPAY" ? "#3b82f6" : "#10b981",
-                                      padding: "0.15rem 0.5rem", borderRadius: "4px", fontSize: "0.7rem", fontWeight: 700, border: `1px solid ${tx.method === "GPAY" ? "#3b82f6" : "#10b981"}`
-                                    }}>
-                                      {tx.method}
-                                    </span>
-                                    <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.5)" }}>
-                                      {tx.date ? new Date(tx.date).toLocaleDateString() : ""}
-                                    </span>
-                                  </div>
-                                  <span style={{ fontWeight: 700, color: "white" }}>₹{tx.amount.toLocaleString()}</span>
-                                </div>
-                                
-                                {tx.method === "CASH" && tx.receiverName && (
-                                  <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)", marginBottom: tx.fileUrl ? "0.5rem" : 0 }}>
-                                    Received by: <span style={{ fontWeight: 600, color: "white" }}>{tx.receiverName}</span>
-                                  </div>
-                                )}
-                                
-                                {tx.fileUrl && (
-                                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8rem", color: "var(--accent)" }}>
-                                    <ImageIcon size={14} />
-                                    <a href={tx.fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>
-                                      View {tx.method === "GPAY" ? "Screenshot" : "Photo"}
-                                    </a>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <button 
-                          onClick={() => handleDownloadReceipt(payment.id, job.customerName)}
-                          disabled={generatingPdf === payment.id}
-                          style={{
-                            width: "100%", padding: "0.875rem",
-                            background: generatingPdf === payment.id ? "var(--surface-border)" : "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-                            color: "white", border: "none", borderRadius: "12px",
-                            fontWeight: 600, cursor: generatingPdf === payment.id ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                          }}
-                        >
-                          {generatingPdf === payment.id ? (
-                            <>
-                              <div className="spinner" style={{ width: "14px", height: "14px", borderWidth: "2px" }} />
-                              Generating PDF...
-                            </>
-                          ) : (
-                            <>
-                              <Download size={18} />
-                              Download Receipt
-                            </>
-                          )}
-                        </button>
+                    <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginBottom: "1.5rem", fontSize: "0.85rem", color: "rgba(255,255,255,0.8)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <Phone size={16} color="var(--accent)" className="icon-hover-effect" /> {job.phone}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <MapPin size={16} color="var(--accent)" className="icon-hover-effect" /> {job.location}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <Calendar size={16} color="var(--accent)" className="icon-hover-effect" /> {job.date}
                       </div>
                     </div>
 
-                    {/* Hidden Receipt Element for PDF Generation (outside job-card-inner to prevent transformations during render) */}
+                    <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "2rem" }}>
+                      {/* Left Col: Work Details */}
+                      <div>
+                        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <TreePine size={16} /> Work Summary
+                        </div>
+                        <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "10px", padding: "1rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.85rem" }}>
+                            <span style={{ color: "rgba(255,255,255,0.5)" }}>Trees Requested:</span>
+                            <span style={{ fontWeight: 500 }}>{job.trees}</span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.85rem" }}>
+                            <span style={{ color: "rgba(255,255,255,0.5)" }}>Price Per Tree:</span>
+                            <span style={{ fontWeight: 500 }}>{job.pricePerTree}</span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.85rem" }}>
+                            <span style={{ color: "rgba(255,255,255,0.5)" }}>Harvested Trees:</span>
+                            <span style={{ color: "#10b981", fontWeight: 600 }}>{payment.totalAmount / parseInt(job.pricePerTree.replace(/[^0-9]/g, ""))}</span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed rgba(255,255,255,0.1)", paddingTop: "0.5rem", marginTop: "0.25rem", fontSize: "1rem" }}>
+                            <span style={{ color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>Total Paid:</span>
+                            <span style={{ color: "#10b981", fontWeight: 700 }}>₹{payment.totalAmount.toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", marginTop: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <Users size={16} /> Team
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                          {job.assignedWorkers?.filter((w: any) => w.status === "accepted").map((w: any, idx: number) => (
+                            <div key={idx} style={{
+                              display: "flex", alignItems: "center", justifyContent: "space-between",
+                              padding: "0.5rem 0.75rem", borderRadius: "8px",
+                              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)"
+                            }}>
+                              <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.82rem", fontWeight: 500 }}>{w.name}</span>
+                              <span style={{ color: "#10b981", fontSize: "0.8rem", fontWeight: 600 }}>{w.harvestedTrees} trees</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Right Col: Transactions */}
+                      <div>
+                        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <HistoryIcon size={16} /> Transaction Breakdown
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                          {payment.transactions?.map((tx: any, idx: number) => (
+                            <div key={idx} style={{ 
+                              background: "rgba(0,0,0,0.2)", borderRadius: "10px", padding: "1rem", 
+                              border: "1px solid rgba(255,255,255,0.05)" 
+                            }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                  <span style={{ 
+                                    background: tx.method === "GPAY" ? "rgba(59, 130, 246, 0.15)" : "rgba(16, 185, 129, 0.15)",
+                                    color: tx.method === "GPAY" ? "#3b82f6" : "#10b981",
+                                    padding: "0.15rem 0.5rem", borderRadius: "4px", fontSize: "0.7rem", fontWeight: 700, border: `1px solid ${tx.method === "GPAY" ? "#3b82f6" : "#10b981"}`
+                                  }}>
+                                    {tx.method}
+                                  </span>
+                                  <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.5)" }}>
+                                    {new Date(tx.date).toLocaleDateString()} at {new Date(tx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                  </span>
+                                </div>
+                                <span style={{ fontWeight: 700, color: "white" }}>₹{tx.amount.toLocaleString()}</span>
+                              </div>
+                              
+                              {tx.method === "CASH" && tx.receiverName && (
+                                <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)", marginBottom: tx.fileUrl ? "0.5rem" : 0 }}>
+                                  Received by: <span style={{ fontWeight: 600, color: "white" }}>{tx.receiverName}</span>
+                                </div>
+                              )}
+                              
+                              {tx.fileUrl && (
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8rem", color: "var(--accent)" }}>
+                                  <ImageIcon size={14} />
+                                  <a href={tx.fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>
+                                    View {tx.method === "GPAY" ? "Screenshot" : "Photo"}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Hidden Receipt Element for PDF Generation */}
                     <div 
                       ref={el => { receiptRefs.current[payment.id] = el; }} 
                       style={{ 
@@ -374,6 +375,7 @@ export default function FinanceHistory() {
                             {payment.transactions?.filter((tx: any) => tx.fileUrl).map((tx: any, idx: number) => (
                               <div key={idx} style={{ border: "1px solid #ddd", padding: "5px", background: "#f9f9f9" }}>
                                 <p style={{ margin: "0 0 5px 0", fontSize: "12px", color: "#666", textAlign: "center" }}>{tx.method} - {new Date(tx.date).toLocaleDateString()}</p>
+                                {/* crossOrigin="anonymous" is critical for html2canvas to render Firebase Storage URLs without taint errors */}
                                 <img src={tx.fileUrl} alt="Proof" crossOrigin="anonymous" style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "contain" }} />
                               </div>
                             ))}
@@ -386,6 +388,7 @@ export default function FinanceHistory() {
                         <p>This is a computer generated receipt and does not require a physical signature.</p>
                       </div>
                     </div>
+
                   </div>
                 );
               })}
@@ -425,7 +428,55 @@ export default function FinanceHistory() {
         .delete-card-anim { animation: cardDeleteOut 0.25s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; z-index: 10; }
 
         /* Premium Job Card Styling and Hover Micro-Animations */
-        /* Removed local job-card overrides to use global 3D flip styles */
+        .job-card {
+          background: var(--surface-2);
+          border: 1px solid var(--surface-border);
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                      box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                      border-color 0.3s ease, 
+                      background 0.3s ease;
+        }
+        .job-card:hover {
+          transform: translateY(-8px) scale(1.02);
+          border-color: var(--accent);
+          background: rgba(255, 255, 255, 0.03);
+          box-shadow: 0 25px 45px -15px var(--primary-glow-border), 
+                      0 0 30px -5px rgba(255, 0, 127, 0.15);
+        }
+
+        /* Vercel-like sweeps sheen glow on hover */
+        .job-card::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -150%;
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          transform: skewX(-25deg);
+          transition: none;
+          pointer-events: none;
+        }
+        .job-card:hover::after {
+          left: 150%;
+          transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Icons play scale & bounce effect */
+        .icon-hover-effect {
+          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
+        }
+        .job-card:hover .icon-hover-effect {
+          transform: scale(1.22) rotate(6deg);
+          color: #ff007f !important;
+        }
       `}} />
     </div>
   );

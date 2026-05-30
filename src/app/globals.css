@@ -1709,65 +1709,23 @@ footer,
   transform: rotate(30deg) translate(30%, 30%);
 }
 
-/* Premium Job Card 3D Flip style */
+/* Premium Job Card Glassmorphic style */
 .job-card {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  perspective: 1000px;
-  cursor: pointer;
-  padding: 0 !important;
-}
-
-.job-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-style: preserve-3d;
-}
-
-.job-card:hover .job-card-inner,
-.job-card.flipped .job-card-inner {
-  transform: rotateY(180deg);
-}
-
-.job-card-front,
-.job-card-back {
-  width: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.job-card-front {
-  position: relative;
   background: var(--surface-2) !important;
   backdrop-filter: blur(var(--surface-blur)) saturate(180%) !important;
   -webkit-backdrop-filter: blur(var(--surface-blur)) saturate(180%) !important;
   border: 1px solid var(--surface-border) !important;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.15) !important;
-  z-index: 2;
 }
 
-.job-card-back {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--surface-overlay) !important;
-  backdrop-filter: blur(var(--surface-blur)) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(var(--surface-blur)) saturate(180%) !important;
-  border: 1px solid var(--accent-glow-border) !important;
+.job-card:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  border-color: var(--accent-glow-border) !important;
+  background-color: var(--surface-overlay) !important;
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45), 0 0 25px var(--accent-glow), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.25) !important;
-  transform: rotateY(180deg);
-  z-index: 1;
 }
 
-.job-card-front::before,
-.job-card-back::before {
+.job-card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1775,59 +1733,46 @@ footer,
   opacity: 0.015 !important;
   pointer-events: none;
   z-index: 0;
-  border-radius: 16px;
 }
 
-[data-theme="light"] .job-card-front::before,
-[data-theme="light"] .job-card-back::before {
+[data-theme="light"] .job-card::before {
   opacity: 0.008 !important;
 }
 
-.job-card-front > *,
-.job-card-back > * {
+.job-card > * {
   position: relative;
+  z-index: 1;
+}
+
+.job-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: none;
+  pointer-events: none;
   z-index: 2;
 }
 
-/* Background glowing blur outline adapted from Uiverse.io */
-.job-card-front::after,
-.job-card-back::after {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  content: '';
-  width: 105%;
-  height: 105%;
-  position: absolute;
-  z-index: -1;
-  border-radius: 16px;
-  filter: blur(20px);
-  animation: glowPulse 5s linear infinite;
-  pointer-events: none;
-}
-
-.job-card-front::after {
-  background: linear-gradient(43deg, var(--primary) 0%, var(--accent) 100%);
-  opacity: 0.15;
-}
-
-.job-card-back::after {
-  background: linear-gradient(160deg, var(--secondary) 0%, var(--accent) 100%);
-  opacity: 0.25;
-}
-
-@keyframes glowPulse {
-  0% { opacity: 0.12; }
-  50% { opacity: 0.28; }
-  100% { opacity: 0.12; }
+.job-card:hover::after {
+  left: 150%;
+  transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .icon-hover-effect {
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
 }
 
-.job-card:hover .icon-hover-effect,
-.job-card.flipped .icon-hover-effect {
+.job-card:hover .icon-hover-effect {
   transform: scale(1.22) rotate(6deg) !important;
   color: var(--accent) !important;
 }

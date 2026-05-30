@@ -318,262 +318,276 @@ export default function DeliveryDashboard() {
                   <div
                     key={job.id}
                     className="job-card"
+                    style={{ padding: "1.5rem", borderRadius: "16px" }}
                   >
-                    <div className="job-card-inner">
-                      {/* Front Side */}
-                      <div className="job-card-front" style={{ padding: "1.5rem", borderRadius: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
-                        {/* Status Badge */}
-                        <div style={{ marginBottom: "1rem" }}>
-                          <div style={{
-                            display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                            padding: "0.3rem 0.6rem", borderRadius: "100px",
-                            fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
-                            ...(job.status === "PICKUP_STARTED"
-                              ? { background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)", color: "#f59e0b" }
-                              : job.status === "ARRIVED_AT_DESTINATION"
-                              ? { background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.4)", color: "#3b82f6" }
-                              : job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED"
-                              ? { background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }
-                              : isConfirmed
-                              ? { background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10b981" }
-                              : { background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)", color: "#3b82f6" }),
-                          }}>
-                            {job.status === "PICKUP_STARTED" ? <Truck size={12} /> :
-                             job.status === "ARRIVED_AT_DESTINATION" ? <MapPin size={12} /> :
-                             job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED" ? <CheckCircle size={12} /> :
-                             isConfirmed ? <CheckCircle size={12} /> : <Truck size={12} />}
-                            
-                            {job.status === "PICKUP_STARTED" ? "PICKUP STARTED" :
-                             job.status === "ARRIVED_AT_DESTINATION" ? "ARRIVED AT DESTINATION" :
-                             job.status === "WORK_COMPLETED" ? "WORK COMPLETED" :
-                             job.status === "COMPLETED" || job.status === "ARCHIVED" ? "COMPLETED" :
-                             isConfirmed ? "DELIVERY CONFIRMED" : "AWAITING CONFIRMATION"}
-                          </div>
-                        </div>
-
-                        {/* Customer Name */}
-                        <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
-
-                        {/* Details Grid */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "var(--text-muted)" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <Phone size={16} color="#10b981" className="icon-hover-effect" />
-                            <span style={{ color: "#10b981", fontWeight: 600 }}>{job.phone}</span>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
-                            {job.location}
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <Calendar size={16} color="var(--accent)" className="icon-hover-effect" />
-                            {job.date}
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
-                            Trees: {job.trees}
-                          </div>
-                          {job.time && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
-                              Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
-                            </div>
-                          )}
-                          {job.pricePerTree && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
-                              {job.pricePerTree}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Flip Prompt/Hint */}
-                        <div style={{ fontSize: "0.75rem", color: "var(--text-light)", textAlign: "center", borderTop: "1px dashed var(--surface-border)", paddingTop: "0.75rem", marginTop: "auto", opacity: 0.6 }}>
-                          Hover to reveal delivery route & actions
-                        </div>
+                    {/* Status Badge */}
+                    <div style={{ marginBottom: "1rem" }}>
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                        padding: "0.3rem 0.6rem", borderRadius: "100px",
+                        fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
+                        ...(job.status === "PICKUP_STARTED"
+                          ? { background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)", color: "#f59e0b" }
+                          : job.status === "ARRIVED_AT_DESTINATION"
+                          ? { background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.4)", color: "#3b82f6" }
+                          : job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED"
+                          ? { background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }
+                          : isConfirmed
+                          ? { background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10b981" }
+                          : { background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)", color: "#3b82f6" }),
+                      }}>
+                        {job.status === "PICKUP_STARTED" ? <Truck size={12} /> :
+                         job.status === "ARRIVED_AT_DESTINATION" ? <MapPin size={12} /> :
+                         job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED" ? <CheckCircle size={12} /> :
+                         isConfirmed ? <CheckCircle size={12} /> : <Truck size={12} />}
+                        
+                        {job.status === "PICKUP_STARTED" ? "PICKUP STARTED" :
+                         job.status === "ARRIVED_AT_DESTINATION" ? "ARRIVED AT DESTINATION" :
+                         job.status === "WORK_COMPLETED" ? "WORK COMPLETED" :
+                         job.status === "COMPLETED" || job.status === "ARCHIVED" ? "COMPLETED" :
+                         isConfirmed ? "DELIVERY CONFIRMED" : "AWAITING CONFIRMATION"}
                       </div>
+                    </div>
 
-                      {/* Back Side */}
-                      <div className="job-card-back" style={{ padding: "1.5rem", borderRadius: "16px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase" }}>Delivery Control</span>
+                    {/* Customer Name */}
+                    <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
+
+                    {/* Details Grid — includes customer phone for delivery */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <Phone size={16} color="#10b981" className="icon-hover-effect" />
+                        <span style={{ color: "#10b981", fontWeight: 600 }}>{job.phone}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
+                        {job.location}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <Calendar size={16} color="var(--accent)" className="icon-hover-effect" />
+                        {job.date}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
+                        Trees: {job.trees}
+                      </div>
+                      {job.time && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
+                          Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
                         </div>
+                      )}
+                      {job.pricePerTree && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
+                          {job.pricePerTree}
+                        </div>
+                      )}
+                    </div>
 
-                        {/* Action Details Subcontainer */}
-                        <div style={{ flex: 1, overflowY: "auto", marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                          {isConfirmed && job.status === "PICKUP_STARTED" && (
-                            <>
-                              {(() => {
-                                const groupedStops = groupWorkerLocations(activeJobWorkers);
+                    {/* Action Button */}
+                    {!isConfirmed && (
+                      <button
+                        onClick={() => handleConfirm(job.id)}
+                        disabled={isConfirming}
+                        style={{
+                          width: "100%", padding: "0.875rem",
+                          background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                          color: "white", border: "none", borderRadius: "12px",
+                          fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                          opacity: isConfirming ? 0.6 : 1, transition: "opacity 0.2s",
+                        }}
+                      >
+                        <CheckCircle size={18} />
+                        {isConfirming ? "Confirming..." : "Confirm Delivery"}
+                      </button>
+                    )}
+
+                    {isConfirmed && job.status === "ACTIVE" && (
+                      <button
+                        onClick={() => handleStartPickup(job.id)}
+                        style={{
+                          width: "100%", padding: "0.875rem",
+                          background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                          color: "white", border: "none", borderRadius: "12px",
+                          fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                          transition: "opacity 0.2s",
+                        }}
+                      >
+                        <Truck size={18} />
+                        Pickup Started
+                      </button>
+                    )}
+
+                    {isConfirmed && job.status === "PICKUP_STARTED" && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                        {(() => {
+                          const groupedStops = groupWorkerLocations(activeJobWorkers);
+                          
+                          // Unified Google Maps Route Link
+                          let gmapsRouteUrl = "https://www.google.com/maps/dir/?api=1";
+                          if (job.harvestLocation) {
+                            gmapsRouteUrl += `&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`;
+                          }
+                          if (groupedStops.length > 0) {
+                            const waypointsStr = groupedStops
+                              .map((stop) => `${stop.latitude},${stop.longitude}`)
+                              .join("|");
+                            gmapsRouteUrl += `&waypoints=${encodeURIComponent(waypointsStr)}`;
+                          }
+
+                          return (
+                            <div style={{
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid var(--surface-border)",
+                              borderRadius: "16px",
+                              padding: "1.25rem",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "1rem"
+                            }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "0.75rem" }}>
+                                <Navigation size={18} color="var(--accent)" />
+                                <h4 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 600, color: "var(--foreground)" }}>Navigation & Stops</h4>
+                              </div>
+
+                              <a
+                                href={gmapsRouteUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: "0.5rem",
+                                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                  color: "white",
+                                  textDecoration: "none",
+                                  padding: "0.85rem",
+                                  borderRadius: "10px",
+                                  fontWeight: 600,
+                                  fontSize: "0.92rem",
+                                  textAlign: "center",
+                                  boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
+                                  transition: "transform 0.2s, opacity 0.2s"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                              >
+                                <ExternalLink size={16} />
+                                Start Google Maps Route
+                              </a>
+
+                              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.25rem" }}>
+                                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Individual Stops</span>
                                 
-                                // Unified Google Maps Route Link
-                                let gmapsRouteUrl = "https://www.google.com/maps/dir/?api=1";
-                                if (job.harvestLocation) {
-                                  gmapsRouteUrl += `&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`;
-                                }
-                                if (groupedStops.length > 0) {
-                                  const waypointsStr = groupedStops
-                                    .map((stop) => `${stop.latitude},${stop.longitude}`)
-                                    .join("|");
-                                  gmapsRouteUrl += `&waypoints=${encodeURIComponent(waypointsStr)}`;
-                                }
-
-                                return (
-                                  <div style={{
-                                    background: "rgba(255,255,255,0.03)",
-                                    border: "1px solid var(--surface-border)",
-                                    borderRadius: "12px",
-                                    padding: "1rem",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "0.75rem"
-                                  }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "0.5rem" }}>
-                                      <Navigation size={16} color="var(--accent)" />
-                                      <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 600, color: "var(--foreground)" }}>Navigation & Stops</h4>
+                                {/* Worker Stops */}
+                                {groupedStops.map((stop, idx) => {
+                                  const stopUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}`;
+                                  return (
+                                    <div key={idx} style={{ 
+                                      display: "flex", 
+                                      justifyContent: "space-between", 
+                                      alignItems: "center",
+                                      background: "rgba(255,255,255,0.02)",
+                                      padding: "0.6rem 0.8rem",
+                                      borderRadius: "8px",
+                                      border: "1px solid rgba(255,255,255,0.05)"
+                                    }}>
+                                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxWidth: "70%" }}>
+                                        <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-light)" }}>
+                                          Pickup Stop {groupedStops.length > 1 ? `#${idx + 1}` : ""}
+                                        </span>
+                                        <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={stop.address || "Worker Stay Location"}>
+                                          {stop.address || "Worker Stay Location"} ({stop.names.join(", ")})
+                                        </span>
+                                      </div>
+                                      <a
+                                        href={stopUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                          background: "rgba(255, 153, 0, 0.1)",
+                                          color: "var(--accent)",
+                                          border: "1px solid rgba(255, 153, 0, 0.2)",
+                                          padding: "4px 10px",
+                                          borderRadius: "6px",
+                                          fontSize: "0.75rem",
+                                          fontWeight: 600,
+                                          textDecoration: "none",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "4px"
+                                        }}
+                                      >
+                                        Navigate <ExternalLink size={12} />
+                                      </a>
                                     </div>
+                                  );
+                                })}
 
+                                {/* Harvest Destination Stop */}
+                                {job.harvestLocation && (
+                                  <div style={{ 
+                                    display: "flex", 
+                                    justifyContent: "space-between", 
+                                    alignItems: "center",
+                                    background: "rgba(255,255,255,0.02)",
+                                    padding: "0.6rem 0.8rem",
+                                    borderRadius: "8px",
+                                    border: "1px solid rgba(255,255,255,0.05)"
+                                  }}>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxWidth: "70%" }}>
+                                      <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-light)" }}>
+                                        Harvest Destination
+                                      </span>
+                                      <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={job.harvestLocation.address || "Harvest Location"}>
+                                        {job.harvestLocation.address || "Harvest Location"}
+                                      </span>
+                                    </div>
                                     <a
-                                      href={gmapsRouteUrl}
+                                      href={`https://www.google.com/maps/dir/?api=1&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       style={{
+                                        background: "rgba(16, 185, 129, 0.1)",
+                                        color: "#34d399",
+                                        border: "1px solid rgba(16, 185, 129, 0.2)",
+                                        padding: "4px 10px",
+                                        borderRadius: "6px",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 600,
+                                        textDecoration: "none",
                                         display: "flex",
                                         alignItems: "center",
-                                        justifyContent: "center",
-                                        gap: "0.5rem",
-                                        background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                                        color: "white",
-                                        textDecoration: "none",
-                                        padding: "0.75rem",
-                                        borderRadius: "8px",
-                                        fontWeight: 600,
-                                        fontSize: "0.85rem",
-                                        textAlign: "center",
-                                        boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
-                                        transition: "transform 0.2s, opacity 0.2s"
+                                        gap: "4px"
                                       }}
                                     >
-                                      <ExternalLink size={14} />
-                                      Start Google Maps Route
+                                      Navigate <ExternalLink size={12} />
                                     </a>
-
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "0.15rem" }}>
-                                      <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" }}>Stops</span>
-                                      
-                                      {groupedStops.map((stop, idx) => {
-                                        const stopUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}`;
-                                        return (
-                                          <div key={idx} style={{ 
-                                            display: "flex", 
-                                            justifyContent: "space-between", 
-                                            alignItems: "center",
-                                            background: "rgba(255,255,255,0.02)",
-                                            padding: "0.5rem 0.6rem",
-                                            borderRadius: "6px",
-                                            border: "1px solid rgba(255,255,255,0.04)"
-                                          }}>
-                                            <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxWidth: "65%" }}>
-                                              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-light)" }}>
-                                                Stop {groupedStops.length > 1 ? `#${idx + 1}` : ""}
-                                              </span>
-                                              <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                                {stop.names.join(", ")}
-                                              </span>
-                                            </div>
-                                            <a
-                                              href={stopUrl}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              style={{
-                                                background: "rgba(255, 153, 0, 0.1)",
-                                                color: "var(--accent)",
-                                                border: "1px solid rgba(255, 153, 0, 0.2)",
-                                                padding: "3px 8px",
-                                                borderRadius: "4px",
-                                                fontSize: "0.7rem",
-                                                fontWeight: 600,
-                                                textDecoration: "none"
-                                              }}
-                                            >
-                                              Map
-                                            </a>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
                                   </div>
-                                );
-                              })()}
-                            </>
-                          )}
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div>
-                          {!isConfirmed && (
-                            <button
-                              onClick={() => handleConfirm(job.id)}
-                              disabled={isConfirming}
-                              style={{
-                                width: "100%", padding: "0.8rem",
-                                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                                color: "white", border: "none", borderRadius: "10px",
-                                fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                                display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                                opacity: isConfirming ? 0.6 : 1, transition: "opacity 0.2s",
-                              }}
-                            >
-                              <CheckCircle size={16} />
-                              {isConfirming ? "Confirming..." : "Confirm Delivery"}
-                            </button>
-                          )}
-
-                          {isConfirmed && job.status === "ACTIVE" && (
-                            <button
-                              onClick={() => handleStartPickup(job.id)}
-                              style={{
-                                width: "100%", padding: "0.8rem",
-                                background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                                color: "white", border: "none", borderRadius: "10px",
-                                fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                                display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                                transition: "opacity 0.2s",
-                              }}
-                            >
-                              <Truck size={16} />
-                              Pickup Started
-                            </button>
-                          )}
-
-                          {isConfirmed && job.status === "PICKUP_STARTED" && (
-                            <button
-                              onClick={() => handleArrive(job.id)}
-                              style={{
-                                width: "100%", padding: "0.8rem",
-                                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                                color: "white", border: "none", borderRadius: "10px",
-                                fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                                display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                                transition: "opacity 0.2s",
-                              }}
-                            >
-                              <MapPin size={16} />
-                              Arrived at Destination
-                            </button>
-                          )}
-                          
-                          {isConfirmed && (job.status === "ARRIVED_AT_DESTINATION" || job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED") && (
-                            <div style={{
-                              padding: "0.8rem", borderRadius: "10px",
-                              background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)",
-                              color: "#10b981", fontWeight: 600, fontSize: "0.85rem", textAlign: "center"
-                            }}>
-                              Job Handed Over
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
+                          );
+                        })()}
+                        <button
+                          onClick={() => handleArrive(job.id)}
+                          style={{
+                            width: "100%", padding: "0.875rem",
+                            background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                            color: "white", border: "none", borderRadius: "12px",
+                            fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                            transition: "opacity 0.2s",
+                          }}
+                        >
+                          <MapPin size={18} />
+                          Arrived at Destination
+                        </button>
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}
@@ -583,6 +597,45 @@ export default function DeliveryDashboard() {
       </main>
 
       <style dangerouslySetInnerHTML={{__html: `
+        .job-card {
+          background: var(--surface-2);
+          border: 1px solid var(--surface-border);
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                      box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                      border-color 0.3s ease,
+                      background 0.3s ease;
+        }
+        .job-card:hover {
+          transform: translateY(-8px) scale(1.02);
+          border-color: var(--accent);
+          background: rgba(255, 255, 255, 0.03);
+          box-shadow: 0 25px 45px -15px var(--primary-glow-border),
+                      0 0 30px -5px rgba(255, 0, 127, 0.15);
+        }
+        .job-card::after {
+          content: '';
+          position: absolute;
+          top: 0; left: -150%;
+          width: 50%; height: 100%;
+          background: linear-gradient(to right, rgba(255,255,255,0) 0%, var(--surface-border) 50%, rgba(255,255,255,0) 100%);
+          transform: skewX(-25deg);
+          transition: none;
+          pointer-events: none;
+        }
+        .job-card:hover::after {
+          left: 150%;
+          transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .icon-hover-effect {
+          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
+        }
+        .job-card:hover .icon-hover-effect {
+          transform: scale(1.22) rotate(6deg);
+          color: #ff007f !important;
+        }
+
         @media (max-width: 1150px) {
           .flex-stack-mobile {
             flex-direction: column !important;

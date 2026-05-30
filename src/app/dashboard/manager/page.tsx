@@ -600,405 +600,385 @@ export default function ManagerDashboard() {
               {jobs.map((job) => (
                 <div key={job.id} 
                   className={`job-card ${job.id === newlyCreatedJobId ? "new-card-anim" : ""} ${job.id === deletingJobId ? "delete-card-anim" : ""}`}
-                >
-                  <div className="job-card-inner">
-                    {/* Front Side */}
-                    <div className="job-card-front" style={{ padding: "1.5rem", borderRadius: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-                        {(() => {
-                          const statusConfig: Record<string, { bg: string; border: string; color: string; icon: React.ReactNode; label: string }> = {
-                            UNCONFIRMED: { bg: "rgba(217,119,6,0.1)", border: "rgba(217,119,6,0.3)", color: "#d97706", icon: <Clock size={12} />, label: "AWAITING RESPONSE" },
-                            CONFIRMED: { bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.3)", color: "#10b981", icon: <FileText size={12} />, label: "CONFIRMED" },
-                            TEAM_PENDING: { bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.3)", color: "#f59e0b", icon: <Users size={12} />, label: "TEAM PENDING" },
-                            TEAM_READY: { bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.3)", color: "#10b981", icon: <CheckCircle size={12} />, label: "TEAM READY" },
-                            DELIVERY_PENDING: { bg: "rgba(59,130,246,0.1)", border: "rgba(59,130,246,0.3)", color: "#3b82f6", icon: <Truck size={12} />, label: "DELIVERY PENDING" },
-                            ACTIVE: { bg: "rgba(16,185,129,0.15)", border: "rgba(16,185,129,0.5)", color: "#10b981", icon: <CheckCircle size={12} />, label: "ACTIVE" },
-                            PICKUP_STARTED: { bg: "rgba(245,158,11,0.15)", border: "rgba(245,158,11,0.5)", color: "#f59e0b", icon: <Truck size={12} />, label: "PICKUP STARTED" },
-                            ARRIVED_AT_DESTINATION: { bg: "rgba(59,130,246,0.15)", border: "rgba(59,130,246,0.5)", color: "#3b82f6", icon: <MapPin size={12} />, label: "ARRIVED AT DESTINATION" },
-                            WORK_COMPLETED: { bg: "rgba(16,185,129,0.15)", border: "rgba(16,185,129,0.5)", color: "#10b981", icon: <CheckCircle size={12} />, label: "WORK COMPLETED" },
-                          };
-                          const cfg = statusConfig[job.status] || statusConfig.UNCONFIRMED;
-                          return (
-                            <div style={{
-                              display: "flex", alignItems: "center", gap: "0.4rem",
-                              background: cfg.bg, padding: "0.3rem 0.6rem",
-                              borderRadius: "100px", border: `1px solid ${cfg.border}`,
-                              fontSize: "0.7rem", fontWeight: 600,
-                              letterSpacing: "0.05em", color: cfg.color,
-                            }}>
-                              {cfg.icon}
-                              {cfg.label}
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Customer Name */}
-                      <h4 style={{ fontSize: "1.5rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
-
-                      {/* Grid of details */}
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Phone size={16} color="var(--accent)" className="icon-hover-effect" />
-                          {job.phone}
+                  style={{
+                  padding: "1.5rem",
+                  borderRadius: "16px"
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                    {(() => {
+                      const statusConfig: Record<string, { bg: string; border: string; color: string; icon: React.ReactNode; label: string }> = {
+                        UNCONFIRMED: { bg: "rgba(217,119,6,0.1)", border: "rgba(217,119,6,0.3)", color: "#d97706", icon: <Clock size={12} />, label: "AWAITING RESPONSE" },
+                        CONFIRMED: { bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.3)", color: "#10b981", icon: <FileText size={12} />, label: "CONFIRMED" },
+                        TEAM_PENDING: { bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.3)", color: "#f59e0b", icon: <Users size={12} />, label: "TEAM PENDING" },
+                        TEAM_READY: { bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.3)", color: "#10b981", icon: <CheckCircle size={12} />, label: "TEAM READY" },
+                        DELIVERY_PENDING: { bg: "rgba(59,130,246,0.1)", border: "rgba(59,130,246,0.3)", color: "#3b82f6", icon: <Truck size={12} />, label: "DELIVERY PENDING" },
+                        ACTIVE: { bg: "rgba(16,185,129,0.15)", border: "rgba(16,185,129,0.5)", color: "#10b981", icon: <CheckCircle size={12} />, label: "ACTIVE" },
+                        PICKUP_STARTED: { bg: "rgba(245,158,11,0.15)", border: "rgba(245,158,11,0.5)", color: "#f59e0b", icon: <Truck size={12} />, label: "PICKUP STARTED" },
+                        ARRIVED_AT_DESTINATION: { bg: "rgba(59,130,246,0.15)", border: "rgba(59,130,246,0.5)", color: "#3b82f6", icon: <MapPin size={12} />, label: "ARRIVED AT DESTINATION" },
+                        WORK_COMPLETED: { bg: "rgba(16,185,129,0.15)", border: "rgba(16,185,129,0.5)", color: "#10b981", icon: <CheckCircle size={12} />, label: "WORK COMPLETED" },
+                      };
+                      const cfg = statusConfig[job.status] || statusConfig.UNCONFIRMED;
+                      return (
+                        <div style={{
+                          display: "flex", alignItems: "center", gap: "0.4rem",
+                          background: cfg.bg, padding: "0.3rem 0.6rem",
+                          borderRadius: "100px", border: `1px solid ${cfg.border}`,
+                          fontSize: "0.7rem", fontWeight: 600,
+                          letterSpacing: "0.05em", color: cfg.color,
+                        }}>
+                          {cfg.icon}
+                          {cfg.label}
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
-                          {job.location}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Calendar size={16} color="var(--accent)" className="icon-hover-effect" />
-                          {job.date}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
-                          Trees: {job.trees}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Users size={16} color="var(--accent)" className="icon-hover-effect" />
-                          Team: <span style={{ color: "var(--accent)", fontWeight: 600 }}>
-                            {(job.assignedWorkers?.filter(w => w.status === "accepted").length) || 0}/{job.workersRequired}
-                          </span>
-                        </div>
-                        {job.status !== "UNCONFIRMED" && job.time && (
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
-                            Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
-                          </div>
-                        )}
-                      </div>
+                      );
+                    })()}
+                    
+                    <div style={{ position: "relative" }}>
+                      <button 
+                        onClick={() => setActiveDropdownId(activeDropdownId === job.id ? null : job.id)}
+                        style={{ 
+                          background: "none", 
+                          border: "none", 
+                          color: activeDropdownId === job.id ? "var(--foreground)" : "var(--text-light)", 
+                          cursor: "pointer",
+                          padding: "0.25rem",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "background 0.2s, color 0.2s"
+                        }}
+                        onMouseEnter={(e) => {
+                          if (activeDropdownId !== job.id) {
+                            e.currentTarget.style.background = "var(--surface-2)";
+                            e.currentTarget.style.color = "var(--foreground)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (activeDropdownId !== job.id) {
+                            e.currentTarget.style.background = "none";
+                            e.currentTarget.style.color = "var(--text-light)";
+                          }
+                        }}
+                      >
+                        <MoreVertical size={18} />
+                      </button>
 
-                      {/* Flip Prompt/Hint */}
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-light)", textAlign: "center", borderTop: "1px dashed var(--surface-border)", paddingTop: "0.75rem", marginTop: "auto", opacity: 0.6 }}>
-                        Hover to reveal actions & reports
-                      </div>
-                    </div>
-
-                    {/* Back Side */}
-                    <div className="job-card-back" style={{ padding: "1.5rem", borderRadius: "16px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                      {/* Top Header Row for Actions */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                        <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase" }}>Actions & Reports</span>
-                        
-                        {/* Dropdown Menu Trigger */}
-                        <div style={{ position: "relative" }}>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveDropdownId(activeDropdownId === job.id ? null : job.id); }}
-                            style={{ 
-                              background: "none", 
-                              border: "none", 
-                              color: activeDropdownId === job.id ? "var(--foreground)" : "var(--text-light)", 
-                              cursor: "pointer",
-                              padding: "0.25rem",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "background 0.2s, color 0.2s"
-                            }}
-                            onMouseEnter={(e) => {
-                              if (activeDropdownId !== job.id) {
-                                e.currentTarget.style.background = "var(--surface-2)";
-                                e.currentTarget.style.color = "var(--foreground)";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (activeDropdownId !== job.id) {
-                                e.currentTarget.style.background = "none";
-                                e.currentTarget.style.color = "var(--text-light)";
-                              }
-                            }}
-                          >
-                            <MoreVertical size={18} />
-                          </button>
-
-                          {/* Dropdown Menu */}
-                          {activeDropdownId === job.id && (
-                            <>
-                              <div 
-                                onClick={(e) => { e.stopPropagation(); setActiveDropdownId(null); }}
-                                style={{
-                                  position: "fixed",
-                                  inset: 0,
-                                  zIndex: 10,
-                                  cursor: "default"
-                                }}
-                              />
-                              <div style={{
-                                position: "absolute",
-                                top: "100%",
-                                right: 0,
-                                marginTop: "0.5rem",
-                                background: "var(--surface)",
-                                border: "1px solid var(--surface-border)",
-                                borderRadius: "10px",
-                                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
-                                width: "140px",
-                                zIndex: 11,
-                                overflow: "hidden",
-                                animation: "dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-                              }}>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleEditClick(job); }}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "0.5rem",
-                                    width: "100%",
-                                    padding: "0.75rem 1rem",
-                                    background: "none",
-                                    border: "none",
-                                    color: "var(--text-muted)",
-                                    fontSize: "0.85rem",
-                                    fontWeight: 550,
-                                    textAlign: "left",
-                                    cursor: "pointer",
-                                    transition: "all 0.2s"
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = "var(--surface-2)";
-                                    e.currentTarget.style.color = "var(--accent)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = "none";
-                                    e.currentTarget.style.color = "var(--text-muted)";
-                                  }}
-                                >
-                                  <Edit size={14} />
-                                  Edit Job
-                                </button>
-
-                                <div style={{ height: "1px", background: "var(--surface-border)" }} />
-
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteClick(job); }}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "0.5rem",
-                                    width: "100%",
-                                    padding: "0.75rem 1rem",
-                                    background: "none",
-                                    border: "none",
-                                    color: "rgba(239, 68, 68, 0.8)",
-                                    fontSize: "0.85rem",
-                                    fontWeight: 550,
-                                    textAlign: "left",
-                                    cursor: "pointer",
-                                    transition: "all 0.2s"
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-                                    e.currentTarget.style.color = "rgb(239, 68, 68)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = "none";
-                                    e.currentTarget.style.color = "rgba(239, 68, 68, 0.8)";
-                                  }}
-                                >
-                                  <Trash2 size={14} />
-                                  Delete Job
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Worker lists or harvest lists */}
-                      <div style={{ flex: 1, overflowY: "auto", marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "0.4rem", maxHeight: "150px" }} onClick={(e) => e.stopPropagation()}>
-                        {/* Worker Status List (for TEAM_PENDING) */}
-                        {job.status === "TEAM_PENDING" && job.assignedWorkers && job.assignedWorkers.length > 0 && (
-                          job.assignedWorkers.map((w, idx) => (
-                            <div key={idx} style={{
-                              display: "flex", alignItems: "center", justifyContent: "space-between",
-                              padding: "0.5rem 0.75rem", borderRadius: "8px",
-                              background: w.status === "accepted" ? "rgba(16,185,129,0.08)" : w.status === "rejected" ? "rgba(239,68,68,0.08)" : "var(--surface-1)",
-                              border: `1px solid ${w.status === "accepted" ? "rgba(16,185,129,0.25)" : w.status === "rejected" ? "rgba(239,68,68,0.25)" : "var(--surface-border)"}`,
-                            }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
-                                {w.status === "accepted" ? <CheckCircle size={14} /> :
-                                 w.status === "rejected" ? <XCircle size={14} color="#ef4444" /> :
-                                 <Clock size={14} color="#f59e0b" />}
-                                <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{w.name}</span>
-                              </div>
-                              <span style={{
-                                fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase",
-                                color: w.status === "accepted" ? "#10b981" : w.status === "rejected" ? "#ef4444" : "#f59e0b",
-                              }}>{w.status}</span>
-                            </div>
-                          ))
-                        )}
-
-                        {/* Worker Harvest List (for WORK_COMPLETED) */}
-                        {job.status === "WORK_COMPLETED" && job.assignedWorkers && job.assignedWorkers.length > 0 && (
-                          <>
-                            <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>
-                              Harvest Reports
-                            </div>
-                            {job.assignedWorkers.filter(w => w.status === "accepted").map((w, idx) => (
-                              <div key={idx} style={{
-                                display: "flex", alignItems: "center", justifyContent: "space-between",
-                                padding: "0.5rem 0.75rem", borderRadius: "8px",
-                                background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "var(--surface-1)",
-                                border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "var(--surface-border)"}`,
-                              }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
-                                  {w.harvestConfirmed ? <CheckCircle size={14} color="#10b981" /> : <Clock size={14} color="#f59e0b" />}
-                                  <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{w.name}</span>
-                                </div>
-                                <span style={{
-                                  fontSize: "0.8rem", fontWeight: 600,
-                                  color: w.harvestConfirmed ? "#10b981" : "#f59e0b",
-                                }}>
-                                  {w.harvestConfirmed ? `${w.harvestedTrees} trees` : "PENDING"}
-                                </span>
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div onClick={(e) => e.stopPropagation()}>
-                        {job.status === "UNCONFIRMED" && (
-                          <button 
-                            onClick={() => handleConfirmOrder(job)}
+                      {/* Dropdown Menu */}
+                      {activeDropdownId === job.id && (
+                        <>
+                          <div 
+                            onClick={() => setActiveDropdownId(null)}
                             style={{
-                              width: "100%", padding: "0.875rem",
-                              background: "#2563eb", color: "white",
-                              border: "none", borderRadius: "12px",
-                              fontWeight: 600, cursor: "pointer",
-                              transition: "all 0.2s ease",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                              position: "fixed",
+                              inset: 0,
+                              zIndex: 10,
+                              cursor: "default"
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = "#1d4ed8"}
-                            onMouseLeave={(e) => e.currentTarget.style.background = "#2563eb"}
-                          >
-                            Set Harvest Time
-                          </button>
-                        )}
-
-                        {job.status === "CONFIRMED" && (
-                          <button 
-                            onClick={() => {
-                              setAssignTeamJobId(job.id);
-                              setAssignTeamWorkersRequired(job.workersRequired);
-                              setAssignTeamExcludeUids([]);
-                            }}
-                            style={{
-                              width: "100%", padding: "0.875rem",
-                              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                              color: "white", border: "none", borderRadius: "12px",
-                              fontWeight: 600, cursor: "pointer",
-                              transition: "all 0.2s ease",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                            }}
-                          >
-                            <Users size={18} />
-                            Assign Team
-                          </button>
-                        )}
-
-                        {job.status === "TEAM_PENDING" && job.assignedWorkers?.some(w => w.status === "rejected") && (
-                          <button 
-                            onClick={() => {
-                              const acceptedUids = job.assignedWorkers?.filter(w => w.status === "accepted").map(w => w.uid) || [];
-                              const slotsNeeded = job.workersRequired - acceptedUids.length;
-                              setAssignTeamJobId(job.id);
-                              setAssignTeamWorkersRequired(slotsNeeded);
-                              setAssignTeamExcludeUids(acceptedUids);
-                            }}
-                            style={{
-                              width: "100%", padding: "0.875rem",
-                              background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                              color: "white", border: "none", borderRadius: "12px",
-                              fontWeight: 600, cursor: "pointer",
-                              transition: "all 0.2s ease",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                            }}
-                          >
-                            <RefreshCw size={16} />
-                            Reassign Workers
-                          </button>
-                        )}
-
-                        {job.status === "TEAM_READY" && (
-                          <button 
-                            onClick={() => setAssignDeliveryJobId(job.id)}
-                            style={{
-                              width: "100%", padding: "0.875rem",
-                              background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                              color: "white", border: "none", borderRadius: "12px",
-                              fontWeight: 600, cursor: "pointer",
-                              transition: "all 0.2s ease",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                            }}
-                          >
-                            <Truck size={18} />
-                            Assign Delivery
-                          </button>
-                        )}
-
-                        {(job.status === "PICKUP_STARTED" || job.status === "ACTIVE" || job.status === "ARRIVED_AT_DESTINATION" || job.status === "DELIVERY_PENDING") && (
-                          <button 
-                            onClick={() => handleTrackJob(job)}
-                            disabled={job.status === "DELIVERY_PENDING"}
-                            style={{
-                              width: "100%", padding: "0.875rem",
-                              background: job.status === "DELIVERY_PENDING" ? "var(--surface-3)" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                              color: job.status === "DELIVERY_PENDING" ? "var(--text-light)" : "white",
-                              border: "none", borderRadius: "12px",
-                              fontWeight: 600, cursor: job.status === "DELIVERY_PENDING" ? "not-allowed" : "pointer",
-                              transition: "all 0.2s ease",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                            }}
-                          >
-                            <MapPin size={18} />
-                            {job.status === "DELIVERY_PENDING" ? "Awaiting Delivery Boy..." : "Track Live Delivery"}
-                          </button>
-                        )}
-
-                        {job.status === "WORK_COMPLETED" && (() => {
-                          const acceptedWorkers = job.assignedWorkers?.filter(w => w.status === "accepted") || [];
-                          const allHarvestsConfirmed = acceptedWorkers.length > 0 && acceptedWorkers.every(w => w.harvestConfirmed);
-
-                          return allHarvestsConfirmed ? (
-                            <button 
-                              onClick={() => handleArchiveJob(job.id)}
+                          />
+                          <div style={{
+                            position: "absolute",
+                            top: "100%",
+                            right: 0,
+                            marginTop: "0.5rem",
+                            background: "var(--surface)",
+                            border: "1px solid var(--surface-border)",
+                            borderRadius: "10px",
+                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
+                            width: "140px",
+                            zIndex: 11,
+                            overflow: "hidden",
+                            animation: "dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                          }}>
+                            <button
+                              onClick={() => handleEditClick(job)}
                               style={{
-                                width: "100%", padding: "0.875rem",
-                                background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-                                color: "white", border: "none", borderRadius: "12px",
-                                fontWeight: 600, cursor: "pointer",
-                                transition: "all 0.2s ease",
-                                display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                                width: "100%",
+                                padding: "0.75rem 1rem",
+                                background: "none",
+                                border: "none",
+                                color: "var(--text-muted)",
+                                fontSize: "0.85rem",
+                                fontWeight: 550,
+                                textAlign: "left",
+                                cursor: "pointer",
+                                transition: "all 0.2s"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "var(--surface-2)";
+                                e.currentTarget.style.color = "var(--accent)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "none";
+                                e.currentTarget.style.color = "var(--text-muted)";
                               }}
                             >
-                              <FileText size={18} />
-                              Archive to History
+                              <Edit size={14} />
+                              Edit Job
                             </button>
-                          ) : (
-                            <div style={{
-                              width: "100%", padding: "0.875rem",
-                              background: "var(--surface-1)",
-                              color: "var(--text-dim)",
-                              borderRadius: "12px",
-                              fontSize: "0.85rem",
-                              fontWeight: 600,
-                              textAlign: "center",
-                              border: "1px dashed var(--surface-border)"
-                            }}>
-                              Waiting for all worker harvest reports...
-                            </div>
-                          );
-                        })()}
-                      </div>
+
+                            <div style={{ height: "1px", background: "var(--surface-border)" }} />
+
+                            <button
+                              onClick={() => handleDeleteClick(job)}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                                width: "100%",
+                                padding: "0.75rem 1rem",
+                                background: "none",
+                                border: "none",
+                                color: "rgba(239, 68, 68, 0.8)",
+                                fontSize: "0.85rem",
+                                fontWeight: 550,
+                                textAlign: "left",
+                                cursor: "pointer",
+                                transition: "all 0.2s"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
+                                e.currentTarget.style.color = "rgb(239, 68, 68)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "none";
+                                e.currentTarget.style.color = "rgba(239, 68, 68, 0.8)";
+                              }}
+                            >
+                              <Trash2 size={14} />
+                              Delete Job
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
+
+                  {/* Customer Name */}
+                  <h4 style={{ fontSize: "1.5rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
+
+                  {/* Grid of details */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Phone size={16} color="var(--accent)" className="icon-hover-effect" />
+                      {job.phone}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
+                      {job.location}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Calendar size={16} color="var(--accent)" className="icon-hover-effect" />
+                      {job.date}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
+                      Trees: {job.trees}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Users size={16} color="var(--accent)" className="icon-hover-effect" />
+                      Team: <span style={{ color: "var(--accent)", fontWeight: 600 }}>
+                        {(job.assignedWorkers?.filter(w => w.status === "accepted").length) || 0}/{job.workersRequired}
+                      </span>
+                    </div>
+                    {job.status !== "UNCONFIRMED" && job.time && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
+                        Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Worker Status List (for TEAM_PENDING) */}
+                  {job.status === "TEAM_PENDING" && job.assignedWorkers && job.assignedWorkers.length > 0 && (
+                    <div style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                      {job.assignedWorkers.map((w, idx) => (
+                        <div key={idx} style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          padding: "0.5rem 0.75rem", borderRadius: "8px",
+                          background: w.status === "accepted" ? "rgba(16,185,129,0.08)" : w.status === "rejected" ? "rgba(239,68,68,0.08)" : "var(--surface-1)",
+                          border: `1px solid ${w.status === "accepted" ? "rgba(16,185,129,0.25)" : w.status === "rejected" ? "rgba(239,68,68,0.25)" : "var(--surface-border)"}`,
+                        }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
+                            {w.status === "accepted" ? <CheckCircle size={14} /> :
+                             w.status === "rejected" ? <XCircle size={14} color="#ef4444" /> :
+                             <Clock size={14} color="#f59e0b" />}
+                            <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{w.name}</span>
+                          </div>
+                          <span style={{
+                            fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase",
+                            color: w.status === "accepted" ? "#10b981" : w.status === "rejected" ? "#ef4444" : "#f59e0b",
+                          }}>{w.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Worker Harvest List (for WORK_COMPLETED) */}
+                  {job.status === "WORK_COMPLETED" && job.assignedWorkers && job.assignedWorkers.length > 0 && (
+                    <div style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>
+                        Harvest Reports
+                      </div>
+                      {job.assignedWorkers.filter(w => w.status === "accepted").map((w, idx) => (
+                        <div key={idx} style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          padding: "0.5rem 0.75rem", borderRadius: "8px",
+                          background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "var(--surface-1)",
+                          border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "var(--surface-border)"}`,
+                        }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
+                            {w.harvestConfirmed ? <CheckCircle size={14} color="#10b981" /> : <Clock size={14} color="#f59e0b" />}
+                            <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{w.name}</span>
+                          </div>
+                          <span style={{
+                            fontSize: "0.8rem", fontWeight: 600,
+                            color: w.harvestConfirmed ? "#10b981" : "#f59e0b",
+                          }}>
+                            {w.harvestConfirmed ? `${w.harvestedTrees} trees` : "PENDING"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  {job.status === "UNCONFIRMED" && (
+                    <button 
+                      onClick={() => handleConfirmOrder(job)}
+                      style={{
+                        width: "100%", padding: "0.875rem",
+                        background: "#2563eb", color: "white",
+                        border: "none", borderRadius: "12px",
+                        fontWeight: 600, cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#1d4ed8"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "#2563eb"}
+                    >
+                      Set Harvest Time
+                    </button>
+                  )}
+
+                  {job.status === "CONFIRMED" && (
+                    <button 
+                      onClick={() => {
+                        setAssignTeamJobId(job.id);
+                        setAssignTeamWorkersRequired(job.workersRequired);
+                        setAssignTeamExcludeUids([]);
+                      }}
+                      style={{
+                        width: "100%", padding: "0.875rem",
+                        background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        color: "white", border: "none", borderRadius: "12px",
+                        fontWeight: 600, cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                      }}
+                    >
+                      <Users size={18} />
+                      Assign Team
+                    </button>
+                  )}
+
+                  {job.status === "TEAM_PENDING" && job.assignedWorkers?.some(w => w.status === "rejected") && (
+                    <button 
+                      onClick={() => {
+                        const acceptedUids = job.assignedWorkers?.filter(w => w.status === "accepted").map(w => w.uid) || [];
+                        const slotsNeeded = job.workersRequired - acceptedUids.length;
+                        setAssignTeamJobId(job.id);
+                        setAssignTeamWorkersRequired(slotsNeeded);
+                        setAssignTeamExcludeUids(acceptedUids);
+                      }}
+                      style={{
+                        width: "100%", padding: "0.875rem",
+                        background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                        color: "white", border: "none", borderRadius: "12px",
+                        fontWeight: 600, cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                      }}
+                    >
+                      <RefreshCw size={16} />
+                      Reassign Workers
+                    </button>
+                  )}
+
+                  {job.status === "TEAM_READY" && (
+                    <button 
+                      onClick={() => setAssignDeliveryJobId(job.id)}
+                      style={{
+                        width: "100%", padding: "0.875rem",
+                        background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                        color: "white", border: "none", borderRadius: "12px",
+                        fontWeight: 600, cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                      }}
+                    >
+                      <Truck size={18} />
+                      Assign Delivery
+                    </button>
+                  )}
+
+                  {(job.status === "PICKUP_STARTED" || job.status === "ACTIVE" || job.status === "ARRIVED_AT_DESTINATION" || job.status === "DELIVERY_PENDING") && (
+                    <button 
+                      onClick={() => handleTrackJob(job)}
+                      disabled={job.status === "DELIVERY_PENDING"}
+                      style={{
+                        width: "100%", padding: "0.875rem",
+                        background: job.status === "DELIVERY_PENDING" ? "var(--surface-3)" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        color: job.status === "DELIVERY_PENDING" ? "var(--text-light)" : "white",
+                        border: "none", borderRadius: "12px",
+                        fontWeight: 600, cursor: job.status === "DELIVERY_PENDING" ? "not-allowed" : "pointer",
+                        transition: "all 0.2s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                      }}
+                    >
+                      <MapPin size={18} />
+                      {job.status === "DELIVERY_PENDING" ? "Awaiting Delivery Boy..." : "Track Live Delivery"}
+                    </button>
+                  )}
+
+                  {job.status === "WORK_COMPLETED" && (() => {
+                    const acceptedWorkers = job.assignedWorkers?.filter(w => w.status === "accepted") || [];
+                    const allHarvestsConfirmed = acceptedWorkers.length > 0 && acceptedWorkers.every(w => w.harvestConfirmed);
+
+                    return allHarvestsConfirmed ? (
+                      <button 
+                        onClick={() => handleArchiveJob(job.id)}
+                        style={{
+                          width: "100%", padding: "0.875rem",
+                          background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+                          color: "white", border: "none", borderRadius: "12px",
+                          fontWeight: 600, cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                        }}
+                      >
+                        <FileText size={18} />
+                        Archive to History
+                      </button>
+                    ) : (
+                      <div style={{
+                        width: "100%", padding: "0.875rem",
+                        background: "var(--surface-1)",
+                        color: "var(--text-dim)",
+                        borderRadius: "12px",
+                        fontSize: "0.85rem",
+                        fontWeight: 600,
+                        textAlign: "center",
+                        border: "1px dashed var(--surface-border)"
+                      }}>
+                        Waiting for all worker harvest reports...
+                      </div>
+                    );
+                  })()}
                 </div>
-              ))
-            }
+              ))}
             </div>
           )}
 
@@ -2000,6 +1980,56 @@ export default function ManagerDashboard() {
           .new-card-anim { animation: cardPopIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; z-index: 10; }
           .delete-card-anim { animation: cardDeleteOut 0.25s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; z-index: 10; }
 
+          /* Premium Job Card Styling and Hover Micro-Animations */
+          .job-card {
+            background: var(--surface-2);
+            border: 1px solid var(--surface-border);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        border-color 0.3s ease, 
+                        background 0.3s ease;
+          }
+          .job-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: 0 25px 45px -15px var(--primary-glow-border), 
+                        0 0 30px -5px rgba(255, 0, 127, 0.15);
+          }
+
+          /* Vercel-like sweeps sheen glow on hover */
+          .job-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+              to right,
+              rgba(255, 255, 255, 0) 0%,
+              rgba(255, 255, 255, 0.08) 50%,
+              rgba(255, 255, 255, 0) 100%
+            );
+            transform: skewX(-25deg);
+            transition: none;
+            pointer-events: none;
+          }
+          .job-card:hover::after {
+            left: 150%;
+            transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+
+          /* Icons play scale & bounce effect */
+          .icon-hover-effect {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
+          }
+          .job-card:hover .icon-hover-effect {
+            transform: scale(1.22) rotate(6deg);
+            color: #ff007f !important;
+          }
         `}} />
       </main>
     </div>

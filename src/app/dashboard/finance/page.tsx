@@ -313,88 +313,83 @@ export default function FinanceOverview() {
                 return (
                   <div key={job.id} 
                     className="job-card"
-                  >
-                    <div className="job-card-inner">
-                      {/* Front Side */}
-                      <div className="job-card-front" style={{ padding: "1.5rem" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-                          <div style={{
-                            display: "flex", alignItems: "center", gap: "0.4rem",
-                            background: "rgba(16,185,129,0.15)", padding: "0.3rem 0.6rem",
-                            borderRadius: "100px", border: "1px solid rgba(16,185,129,0.5)",
-                            fontSize: "0.7rem", fontWeight: 600,
-                            letterSpacing: "0.05em", color: "#10b981",
-                          }}>
-                            <CheckCircle size={12} />
-                            {job.status === "ARCHIVED" ? "ARCHIVED" : "WORK COMPLETED"}
-                          </div>
-                        </div>
-
-                        <h4 style={{ fontSize: "1.5rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
-
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <Phone size={16} color="var(--accent)" className="icon-hover-effect" />
-                            {job.phone}
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
-                            {job.location}
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
-                            Harvest: {getJobHarvestTotal(job)} trees
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <IndianRupee size={16} color="var(--accent)" className="icon-hover-effect" />
-                            Cost: ₹{totalCost.toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Back Side */}
-                      <div className="job-card-back" style={{ padding: "1.5rem", justifyContent: "space-between" }}>
-                        <div style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                          <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>
-                            Harvest Reports
-                          </div>
-                          {job.assignedWorkers?.filter(w => w.status === "accepted").map((w, idx) => (
-                            <div key={idx} style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              padding: "0.5rem 0.75rem",
-                              borderRadius: "8px",
-                              background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "var(--surface-1)",
-                              border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "var(--surface-border)"}`,
-                            }}>
-                              <span style={{ color: "var(--foreground)", fontWeight: 550 }}>{w.name}</span>
-                              <span style={{
-                                fontSize: "0.8rem", fontWeight: 600,
-                                color: w.harvestConfirmed ? "#10b981" : "#f59e0b",
-                              }}>
-                                {w.harvestConfirmed ? `${w.harvestedTrees} trees` : "PENDING"}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <button 
-                          onClick={() => handleOpenPayment(job)}
-                          style={{
-                            width: "100%", padding: "0.875rem",
-                            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                            color: "white", border: "none", borderRadius: "12px",
-                            fontWeight: 600, cursor: "pointer",
-                            transition: "all 0.2s ease",
-                            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                          }}
-                        >
-                          <IndianRupee size={18} />
-                          Receive Payment
-                        </button>
+                    style={{
+                    padding: "1.5rem",
+                    borderRadius: "16px"
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: "0.4rem",
+                        background: "rgba(16,185,129,0.15)", padding: "0.3rem 0.6rem",
+                        borderRadius: "100px", border: "1px solid rgba(16,185,129,0.5)",
+                        fontSize: "0.7rem", fontWeight: 600,
+                        letterSpacing: "0.05em", color: "#10b981",
+                      }}>
+                        <CheckCircle size={12} />
+                        {job.status === "ARCHIVED" ? "ARCHIVED" : "WORK COMPLETED"}
                       </div>
                     </div>
+
+                    <h4 style={{ fontSize: "1.5rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <Phone size={16} color="var(--accent)" className="icon-hover-effect" />
+                        {job.phone}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
+                        {job.location}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
+                        Harvest: {getJobHarvestTotal(job)} trees
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <IndianRupee size={16} color="var(--accent)" className="icon-hover-effect" />
+                        Cost: ₹{totalCost.toLocaleString()}
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>
+                        Harvest Reports
+                      </div>
+                      {job.assignedWorkers?.filter(w => w.status === "accepted").map((w, idx) => (
+                        <div key={idx} style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "0.5rem 0.75rem",
+                          borderRadius: "8px",
+                          background: w.harvestConfirmed ? "rgba(16,185,129,0.08)" : "var(--surface-1)",
+                          border: `1px solid ${w.harvestConfirmed ? "rgba(16,185,129,0.25)" : "var(--surface-border)"}`,
+                        }}>
+                          <span style={{ color: "var(--foreground)", fontWeight: 550 }}>{w.name}</span>
+                          <span style={{
+                            fontSize: "0.8rem", fontWeight: 600,
+                            color: w.harvestConfirmed ? "#10b981" : "#f59e0b",
+                          }}>
+                            {w.harvestConfirmed ? `${w.harvestedTrees} trees` : "PENDING"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button 
+                      onClick={() => handleOpenPayment(job)}
+                      style={{
+                        width: "100%", padding: "0.875rem",
+                        background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        color: "white", border: "none", borderRadius: "12px",
+                        fontWeight: 600, cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                      }}
+                    >
+                      <IndianRupee size={18} />
+                      Receive Payment
+                    </button>
                   </div>
                 );
               })}
@@ -611,7 +606,55 @@ export default function FinanceOverview() {
         .delete-card-anim { animation: cardDeleteOut 0.25s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; z-index: 10; }
 
         /* Premium Job Card Styling and Hover Micro-Animations */
-        /* Removed local job-card overrides to use global 3D flip styles */
+        .job-card {
+          background: var(--surface-2);
+          border: 1px solid var(--surface-border);
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                      box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                      border-color 0.3s ease, 
+                      background 0.3s ease;
+        }
+        .job-card:hover {
+          transform: translateY(-8px) scale(1.02);
+          border-color: var(--accent);
+          background: rgba(255, 255, 255, 0.03);
+          box-shadow: 0 25px 45px -15px var(--primary-glow-border), 
+                      0 0 30px -5px rgba(255, 0, 127, 0.15);
+        }
+
+        /* Vercel-like sweeps sheen glow on hover */
+        .job-card::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -150%;
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          transform: skewX(-25deg);
+          transition: none;
+          pointer-events: none;
+        }
+        .job-card:hover::after {
+          left: 150%;
+          transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Icons play scale & bounce effect */
+        .icon-hover-effect {
+          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
+        }
+        .job-card:hover .icon-hover-effect {
+          transform: scale(1.22) rotate(6deg);
+          color: #ff007f !important;
+        }
 
         @media (max-width: 1150px) {
           .flex-stack-mobile {
