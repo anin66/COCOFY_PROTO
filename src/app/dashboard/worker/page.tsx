@@ -336,229 +336,255 @@ export default function WorkerDashboard() {
                   <div
                     key={job.id}
                     className="job-card"
-                    style={{ padding: "1.5rem", borderRadius: "16px" }}
                   >
-                    {/* Status Badges */}
-                    <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                      <div style={{
-                        display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                        padding: "0.3rem 0.6rem", borderRadius: "100px",
-                        fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
-                        ...(myStatus === "accepted"
-                          ? { background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10b981" }
-                          : myStatus === "rejected"
-                          ? { background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444" }
-                          : { background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#f59e0b" }),
-                      }}>
-                        {myStatus === "accepted" ? <CheckCircle size={12} /> :
-                         myStatus === "rejected" ? <XCircle size={12} /> :
-                         <Clock size={12} />}
-                        {myStatus === "accepted" ? "ACCEPTED" : myStatus === "rejected" ? "REJECTED" : "PENDING RESPONSE"}
-                      </div>
-
-                      {myStatus === "accepted" && (
-                        <div style={{
-                          display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                          padding: "0.3rem 0.6rem", borderRadius: "100px",
-                          fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
-                          ...(job.status === "ACTIVE"
-                            ? { background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.4)", color: "#3b82f6" }
-                            : job.status === "PICKUP_STARTED"
-                            ? { background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)", color: "#f59e0b" }
-                            : job.status === "ARRIVED_AT_DESTINATION"
-                            ? { background: "var(--accent-glow)", border: "1px solid var(--accent)", color: "var(--accent)" }
-                            : job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED"
-                            ? { background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }
-                            : { background: "var(--surface-2)", border: "1px solid var(--surface-border)", color: "var(--text-light)" }),
-                        }}>
-                          {job.status === "ACTIVE" ? "ACTIVE" :
-                           job.status === "PICKUP_STARTED" ? "PICKUP STARTED" :
-                           job.status === "ARRIVED_AT_DESTINATION" ? "ARRIVED" :
-                           job.status === "WORK_COMPLETED" ? "WORK COMPLETED" :
-                           job.status === "COMPLETED" || job.status === "ARCHIVED" ? "COMPLETED" :
-                           "PENDING START"}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Customer Name (NO phone for privacy) */}
-                    <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
-
-                    {/* Details Grid — no phone number */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "var(--text-muted)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
-                        {job.location}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <Calendar size={16} color="var(--accent)" className="icon-hover-effect" />
-                        {job.date}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
-                        Trees: {job.trees}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <Users size={16} color="var(--accent)" className="icon-hover-effect" />
-                        Team: {job.workersRequired}
-                      </div>
-                      {job.time && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
-                          Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
-                        </div>
-                      )}
-                      {job.pricePerTree && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
-                          {job.pricePerTree}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Accept / Reject Buttons */}
-                    {isPending && (
-                      <div style={{ display: "flex", gap: "0.75rem" }}>
-                        <button
-                          onClick={() => handleRespond(job.id, "accepted")}
-                          disabled={isResponding}
-                          style={{
-                            flex: 1, padding: "0.8rem",
-                            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                            color: "white", border: "none", borderRadius: "12px",
-                            fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                            opacity: isResponding ? 0.6 : 1, transition: "opacity 0.2s",
-                          }}
-                        >
-                          <CheckCircle size={18} />
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => {
-                            setRejectJobId(job.id);
-                            setShowRejectModal(true);
-                          }}
-                          disabled={isResponding}
-                          style={{
-                            flex: 1, padding: "0.8rem",
-                            background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
-                            color: "white", border: "none", borderRadius: "12px",
-                            fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                            opacity: isResponding ? 0.6 : 1, transition: "opacity 0.2s",
-                          }}
-                        >
-                          <XCircle size={18} />
-                          Reject
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Worker Action Buttons for active job workflow */}
-                    {myStatus === "accepted" && job.status === "ARRIVED_AT_DESTINATION" && (
-                      <button
-                        onClick={() => handleCompleteJob(job.id)}
-                        style={{
-                          width: "100%", padding: "0.875rem",
-                          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                          color: "white", border: "none", borderRadius: "12px",
-                          fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                          transition: "opacity 0.2s",
-                        }}
-                      >
-                        <CheckCircle size={18} />
-                        Job Completed
-                      </button>
-                    )}
-
-                    {myStatus === "accepted" && (job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED") && (() => {
-                      const myWorkerInfo = job.assignedWorkers?.find(w => w.uid === currentUid);
-                      const hasConfirmedHarvest = myWorkerInfo?.harvestConfirmed || false;
-                      const myHarvestedTrees = myWorkerInfo?.harvestedTrees || 0;
-
-                      if (hasConfirmedHarvest) {
-                        return (
+                    <div className="job-card-inner">
+                      {/* Front Side */}
+                      <div className="job-card-front" style={{ padding: "1.5rem", borderRadius: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
+                        {/* Status Badges */}
+                        <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                           <div style={{
-                            padding: "1rem",
-                            borderRadius: "12px",
-                            background: "rgba(16,185,129,0.08)",
-                            border: "1px solid rgba(16,185,129,0.2)",
-                            color: "#10b981",
-                            fontWeight: 600,
-                            fontSize: "0.9rem",
-                            textAlign: "center",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "0.5rem"
+                            display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                            padding: "0.3rem 0.6rem", borderRadius: "100px",
+                            fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
+                            ...(myStatus === "accepted"
+                              ? { background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10b981" }
+                              : myStatus === "rejected"
+                              ? { background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444" }
+                              : { background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#f59e0b" }),
                           }}>
-                            <CheckCircle size={16} />
-                            Harvest Reported: {myHarvestedTrees} {myHarvestedTrees === 1 ? 'tree' : 'trees'}
+                            {myStatus === "accepted" ? <CheckCircle size={12} /> :
+                             myStatus === "rejected" ? <XCircle size={12} /> :
+                             <Clock size={12} />}
+                            {myStatus === "accepted" ? "ACCEPTED" : myStatus === "rejected" ? "REJECTED" : "PENDING RESPONSE"}
                           </div>
-                        );
-                      }
 
-                      return (
-                        <div style={{
-                          padding: "1rem",
-                          borderRadius: "12px",
-                          background: "var(--surface-1)",
-                          border: "1px solid var(--surface-border)",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "0.75rem"
-                        }}>
-                          <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-muted)" }}>
-                            Enter Harvested Trees
-                          </label>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                            <input
-                              type="number"
-                              min="0"
-                              placeholder="Number of trees"
-                              value={harvestCounts[job.id] ?? ""}
-                              onChange={(e) => setHarvestCounts({
-                                ...harvestCounts,
-                                [job.id]: parseInt(e.target.value) || 0
-                              })}
-                              style={{
-                                width: "100%",
-                                background: "var(--surface-2)",
+                          {myStatus === "accepted" && (
+                            <div style={{
+                              display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                              padding: "0.3rem 0.6rem", borderRadius: "100px",
+                              fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
+                              ...(job.status === "ACTIVE"
+                                ? { background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.4)", color: "#3b82f6" }
+                                : job.status === "PICKUP_STARTED"
+                                ? { background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)", color: "#f59e0b" }
+                                : job.status === "ARRIVED_AT_DESTINATION"
+                                ? { background: "var(--accent-glow)", border: "1px solid var(--accent)", color: "var(--accent)" }
+                                : job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED"
+                                ? { background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981" }
+                                : { background: "var(--surface-2)", border: "1px solid var(--surface-border)", color: "var(--text-light)" }),
+                            }}>
+                              {job.status === "ACTIVE" ? "ACTIVE" :
+                               job.status === "PICKUP_STARTED" ? "PICKUP STARTED" :
+                               job.status === "ARRIVED_AT_DESTINATION" ? "ARRIVED" :
+                               job.status === "WORK_COMPLETED" ? "WORK COMPLETED" :
+                               job.status === "COMPLETED" || job.status === "ARCHIVED" ? "COMPLETED" :
+                               "PENDING START"}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Customer Name (NO phone for privacy) */}
+                        <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>{job.customerName}</h4>
+
+                        {/* Details Grid — no phone number */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
+                            {job.location}
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Calendar size={16} color="var(--accent)" className="icon-hover-effect" />
+                            {job.date}
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
+                            Trees: {job.trees}
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Users size={16} color="var(--accent)" className="icon-hover-effect" />
+                            Team: {job.workersRequired}
+                          </div>
+                          {job.time && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
+                              Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
+                            </div>
+                          )}
+                          {job.pricePerTree && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
+                              {job.pricePerTree}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Flip Prompt/Hint */}
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-light)", textAlign: "center", borderTop: "1px dashed var(--surface-border)", paddingTop: "0.75rem", marginTop: "auto", opacity: 0.6 }}>
+                          Hover to reveal actions & entry forms
+                        </div>
+                      </div>
+
+                      {/* Back Side */}
+                      <div className="job-card-back" style={{ padding: "1.5rem", borderRadius: "16px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase" }}>Worker Controls</span>
+                        </div>
+
+                        {/* Middle Space for Action Inputs or dynamic information */}
+                        <div style={{ flex: 1, overflowY: "auto", marginBottom: "1rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                          {myStatus === "accepted" && (job.status === "WORK_COMPLETED" || job.status === "COMPLETED" || job.status === "ARCHIVED") && (() => {
+                            const myWorkerInfo = job.assignedWorkers?.find(w => w.uid === currentUid);
+                            const hasConfirmedHarvest = myWorkerInfo?.harvestConfirmed || false;
+                            const myHarvestedTrees = myWorkerInfo?.harvestedTrees || 0;
+
+                            if (hasConfirmedHarvest) {
+                              return (
+                                <div style={{
+                                  padding: "0.75rem",
+                                  borderRadius: "10px",
+                                  background: "rgba(16,185,129,0.08)",
+                                  border: "1px solid rgba(16,185,129,0.2)",
+                                  color: "#10b981",
+                                  fontWeight: 600,
+                                  fontSize: "0.85rem",
+                                  textAlign: "center",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: "0.5rem"
+                                }}>
+                                  <CheckCircle size={14} />
+                                  Harvest Reported: {myHarvestedTrees} {myHarvestedTrees === 1 ? 'tree' : 'trees'}
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div style={{
+                                padding: "0.75rem",
+                                borderRadius: "10px",
+                                background: "var(--surface-1)",
                                 border: "1px solid var(--surface-border)",
-                                color: "white",
-                                padding: "0.6rem 0.8rem",
-                                borderRadius: "8px",
-                                outline: "none",
-                                fontSize: "0.9rem",
-                                fontFamily: "inherit"
-                              }}
-                            />
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "0.5rem"
+                              }}>
+                                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-muted)" }}>
+                                  Enter Harvested Trees
+                                </label>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="Number of trees"
+                                    value={harvestCounts[job.id] ?? ""}
+                                    onChange={(e) => setHarvestCounts({
+                                      ...harvestCounts,
+                                      [job.id]: parseInt(e.target.value) || 0
+                                    })}
+                                    style={{
+                                      width: "100%",
+                                      background: "var(--surface-2)",
+                                      border: "1px solid var(--surface-border)",
+                                      color: "white",
+                                      padding: "0.5rem 0.75rem",
+                                      borderRadius: "8px",
+                                      outline: "none",
+                                      fontSize: "0.85rem",
+                                      fontFamily: "inherit"
+                                    }}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const count = harvestCounts[job.id] ?? 0;
+                                      handleConfirmHarvest(job.id, count);
+                                    }}
+                                    style={{
+                                      width: "100%",
+                                      padding: "0.5rem 1rem",
+                                      background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+                                      color: "white",
+                                      border: "none",
+                                      borderRadius: "8px",
+                                      fontWeight: 600,
+                                      cursor: "pointer",
+                                      fontSize: "0.85rem",
+                                      fontFamily: "inherit"
+                                    }}
+                                  >
+                                    Confirm Harvest
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })()}
+
+                          {myStatus === "accepted" && job.status !== "WORK_COMPLETED" && job.status !== "COMPLETED" && job.status !== "ARCHIVED" && job.status !== "ARRIVED_AT_DESTINATION" && (
+                            <div style={{ textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)", padding: "1rem" }}>
+                              Awaiting transit or manager confirmation...
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div>
+                          {isPending && (
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                              <button
+                                onClick={() => handleRespond(job.id, "accepted")}
+                                disabled={isResponding}
+                                style={{
+                                  flex: 1, padding: "0.75rem",
+                                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                  color: "white", border: "none", borderRadius: "10px",
+                                  fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                                  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
+                                  opacity: isResponding ? 0.6 : 1, transition: "opacity 0.2s",
+                                }}
+                              >
+                                <CheckCircle size={16} />
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setRejectJobId(job.id);
+                                  setShowRejectModal(true);
+                                }}
+                                disabled={isResponding}
+                                style={{
+                                  flex: 1, padding: "0.75rem",
+                                  background: "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
+                                  color: "white", border: "none", borderRadius: "10px",
+                                  fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                                  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
+                                  opacity: isResponding ? 0.6 : 1, transition: "opacity 0.2s",
+                                }}
+                              >
+                                <XCircle size={16} />
+                                Reject
+                              </button>
+                            </div>
+                          )}
+
+                          {myStatus === "accepted" && job.status === "ARRIVED_AT_DESTINATION" && (
                             <button
-                              onClick={() => {
-                                const count = harvestCounts[job.id] ?? 0;
-                                handleConfirmHarvest(job.id, count);
-                              }}
+                              onClick={() => handleCompleteJob(job.id)}
                               style={{
-                                width: "100%",
-                                padding: "0.6rem 1.2rem",
-                                background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "8px",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                fontSize: "0.9rem",
-                                fontFamily: "inherit"
+                                width: "100%", padding: "0.8rem",
+                                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                                color: "white", border: "none", borderRadius: "10px",
+                                fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                                display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                                transition: "opacity 0.2s",
                               }}
                             >
-                              Confirm
+                              <CheckCircle size={16} />
+                              Job Completed
                             </button>
-                          </div>
+                          )}
                         </div>
-                      );
-                    })()}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -663,45 +689,6 @@ export default function WorkerDashboard() {
       )}
 
       <style dangerouslySetInnerHTML={{__html: `
-        .job-card {
-          background: var(--surface-2);
-          border: 1px solid var(--surface-border);
-          position: relative;
-          overflow: hidden;
-          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                      box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                      border-color 0.3s ease,
-                      background 0.3s ease;
-        }
-        .job-card:hover {
-          transform: translateY(-8px) scale(1.02);
-          border-color: var(--accent);
-          background: var(--surface-1);
-          box-shadow: 0 25px 45px -15px var(--accent-glow-border),
-                      0 0 30px -5px var(--primary-glow-border);
-        }
-        .job-card::after {
-          content: '';
-          position: absolute;
-          top: 0; left: -150%;
-          width: 50%; height: 100%;
-          background: linear-gradient(to right, rgba(255,255,255,0) 0%, var(--surface-border) 50%, rgba(255,255,255,0) 100%);
-          transform: skewX(-25deg);
-          transition: none;
-          pointer-events: none;
-        }
-        .job-card:hover::after {
-          left: 150%;
-          transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .icon-hover-effect {
-          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
-        }
-        .job-card:hover .icon-hover-effect {
-          transform: scale(1.22) rotate(6deg);
-          color: #ff007f !important;
-        }
-        
         @media (max-width: 1150px) {
           .worker-page-container {
             padding: 1rem !important;

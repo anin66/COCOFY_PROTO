@@ -240,36 +240,117 @@ export default function HistoryPage() {
                   <div
                     key={job.id}
                     className="job-card"
-                    style={{ padding: "1.5rem", borderRadius: "16px" }}
                   >
-                    {/* Status Badge */}
-                    <div style={{ marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{
-                        display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                        padding: "0.3rem 0.6rem", borderRadius: "100px",
-                        fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
-                        background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981"
-                      }}>
-                        <CheckCircle size={12} />
-                        ARCHIVED
+                    <div className="job-card-inner">
+                      {/* Front Side */}
+                      <div className="job-card-front" style={{ padding: "1.5rem" }}>
+                        {/* Status Badge */}
+                        <div style={{ marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{
+                            display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                            padding: "0.3rem 0.6rem", borderRadius: "100px",
+                            fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.05em",
+                            background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#10b981"
+                          }}>
+                            <CheckCircle size={12} />
+                            ARCHIVED
+                          </div>
+                          <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>
+                            {job.date}
+                          </span>
+                        </div>
+
+                        {/* Customer Name */}
+                        <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>
+                          {job.customerName}
+                        </h4>
+
+                        {/* Details Grid */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "rgba(255,255,255,0.8)" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Phone size={16} color="#10b981" className="icon-hover-effect" />
+                            <span style={{ color: "#10b981", fontWeight: 600 }}>{job.phone}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
+                            {job.location}
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
+                            Harvested: <span style={{ color: "white", fontWeight: 600, marginLeft: "0.25rem" }}>{jobHarvest} / {job.trees}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
+                            Rate: {job.pricePerTree}
+                          </div>
+                          {job.time && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
+                              Time: {job.time}
+                            </div>
+                          )}
+                          {totalCost > 0 && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", gridColumn: "span 2" }}>
+                              <FileText size={16} color="#10b981" className="icon-hover-effect" />
+                              <span>Total Payout: </span>
+                              <span style={{ color: "#10b981", fontWeight: 700, marginLeft: "0.25rem" }}>
+                                Rs. {totalCost}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>
-                          {job.date}
-                        </span>
+
+                      {/* Back Side */}
+                      <div className="job-card-back" style={{ padding: "1.5rem", justifyContent: "space-between" }}>
+                        {/* Workers Breakdown */}
+                        {job.assignedWorkers && job.assignedWorkers.some(w => w.status === "accepted") ? (
+                          <div style={{
+                            background: "rgba(255,255,255,0.02)",
+                            border: "1px solid var(--surface-border)",
+                            padding: "0.85rem",
+                            borderRadius: "12px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.4rem",
+                            flex: 1,
+                            marginBottom: "1rem"
+                          }}>
+                            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>
+                              Worker Breakdown
+                            </div>
+                            {job.assignedWorkers.filter(w => w.status === "accepted").map((w, idx) => (
+                              <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem" }}>
+                                <span style={{ color: "rgba(255,255,255,0.6)" }}>{w.name}</span>
+                                <span style={{ color: "white", fontWeight: 600 }}>
+                                  {w.harvestConfirmed ? `${w.harvestedTrees} trees` : "0 trees (No Report)"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-light)", fontSize: "0.85rem" }}>
+                            No workers assigned.
+                          </div>
+                        )}
+
+                        {/* Actions */}
                         <button
                           onClick={() => handleDeleteJob(job.id, job.customerName)}
                           style={{
+                            width: "100%",
+                            padding: "0.75rem",
                             background: "rgba(239,35,60,0.08)",
                             color: "var(--error)",
                             border: "1px solid rgba(239,35,60,0.15)",
-                            borderRadius: "6px",
-                            width: "26px",
-                            height: "26px",
+                            borderRadius: "10px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            gap: "0.5rem",
                             cursor: "pointer",
+                            fontWeight: 600,
+                            fontSize: "0.85rem",
                             transition: "all 0.2s"
                           }}
                           onMouseEnter={(e) => {
@@ -280,80 +361,12 @@ export default function HistoryPage() {
                             e.currentTarget.style.background = "rgba(239,35,60,0.08)";
                             e.currentTarget.style.color = "var(--error)";
                           }}
-                          title="Permanently Delete Job"
                         >
-                          <Trash2 size={12} />
+                          <Trash2 size={16} />
+                          Delete Record
                         </button>
                       </div>
                     </div>
-
-                    {/* Customer Name */}
-                    <h4 style={{ fontSize: "1.35rem", margin: "0 0 1rem 0", fontWeight: 700 }}>
-                      {job.customerName}
-                    </h4>
-
-                    {/* Details Grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem", marginBottom: "1.5rem", fontSize: "0.88rem", color: "rgba(255,255,255,0.8)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <Phone size={16} color="#10b981" className="icon-hover-effect" />
-                        <span style={{ color: "#10b981", fontWeight: 600 }}>{job.phone}</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <MapPin size={16} color="var(--accent)" className="icon-hover-effect" />
-                        {job.location}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <TreePine size={16} color="var(--accent)" className="icon-hover-effect" />
-                        Harvested: <span style={{ color: "white", fontWeight: 600, marginLeft: "0.25rem" }}>{jobHarvest} / {job.trees}</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
-                        Rate: {job.pricePerTree}
-                      </div>
-                      {job.time && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Clock size={16} color="var(--accent)" className="icon-hover-effect" />
-                          Time: {job.time}
-                        </div>
-                      )}
-                      {totalCost > 0 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", gridColumn: "span 2" }}>
-                          <FileText size={16} color="#10b981" className="icon-hover-effect" />
-                          <span>Total Payout: </span>
-                          <span style={{ color: "#10b981", fontWeight: 700, marginLeft: "0.25rem" }}>
-                            Rs. {totalCost}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Workers Breakdown */}
-                    {job.assignedWorkers && job.assignedWorkers.some(w => w.status === "accepted") && (
-                      <div style={{
-                        background: "rgba(255,255,255,0.02)",
-                        border: "1px solid var(--surface-border)",
-                        padding: "0.85rem",
-                        borderRadius: "12px",
-                        marginBottom: "1.5rem",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.4rem"
-                      }}>
-                        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>
-                          Worker Breakdown
-                        </div>
-                        {job.assignedWorkers.filter(w => w.status === "accepted").map((w, idx) => (
-                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem" }}>
-                            <span style={{ color: "rgba(255,255,255,0.6)" }}>{w.name}</span>
-                            <span style={{ color: "white", fontWeight: 600 }}>
-                              {w.harvestConfirmed ? `${w.harvestedTrees} trees` : "0 trees (No Report)"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-
                   </div>
                 );
               })}
@@ -465,55 +478,7 @@ export default function HistoryPage() {
 
       <style dangerouslySetInnerHTML={{__html: `
         /* Premium Job Card Styling and Hover Micro-Animations */
-        .job-card {
-          background: var(--surface-2);
-          border: 1px solid var(--surface-border);
-          position: relative;
-          overflow: hidden;
-          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                      box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                      border-color 0.3s ease, 
-                      background 0.3s ease;
-        }
-        .job-card:hover {
-          transform: translateY(-8px) scale(1.02);
-          border-color: var(--accent);
-          background: rgba(255, 255, 255, 0.03);
-          box-shadow: 0 25px 45px -15px var(--primary-glow-border), 
-                      0 0 30px -5px rgba(255, 0, 127, 0.15);
-        }
-
-        /* Vercel-like sweeps sheen glow on hover */
-        .job-card::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -150%;
-          width: 50%;
-          height: 100%;
-          background: linear-gradient(
-            to right,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.08) 50%,
-            rgba(255, 255, 255, 0) 100%
-          );
-          transform: skewX(-25deg);
-          transition: none;
-          pointer-events: none;
-        }
-        .job-card:hover::after {
-          left: 150%;
-          transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Icons play scale & bounce effect */
-        .icon-hover-effect {
-          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
-        }
-        .job-card:hover .icon-hover-effect {
-          transform: scale(1.22) rotate(6deg);
-          color: #ff007f !important;
-        }
+        /* Removed local job-card overrides to use global 3D flip styles */
       `}} />
     </div>
   );
