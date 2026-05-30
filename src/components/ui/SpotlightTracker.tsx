@@ -8,11 +8,26 @@ export default function SpotlightTracker() {
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
-    // Disable on touch viewports for performance
+    // Global click listener to toggle card flips on touch / click (for mobile)
+    const handleGlobalClick = (e: MouseEvent) => {
+      const card = (e.target as HTMLElement).closest(".job-card");
+      if (!card) return;
+
+      const interactive = (e.target as HTMLElement).closest("button, a, input, select, textarea, [role='button']");
+      if (interactive) return;
+
+      card.classList.toggle("flipped");
+    };
+
+    document.addEventListener("click", handleGlobalClick);
+
+    // Disable mouse spotlight on touch viewports for performance
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice) {
       setIsTouch(true);
-      return;
+      return () => {
+        document.removeEventListener("click", handleGlobalClick);
+      };
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -32,6 +47,7 @@ export default function SpotlightTracker() {
     setIsHovering(true);
 
     return () => {
+      document.removeEventListener("click", handleGlobalClick);
       window.removeEventListener("mousemove", handleMouseMove);
       document.body.removeEventListener("mouseenter", handleMouseEnter);
       document.body.removeEventListener("mouseleave", handleMouseLeave);

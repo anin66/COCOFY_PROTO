@@ -1727,7 +1727,8 @@ footer,
   transform-style: preserve-3d;
 }
 
-.job-card:hover .job-card-inner {
+.job-card:hover .job-card-inner,
+.job-card.flipped .job-card-inner {
   transform: rotateY(180deg);
 }
 
@@ -1825,7 +1826,8 @@ footer,
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
 }
 
-.job-card:hover .icon-hover-effect {
+.job-card:hover .icon-hover-effect,
+.job-card.flipped .icon-hover-effect {
   transform: scale(1.22) rotate(6deg) !important;
   color: var(--accent) !important;
 }
