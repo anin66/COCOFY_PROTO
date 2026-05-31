@@ -3,13 +3,14 @@
 import { useState, useEffect, useMemo } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
+import { useToast } from "@/context/ToastContext";
 import {
   ChevronLeft, ChevronRight, Calendar, MapPin, Clock,
   TreePine, Users, Phone, Briefcase, CheckCircle, Truck,
-  FileText, XCircle,
+  FileText, XCircle, Edit, Plus, X
 } from "lucide-react";
 import { db, auth } from "@/lib/firebase";
-import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
@@ -52,11 +53,52 @@ function toKey(y: number, m: number, d: number) {
 /* ─── Component ─── */
 export default function SchedulingPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [currentUserName, setCurrentUserName] = useState("Manager");
   const [currentUserRole, setCurrentUserRole] = useState("manager");
   const today = new Date();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Harvest Time Modal states
+  const [timeModalOpen, setTimeModalOpen] = useState(false);
+  const [selectedJobForTime, setSelectedJobForTime] = useState<Job | null>(null);
+  const [harvestTimeInput, setHarvestTimeInput] = useState("");
+  const [updatingTime, setUpdatingTime] = useState(false);
+
+  const handleOpenTimeModal = (job: Job) => {
+    setSelectedJobForTime(job);
+    setHarvestTimeInput(job.time || "7:00 AM");
+    setTimeModalOpen(true);
+  };
+
+  const handleSaveHarvestTime = async () => {
+    if (!selectedJobForTime) return;
+    if (!harvestTimeInput.trim()) {
+      showToast("Please enter or select a start time.", "error");
+      return;
+    }
+    setUpdatingTime(true);
+    try {
+      const jobRef = doc(db, "jobs", selectedJobForTime.id);
+      const isUnconfirmed = selectedJobForTime.status === "UNCONFIRMED";
+      
+      await updateDoc(jobRef, {
+        time: harvestTimeInput.trim(),
+        ...(isUnconfirmed ? { status: "CONFIRMED" } : {}),
+      });
+
+      showToast("Harvest time updated successfully.", "success");
+      setTimeModalOpen(false);
+      setSelectedJobForTime(null);
+      setHarvestTimeInput("");
+    } catch (err) {
+      console.error("Error updating harvest time:", err);
+      showToast("Failed to update harvest time.", "error");
+    } finally {
+      setUpdatingTime(false);
+    }
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -379,12 +421,51 @@ export default function SchedulingPage() {
                           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                             <MapPin size={12} color="var(--accent)" /> {job.location}
                           </div>
-                          {job.time && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                              <Clock size={12} color="var(--accent)" />
-                              <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
-                            </div>
-                          )}
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                            <Clock size={12} color="var(--accent)" />
+                            {job.time ? (
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                                <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
+                                {job.status !== "COMPLETED" && job.status !== "ARCHIVED" && (
+                                  <button
+                                    onClick={() => handleOpenTimeModal(job)}
+                                    style={{
+                                      background: "none", border: "none", color: "var(--text-light)",
+                                      cursor: "pointer", padding: "2px", display: "inline-flex",
+                                      alignItems: "center"
+                                    }}
+                                    title="Edit Harvest Time"
+                                  >
+                                    <Edit size={10} />
+                                  </button>
+                                )}
+                              </div>
+                            ) : (
+                              job.status !== "COMPLETED" && job.status !== "ARCHIVED" ? (
+                                <button
+                                  onClick={() => handleOpenTimeModal(job)}
+                                  style={{
+                                    background: "rgba(255, 153, 0, 0.1)",
+                                    border: "1px solid rgba(255, 153, 0, 0.2)",
+                                    color: "var(--accent)",
+                                    borderRadius: "4px",
+                                    fontSize: "0.68rem",
+                                    padding: "2px 6px",
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    fontFamily: "inherit",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "2px"
+                                  }}
+                                >
+                                  <Plus size={10} /> Time
+                                </button>
+                              ) : (
+                                <span style={{ color: "var(--text-dim)" }}>No Time</span>
+                              )
+                            )}
+                          </div>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                             <TreePine size={12} color="var(--accent)" /> {job.trees} tree{job.trees !== 1 ? "s" : ""}
                           </div>
@@ -550,6 +631,102 @@ export default function SchedulingPage() {
             }
           }
         `}} />
+        {/* Harvest Time Modal */}
+        {timeModalOpen && selectedJobForTime && (
+          <div style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(4px)", display: "flex", alignItems: "center",
+            justifyContent: "center", zIndex: 1000, padding: "1rem"
+          }}>
+            <div className="mobile-scroll-modal modal-opening" style={{
+              background: "var(--surface)", border: "1px solid var(--surface-border)",
+              borderRadius: "20px", width: "100%", maxWidth: "400px",
+              padding: "1.75rem", display: "flex", flexDirection: "column", gap: "1.25rem",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--surface-border)", paddingBottom: "0.75rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Clock size={18} color="var(--accent)" />
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700 }}>Set Harvest Time</h3>
+                </div>
+                <button
+                  onClick={() => setTimeModalOpen(false)}
+                  style={{ background: "none", border: "none", color: "var(--text-light)", cursor: "pointer" }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div style={{ fontSize: "0.85rem", color: "var(--text-light)" }}>
+                Setting time for <strong>{selectedJobForTime.customerName}</strong> on {selectedJobForTime.date}.
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-muted)" }}>
+                  Start Time
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 7:30 AM"
+                  value={harvestTimeInput}
+                  onChange={(e) => setHarvestTimeInput(e.target.value)}
+                  style={{
+                    background: "var(--surface-2)", border: "1px solid var(--surface-border)",
+                    color: "white", padding: "0.65rem 0.85rem", borderRadius: "8px",
+                    outline: "none", fontFamily: "inherit", fontSize: "0.9rem"
+                  }}
+                />
+              </div>
+
+              {/* Presets */}
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                {["6:00 AM", "7:00 AM", "8:00 AM", "4:30 PM"].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setHarvestTimeInput(preset)}
+                    style={{
+                      background: harvestTimeInput === preset ? "var(--primary)" : "var(--surface-2)",
+                      border: `1px solid ${harvestTimeInput === preset ? "var(--primary)" : "var(--surface-border)"}`,
+                      color: "white", borderRadius: "6px", padding: "0.35rem 0.75rem",
+                      fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", transition: "all 0.2s"
+                    }}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setTimeModalOpen(false)}
+                  style={{
+                    flex: 1, padding: "0.65rem", borderRadius: "10px",
+                    background: "var(--surface-2)", border: "1px solid var(--surface-border)",
+                    color: "white", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveHarvestTime}
+                  disabled={updatingTime}
+                  style={{
+                    flex: 1, padding: "0.65rem", borderRadius: "10px",
+                    background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
+                    border: "none", color: "white", fontWeight: 700,
+                    cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem",
+                    opacity: updatingTime ? 0.7 : 1
+                  }}
+                >
+                  {updatingTime ? "Saving..." : "Save Time"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
