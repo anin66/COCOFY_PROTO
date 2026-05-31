@@ -104,9 +104,10 @@ export default function MiscellaneousJobsPage() {
   // Filter workers based on search & exclude already selected ones
   const availableWorkers = allWorkers.filter((w) => {
     const isAlreadySelected = selectedWorkers.some((sw) => sw.uid === w.uid);
-    const matchesSearch = w.name.toLowerCase().includes(workerSearch.toLowerCase()) || 
-                          w.phone.includes(workerSearch);
-    return !isAlreadySelected && matchesSearch;
+    if (isAlreadySelected) return false;
+    if (!workerSearch.trim()) return true;
+    return w.name.toLowerCase().includes(workerSearch.toLowerCase()) || 
+           w.phone.includes(workerSearch);
   });
 
   const handleAddWorker = (worker: Worker) => {
@@ -393,7 +394,7 @@ export default function MiscellaneousJobsPage() {
                 </div>
 
                 {/* Dropdown Options */}
-                {dropdownOpen && workerSearch && (
+                {dropdownOpen && (
                   <>
                     <div 
                       onClick={() => setDropdownOpen(false)} 
