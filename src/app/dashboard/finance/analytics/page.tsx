@@ -380,8 +380,8 @@ export default function FinanceAnalytics() {
   }, [filteredJobs, workerCostPerTreeBE]);
 
   const totalExpensesAmt = useMemo(
-    () => filteredExpenses.reduce((s, e) => s + e.amount, 0) + totalWorkerCost,
-    [filteredExpenses, totalWorkerCost]
+    () => filteredExpenses.reduce((s, e) => s + e.amount, 0),
+    [filteredExpenses]
   );
 
   const netProfit = totalRevenue - totalExpensesAmt;
