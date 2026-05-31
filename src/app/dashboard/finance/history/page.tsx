@@ -4,19 +4,22 @@ import { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { db, auth } from "@/lib/firebase";
-import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { 
   CheckCircle, MapPin, Phone, Calendar, TreePine, 
-  IndianRupee, Download, Users, FileText, Image as ImageIcon, History as HistoryIcon
+  IndianRupee, Download, Users, FileText, Image as ImageIcon, History as HistoryIcon,
+  Trash2
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { useToast } from "@/context/ToastContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import jsPDF from "jspdf";
 
 export default function FinanceHistory() {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const router = useRouter();
   const [currentUserRole, setCurrentUserRole] = useState<string>("finance");
   const [currentUserName, setCurrentUserName] = useState<string>("Finance Manager");
@@ -26,6 +29,26 @@ export default function FinanceHistory() {
   // Receipt Generation State
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
   const receiptRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  const handleDeleteHistory = async (paymentId: string, customerName: string) => {
+    const isConfirmed = await confirm({
+      title: "Delete Payment Record?",
+      message: `Are you sure you want to delete the payment history for "${customerName}"? This will permanently remove the record from the database.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger"
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await deleteDoc(doc(db, "payments", paymentId));
+      showToast("Payment record deleted successfully.", "success");
+    } catch (error: any) {
+      console.error("Error deleting payment record:", error);
+      showToast(error.message || "Failed to delete payment record.", "error");
+    }
+  };
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
@@ -167,38 +190,68 @@ export default function FinanceHistory() {
                         <h4 style={{ fontSize: "1.5rem", margin: 0, fontWeight: 700 }}>{job.customerName}</h4>
                       </div>
                       
-                      <button 
-                        onClick={() => handleDownloadReceipt(payment.id, job.customerName)}
-                        disabled={generatingPdf === payment.id}
-                        style={{
-                          padding: "0.6rem 1.2rem",
-                          background: generatingPdf === payment.id ? "var(--surface-border)" : "var(--surface-2)",
-                          color: "white", border: "1px solid var(--primary)", borderRadius: "8px",
-                          fontWeight: 600, cursor: generatingPdf === payment.id ? "not-allowed" : "pointer",
-                          transition: "all 0.2s ease",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-                          fontSize: "0.85rem",
-                          width: "auto"
-                        }}
-                        onMouseEnter={(e) => {
-                          if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--primary-glow)";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--surface-2)";
-                        }}
-                      >
-                        {generatingPdf === payment.id ? (
-                          <>
-                            <div className="spinner" style={{ width: "14px", height: "14px", borderWidth: "2px" }} />
-                            Generating PDF...
-                          </>
-                        ) : (
-                          <>
-                            <Download size={16} />
-                            Download Receipt
-                          </>
-                        )}
-                      </button>
+                      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                        <button 
+                          onClick={() => handleDownloadReceipt(payment.id, job.customerName)}
+                          disabled={generatingPdf === payment.id}
+                          style={{
+                            padding: "0.6rem 1.2rem",
+                            background: generatingPdf === payment.id ? "var(--surface-border)" : "var(--surface-2)",
+                            color: "white", border: "1px solid var(--primary)", borderRadius: "8px",
+                            fontWeight: 600, cursor: generatingPdf === payment.id ? "not-allowed" : "pointer",
+                            transition: "all 0.2s ease",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+                            fontSize: "0.85rem",
+                            width: "auto"
+                          }}
+                          onMouseEnter={(e) => {
+                            if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--primary-glow)";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (generatingPdf !== payment.id) e.currentTarget.style.background = "var(--surface-2)";
+                          }}
+                        >
+                          {generatingPdf === payment.id ? (
+                            <>
+                              <div className="spinner" style={{ width: "14px", height: "14px", borderWidth: "2px" }} />
+                              Generating PDF...
+                            </>
+                          ) : (
+                            <>
+                              <Download size={16} />
+                              Download Receipt
+                            </>
+                          )}
+                        </button>
+
+                        <button 
+                          onClick={() => handleDeleteHistory(payment.id, job.customerName)}
+                          style={{
+                            padding: "0.6rem 1.2rem",
+                            background: "rgba(220, 38, 38, 0.12)",
+                            color: "var(--error)", 
+                            border: "1px solid rgba(220, 38, 38, 0.35)", 
+                            borderRadius: "8px",
+                            fontWeight: 600, 
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            display: "flex", 
+                            alignItems: "center", 
+                            justifyContent: "center", 
+                            gap: "0.5rem",
+                            fontSize: "0.85rem"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "rgba(220, 38, 38, 0.25)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "rgba(220, 38, 38, 0.12)";
+                          }}
+                        >
+                          <Trash2 size={16} />
+                          Delete Record
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid-stack-mobile" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginBottom: "1.5rem", fontSize: "0.85rem", color: "rgba(255,255,255,0.8)" }}>
