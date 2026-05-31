@@ -4,16 +4,17 @@ import { useState, useEffect, useMemo } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { useToast } from "@/context/ToastContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import { db, auth } from "@/lib/firebase";
 import { 
-  collection, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc 
+  collection, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query, where
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { 
   IndianRupee, Calendar, Users, CheckCircle, Clock, 
   Search, Download, CreditCard, X, AlertCircle, Filter, 
-  ArrowRight, TreePine, Sparkles, CheckCircle2, DollarSign
+  ArrowRight, TreePine, Sparkles, CheckCircle2, DollarSign, Trash2
 } from "lucide-react";
 import { SkeletonCard, SkeletonTable } from "@/components/ui/Skeleton";
 
@@ -99,6 +100,7 @@ interface WorkerWithCycles {
 export default function FinanceSalary() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [currentUserRole, setCurrentUserRole] = useState<string>("finance");
   const [currentUserName, setCurrentUserName] = useState<string>("Finance Manager");
   const [currentUserUid, setCurrentUserUid] = useState<string>("");
@@ -126,6 +128,9 @@ export default function FinanceSalary() {
   const [notes, setNotes] = useState("");
   const [changePlanOption, setChangePlanOption] = useState<"continue" | "change">("continue");
   const [nextPlanId, setNextPlanId] = useState<string>("");
+  const [salaryHistoryClearedAt, setSalaryHistoryClearedAt] = useState<string>("");
+  const [showClearHistoryModal, setShowClearHistoryModal] = useState<boolean>(false);
+  const [clearingHistory, setClearingHistory] = useState<boolean>(false);
 
   // Auth synchronization
   useEffect(() => {
@@ -143,13 +148,14 @@ export default function FinanceSalary() {
           setCurrentUserRole(role);
           setCurrentUserName(userDoc.data().name || "Finance Manager");
           setCurrentUserUid(user.uid);
+          setSalaryHistoryClearedAt(userDoc.data().salaryHistoryClearedAt || "");
         }
       }
     });
     return () => unsubAuth();
   }, [router]);
 
-  // Real-time synchronization of plans, users, jobs, payouts
+  // Real-time synchronization of plans, users, jobs
   useEffect(() => {
     setLoading(true);
 
@@ -176,20 +182,31 @@ export default function FinanceSalary() {
       setJobs(list);
     });
 
-    const unsubPayouts = onSnapshot(collection(db, "payouts"), (snap) => {
-      const list: Payout[] = [];
-      snap.forEach((d) => list.push({ ...d.data() as Payout, id: d.id }));
-      setPayouts(list);
-      setLoading(false);
-    });
-
     return () => {
       unsubPlans();
       unsubUsers();
       unsubJobs();
-      unsubPayouts();
     };
   }, []);
+
+  // Real-time synchronization of payouts with cleared filter
+  useEffect(() => {
+    setLoading(true);
+    let q: any = collection(db, "payouts");
+    if (salaryHistoryClearedAt) {
+      q = query(collection(db, "payouts"), where("paidAt", ">", salaryHistoryClearedAt));
+    }
+    const unsubPayouts = onSnapshot(q, (snap: any) => {
+      const list: Payout[] = [];
+      snap.forEach((d: any) => list.push({ ...d.data() as Payout, id: d.id }));
+      setPayouts(list);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error loading payouts:", error);
+      setLoading(false);
+    });
+    return () => unsubPayouts();
+  }, [salaryHistoryClearedAt]);
 
   // Cycle Generation Engine: computes cycles recursively from assignment date
   const processedWorkersData = useMemo<WorkerWithCycles[]>(() => {
@@ -449,6 +466,49 @@ export default function FinanceSalary() {
     }
   };
 
+  const handleDeletePayout = async (payoutId: string, workerName: string) => {
+    const isConfirmed = await confirm({
+      title: "Delete Payout Record?",
+      message: `Are you sure you want to delete the payout record for "${workerName}"? This will permanently remove the record and return the cycle to Pending Payouts.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger"
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await deleteDoc(doc(db, "payouts", payoutId));
+      showToast("Payout record deleted successfully.", "success");
+    } catch (error: any) {
+      console.error("Error deleting payout record:", error);
+      showToast(error.message || "Failed to delete payout record.", "error");
+    }
+  };
+
+  const handleConfirmClearPayoutHistory = async () => {
+    setClearingHistory(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("No authenticated user");
+
+      const newClearedAt = new Date().toISOString();
+      await updateDoc(doc(db, "users", user.uid), {
+        salaryHistoryClearedAt: newClearedAt
+      });
+
+      setSalaryHistoryClearedAt(newClearedAt);
+      setPayouts([]);
+      setShowClearHistoryModal(false);
+      showToast("Payout history cleared from active view.", "success");
+    } catch (error: any) {
+      console.error("Error clearing history:", error);
+      showToast(error.message || "Failed to clear history.", "error");
+    } finally {
+      setClearingHistory(false);
+    }
+  };
+
   // Salary Spreadsheet Export Generator
   const handleExportSalarySheet = () => {
     let csv = "Worker Name,Email,Phone,Active Plan,Cycle Number,Cycle Start,Cycle End,Trees Harvested,Base Salary,Incentives,Payment Status,Amount Paid,Paid Date,Payment Method,Receiver/Notes\r\n";
@@ -604,26 +664,58 @@ export default function FinanceSalary() {
               ))}
             </div>
 
-            {/* Search Input */}
-            <div style={{ position: "relative", width: "100%", maxWidth: "320px" }}>
-              <Search size={16} color="var(--text-light)" style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)" }} />
-              <input 
-                type="text"
-                placeholder="Search worker or package..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.65rem 1rem 0.65rem 2.5rem",
-                  background: "rgba(0,0,0,0.2)",
-                  border: "1px solid var(--surface-border)",
-                  borderRadius: "8px",
-                  color: "white",
-                  fontSize: "0.9rem",
-                  outline: "none",
-                  fontFamily: "inherit"
-                }}
-              />
+            {/* Search Input & Action Buttons */}
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center", width: "100%", maxWidth: "480px", justifyContent: "flex-end" }}>
+              {activeTab === "history" && payouts.length > 0 && (
+                <button
+                  onClick={() => setShowClearHistoryModal(true)}
+                  style={{
+                    padding: "0.6rem 1.2rem",
+                    background: "rgba(239, 35, 60, 0.12)",
+                    color: "var(--error)",
+                    border: "1px solid rgba(239, 35, 60, 0.35)",
+                    borderRadius: "8px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    fontSize: "0.85rem",
+                    width: "auto"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--error)";
+                    e.currentTarget.style.color = "white";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 35, 60, 0.12)";
+                    e.currentTarget.style.color = "var(--error)";
+                  }}
+                >
+                  Clear History
+                </button>
+              )}
+              <div style={{ position: "relative", width: "100%", maxWidth: "320px" }}>
+                <Search size={16} color="var(--text-light)" style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)" }} />
+                <input 
+                  type="text"
+                  placeholder="Search worker or package..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.65rem 1rem 0.65rem 2.5rem",
+                    background: "rgba(0,0,0,0.2)",
+                    border: "1px solid var(--surface-border)",
+                    borderRadius: "8px",
+                    color: "white",
+                    fontSize: "0.9rem",
+                    outline: "none",
+                    fontFamily: "inherit"
+                  }}
+                />
+              </div>
             </div>
           </div>
 
@@ -795,6 +887,7 @@ export default function FinanceSalary() {
                       <th style={{ padding: "1.2rem 1.5rem", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>Trees Harvested</th>
                       <th style={{ padding: "1.2rem 1.5rem", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>Amount Paid</th>
                       <th style={{ padding: "1.2rem 1.5rem", textAlign: "center", fontSize: "0.75rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>Method</th>
+                      <th style={{ padding: "1.2rem 1.5rem", textAlign: "center", fontSize: "0.75rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -832,6 +925,35 @@ export default function FinanceSalary() {
                           }}>
                             {payout.paymentMethod}
                           </span>
+                        </td>
+                        <td style={{ padding: "1rem 1.5rem", textAlign: "center" }}>
+                          <button
+                            onClick={() => handleDeletePayout(payout.id, payout.workerName)}
+                            style={{
+                              background: "rgba(239,35,60,0.08)",
+                              color: "var(--error)",
+                              border: "1px solid rgba(239,35,60,0.15)",
+                              borderRadius: "6px",
+                              width: "28px",
+                              height: "28px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                              transition: "all 0.2s"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "var(--error)";
+                              e.currentTarget.style.color = "white";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = "rgba(239,35,60,0.08)";
+                              e.currentTarget.style.color = "var(--error)";
+                            }}
+                            title="Delete Payout Record"
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1082,6 +1204,128 @@ export default function FinanceSalary() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear Payout History Warning Modal */}
+      {showClearHistoryModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "1rem"
+        }}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }} onClick={() => !clearingHistory && setShowClearHistoryModal(false)} />
+          
+          <div 
+            style={{
+              position: "relative",
+              background: "var(--surface-overlay)",
+              backdropFilter: "blur(24px)",
+              border: "1px solid var(--surface-border)",
+              borderRadius: "20px",
+              width: "100%", maxWidth: "480px",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+              overflow: "hidden"
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.15)" }}>
+              <div>
+                <h3 style={{ fontSize: "1.25rem", fontWeight: 700, margin: 0, color: "var(--error)" }}>Clear Payout History</h3>
+              </div>
+              <button 
+                onClick={() => setShowClearHistoryModal(false)}
+                disabled={clearingHistory}
+                style={{ background: "none", border: "none", color: "white", cursor: "pointer" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "1.5rem", overflowY: "auto", flex: 1 }}>
+              <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", background: "rgba(239, 35, 60, 0.08)", padding: "1rem", borderRadius: "10px", border: "1px solid rgba(239, 35, 60, 0.2)" }}>
+                <AlertCircle size={24} style={{ color: "var(--error)", flexShrink: 0, marginTop: "2px" }} />
+                <div style={{ fontSize: "0.9rem", color: "var(--text-light)", lineHeight: "1.5" }}>
+                  <p style={{ margin: "0 0 0.5rem 0", color: "white", fontWeight: 600 }}>This action cannot be undone locally.</p>
+                  Clearing history will archive and hide all existing payout records from the dashboard display to keep it responsive. The raw records will remain in the database for compliance.
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                  It is highly recommended that you export the current salary sheet data before clearing the dashboard logs.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleExportSalarySheet}
+                  style={{
+                    width: "100%",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem",
+                    padding: "0.75rem",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--surface-border)",
+                    borderRadius: "8px",
+                    fontWeight: 650,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.08)"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--surface-2)"}
+                >
+                  <Download size={16} color="var(--accent)" />
+                  Download Salary CSV Sheet
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowClearHistoryModal(false)}
+                  disabled={clearingHistory}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid var(--surface-border)",
+                    borderRadius: "8px",
+                    color: "white",
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                    cursor: "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmClearPayoutHistory}
+                  disabled={clearingHistory}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: clearingHistory ? "var(--surface-border)" : "var(--error)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "white",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    cursor: clearingHistory ? "not-allowed" : "pointer"
+                  }}
+                >
+                  {clearingHistory ? "Clearing..." : "Clear History"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
