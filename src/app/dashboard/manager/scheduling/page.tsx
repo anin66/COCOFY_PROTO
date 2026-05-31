@@ -64,15 +64,18 @@ export default function SchedulingPage() {
   const [timeModalOpen, setTimeModalOpen] = useState(false);
   const [selectedJobForTime, setSelectedJobForTime] = useState<Job | null>(null);
   const [harvestTimeInput, setHarvestTimeInput] = useState("");
+  const [confirmSelectedPrice, setConfirmSelectedPrice] = useState("");
   const [updatingTime, setUpdatingTime] = useState(false);
 
   const handleOpenTimeModal = (job: Job) => {
     setSelectedJobForTime(job);
-    setHarvestTimeInput(job.time || "7:00 AM");
+    setHarvestTimeInput(job.time || "");
+    setConfirmSelectedPrice(job.pricePerTree || "");
     setTimeModalOpen(true);
   };
 
-  const handleSaveHarvestTime = async () => {
+  const handleSaveHarvestTime = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!selectedJobForTime) return;
     if (!harvestTimeInput.trim()) {
       showToast("Please enter or select a start time.", "error");
@@ -85,16 +88,18 @@ export default function SchedulingPage() {
       
       await updateDoc(jobRef, {
         time: harvestTimeInput.trim(),
+        pricePerTree: confirmSelectedPrice.trim(),
         ...(isUnconfirmed ? { status: "CONFIRMED" } : {}),
       });
 
-      showToast("Harvest time updated successfully.", "success");
+      showToast("Job confirmed successfully.", "success");
       setTimeModalOpen(false);
       setSelectedJobForTime(null);
       setHarvestTimeInput("");
+      setConfirmSelectedPrice("");
     } catch (err) {
-      console.error("Error updating harvest time:", err);
-      showToast("Failed to update harvest time.", "error");
+      console.error("Error updating job details:", err);
+      showToast("Failed to update job details.", "error");
     } finally {
       setUpdatingTime(false);
     }
@@ -598,7 +603,7 @@ export default function SchedulingPage() {
             }
           }
         `}} />
-        {/* Harvest Time Modal */}
+        {/* Confirm Job Details Modal */}
         {timeModalOpen && selectedJobForTime && (
           <div style={{
             position: "fixed",
@@ -627,7 +632,7 @@ export default function SchedulingPage() {
               <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <Clock size={24} color="var(--accent)" />
-                  <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "var(--foreground)" }}>Set Harvest Time</h2>
+                  <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "var(--foreground)" }}>Confirm Job Details</h2>
                 </div>
                 <button 
                   onClick={() => setTimeModalOpen(false)}
@@ -640,78 +645,172 @@ export default function SchedulingPage() {
               {/* Modal Body */}
               <div style={{ padding: "2rem" }}>
                 <p style={{ margin: "0 0 1.5rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
-                  Setting time for <strong style={{ color: "var(--foreground)" }}>{selectedJobForTime.customerName}</strong> on {selectedJobForTime.date}.
+                  Finalize the start time and pricing structure for <strong style={{ color: "var(--foreground)" }}>{selectedJobForTime.customerName}</strong>.
                 </p>
 
-                {/* Exact Start Time Input */}
-                <div style={{ marginBottom: "1.25rem" }}>
-                  <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
-                    Exact Start Time
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <Clock size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
-                    <input 
-                      type="text"
-                      placeholder="e.g. 6:15 AM or 17:30"
-                      value={harvestTimeInput}
-                      onChange={(e) => setHarvestTimeInput(e.target.value)}
-                      style={{
-                        width: "100%",
-                        background: "var(--surface-2)",
-                        border: "1px solid var(--surface-border)",
-                        color: "var(--foreground)",
-                        padding: "0.75rem 1rem 0.75rem 2.5rem",
-                        borderRadius: "8px",
-                        outline: "none",
-                        fontFamily: "inherit"
-                      }}
-                    />
+                <form id="confirm-job-form-sched" onSubmit={handleSaveHarvestTime}>
+                  {/* Exact Start Time Input */}
+                  <div style={{ marginBottom: "1.25rem" }}>
+                    <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
+                      Exact Start Time
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <Clock size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
+                      <input 
+                        type="text"
+                        placeholder="e.g. 6:15 AM or 17:30"
+                        value={harvestTimeInput}
+                        onChange={(e) => setHarvestTimeInput(e.target.value)}
+                        style={{
+                          width: "100%",
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--surface-border)",
+                          color: "var(--foreground)",
+                          padding: "0.75rem 1rem 0.75rem 2.5rem",
+                          borderRadius: "8px",
+                          outline: "none",
+                          fontFamily: "inherit"
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* Quick Presets */}
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
-                    ⚡ Quick Presets
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
-                    {["6:00 AM", "7:00 AM", "8:00 AM", "4:30 PM"].map((timePreset) => {
-                      const isSelected = harvestTimeInput === timePreset;
-                      return (
-                        <button
-                          key={timePreset}
-                          type="button"
-                          onClick={() => setHarvestTimeInput(timePreset)}
-                          style={{
-                            padding: "0.5rem 1rem",
-                            borderRadius: "8px",
-                            background: isSelected ? "var(--primary-glow)" : "var(--surface-2)",
-                            border: isSelected ? "1px solid var(--accent)" : "1px solid var(--surface-border)",
-                            color: isSelected ? "var(--accent)" : "var(--text-muted)",
-                            fontSize: "0.8rem",
-                            fontWeight: 600,
-                            cursor: "pointer",
-                            transition: "all 0.2s ease"
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected) {
-                              e.currentTarget.style.background = "var(--surface-overlay)";
-                              e.currentTarget.style.color = "var(--foreground)";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected) {
-                              e.currentTarget.style.background = "var(--surface-2)";
-                              e.currentTarget.style.color = "var(--text-muted)";
-                            }
-                          }}
-                        >
-                          {timePreset}
-                        </button>
-                      );
-                    })}
+                  {/* Quick Presets */}
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
+                      ⚡ Quick Presets
+                    </label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
+                      {["6:00 AM", "7:00 AM", "8:00 AM", "4:30 PM"].map((timePreset) => {
+                        const isSelected = harvestTimeInput === timePreset;
+                        return (
+                          <button
+                            key={timePreset}
+                            type="button"
+                            onClick={() => setHarvestTimeInput(timePreset)}
+                            style={{
+                              padding: "0.5rem 1rem",
+                              borderRadius: "8px",
+                              background: isSelected ? "var(--primary-glow)" : "var(--surface-2)",
+                              border: isSelected ? "1px solid var(--accent)" : "1px solid var(--surface-border)",
+                              color: isSelected ? "var(--accent)" : "var(--text-muted)",
+                              fontSize: "0.8rem",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              transition: "all 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.background = "var(--surface-overlay)";
+                                e.currentTarget.style.color = "var(--foreground)";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.background = "var(--surface-2)";
+                                e.currentTarget.style.color = "var(--text-muted)";
+                              }
+                            }}
+                          >
+                            {timePreset}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+
+                  {/* Confirm Price Input */}
+                  <div style={{ marginBottom: "1.25rem" }}>
+                    <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
+                      Confirm Price (₹/tree)
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <Briefcase size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
+                      <input 
+                        type="text"
+                        placeholder="Type a price or select a preset below"
+                        value={confirmSelectedPrice}
+                        onChange={(e) => setConfirmSelectedPrice(e.target.value)}
+                        style={{
+                          width: "100%",
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--surface-border)",
+                          color: "var(--foreground)",
+                          padding: "0.75rem 1rem 0.75rem 2.5rem",
+                          borderRadius: "8px",
+                          outline: "none",
+                          fontFamily: "inherit"
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick Price Presets */}
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
+                      💸 Quick Price Presets
+                    </label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
+                      {[
+                        { label: "₹30", value: "Price (₹30/tree)" },
+                        { label: "₹45", value: "Price (₹45/tree)" },
+                        { label: "₹50", value: "Price (₹50/tree)" },
+                        { label: "₹60", value: "Price (₹60/tree)" }
+                      ].map((preset) => {
+                        const isSelected = confirmSelectedPrice === preset.value;
+                        return (
+                          <button
+                            key={preset.value}
+                            type="button"
+                            onClick={() => setConfirmSelectedPrice(preset.value)}
+                            style={{
+                              padding: "0.5rem 1rem",
+                              borderRadius: "8px",
+                              background: isSelected ? "var(--primary-glow)" : "var(--surface-2)",
+                              border: isSelected ? "1px solid var(--accent)" : "1px solid var(--surface-border)",
+                              color: isSelected ? "var(--accent)" : "var(--text-muted)",
+                              fontSize: "0.8rem",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              transition: "all 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.background = "var(--surface-overlay)";
+                                e.currentTarget.style.color = "var(--foreground)";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.background = "var(--surface-2)";
+                                e.currentTarget.style.color = "var(--text-muted)";
+                              }
+                            }}
+                          >
+                            {preset.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Scheduled For Row */}
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--surface-border)",
+                    borderRadius: "8px",
+                    padding: "0.75rem 1rem",
+                    marginBottom: "0.5rem",
+                    fontSize: "0.85rem",
+                    color: "var(--text-muted)"
+                  }}>
+                    <Calendar size={16} color="var(--accent)" />
+                    <span>Scheduled for: <strong style={{ color: "var(--foreground)" }}>{selectedJobForTime.date}</strong></span>
+                  </div>
+                </form>
               </div>
 
               {/* Modal Footer */}
@@ -731,8 +830,8 @@ export default function SchedulingPage() {
                   Cancel
                 </button>
                 <button 
-                  type="button"
-                  onClick={handleSaveHarvestTime}
+                  type="submit"
+                  form="confirm-job-form-sched"
                   disabled={updatingTime}
                   style={{
                     padding: "0.6rem 1.5rem",
@@ -745,7 +844,7 @@ export default function SchedulingPage() {
                     opacity: updatingTime ? 0.7 : 1
                   }}
                 >
-                  {updatingTime ? "Saving..." : "Save Time"}
+                  {updatingTime ? "Confirming..." : "Confirm Job"}
                 </button>
               </div>
             </div>
