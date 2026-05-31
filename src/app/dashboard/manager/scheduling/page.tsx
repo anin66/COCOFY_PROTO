@@ -601,90 +601,147 @@ export default function SchedulingPage() {
         {/* Harvest Time Modal */}
         {timeModalOpen && selectedJobForTime && (
           <div style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
-            backdropFilter: "blur(4px)", display: "flex", alignItems: "center",
-            justifyContent: "center", zIndex: 1000, padding: "1rem"
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "1rem"
           }}>
-            <div className="mobile-scroll-modal modal-opening" style={{
-              background: "var(--surface)", border: "1px solid var(--surface-border)",
-              borderRadius: "20px", width: "100%", maxWidth: "400px",
-              padding: "1.75rem", display: "flex", flexDirection: "column", gap: "1.25rem",
-              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)"
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--surface-border)", paddingBottom: "0.75rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <Clock size={18} color="var(--accent)" />
-                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700 }}>Set Harvest Time</h3>
+            <div 
+              className="mobile-scroll-modal modal-opening"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--surface-border)",
+                borderRadius: "20px",
+                width: "100%",
+                maxWidth: "460px",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                overflow: "hidden"
+              }}
+            >
+              {/* Modal Header */}
+              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <Clock size={24} color="var(--accent)" />
+                  <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "var(--foreground)" }}>Set Harvest Time</h2>
                 </div>
-                <button
+                <button 
                   onClick={() => setTimeModalOpen(false)}
                   style={{ background: "none", border: "none", color: "var(--text-light)", cursor: "pointer" }}
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
 
-              <div style={{ fontSize: "0.85rem", color: "var(--text-light)" }}>
-                Setting time for <strong>{selectedJobForTime.customerName}</strong> on {selectedJobForTime.date}.
+              {/* Modal Body */}
+              <div style={{ padding: "2rem" }}>
+                <p style={{ margin: "0 0 1.5rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
+                  Setting time for <strong style={{ color: "var(--foreground)" }}>{selectedJobForTime.customerName}</strong> on {selectedJobForTime.date}.
+                </p>
+
+                {/* Exact Start Time Input */}
+                <div style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
+                    Exact Start Time
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <Clock size={16} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
+                    <input 
+                      type="text"
+                      placeholder="e.g. 6:15 AM or 17:30"
+                      value={harvestTimeInput}
+                      onChange={(e) => setHarvestTimeInput(e.target.value)}
+                      style={{
+                        width: "100%",
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--surface-border)",
+                        color: "var(--foreground)",
+                        padding: "0.75rem 1rem 0.75rem 2.5rem",
+                        borderRadius: "8px",
+                        outline: "none",
+                        fontFamily: "inherit"
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Presets */}
+                <div style={{ marginBottom: "1.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem", fontSize: "0.85rem", fontWeight: 600 }}>
+                    ⚡ Quick Presets
+                  </label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
+                    {["6:00 AM", "7:00 AM", "8:00 AM", "4:30 PM"].map((timePreset) => {
+                      const isSelected = harvestTimeInput === timePreset;
+                      return (
+                        <button
+                          key={timePreset}
+                          type="button"
+                          onClick={() => setHarvestTimeInput(timePreset)}
+                          style={{
+                            padding: "0.5rem 1rem",
+                            borderRadius: "8px",
+                            background: isSelected ? "var(--primary-glow)" : "var(--surface-2)",
+                            border: isSelected ? "1px solid var(--accent)" : "1px solid var(--surface-border)",
+                            color: isSelected ? "var(--accent)" : "var(--text-muted)",
+                            fontSize: "0.8rem",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.background = "var(--surface-overlay)";
+                              e.currentTarget.style.color = "var(--foreground)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.background = "var(--surface-2)";
+                              e.currentTarget.style.color = "var(--text-muted)";
+                            }
+                          }}
+                        >
+                          {timePreset}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-muted)" }}>
-                  Start Time
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 7:30 AM"
-                  value={harvestTimeInput}
-                  onChange={(e) => setHarvestTimeInput(e.target.value)}
-                  style={{
-                    background: "var(--surface-2)", border: "1px solid var(--surface-border)",
-                    color: "white", padding: "0.65rem 0.85rem", borderRadius: "8px",
-                    outline: "none", fontFamily: "inherit", fontSize: "0.9rem"
-                  }}
-                />
-              </div>
-
-              {/* Presets */}
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                {["6:00 AM", "7:00 AM", "8:00 AM", "4:30 PM"].map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => setHarvestTimeInput(preset)}
-                    style={{
-                      background: harvestTimeInput === preset ? "var(--primary)" : "var(--surface-2)",
-                      border: `1px solid ${harvestTimeInput === preset ? "var(--primary)" : "var(--surface-border)"}`,
-                      color: "white", borderRadius: "6px", padding: "0.35rem 0.75rem",
-                      fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", transition: "all 0.2s"
-                    }}
-                  >
-                    {preset}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
-                <button
+              {/* Modal Footer */}
+              <div style={{ padding: "1.5rem 2rem", background: "var(--surface-2)", display: "flex", justifyContent: "flex-end", gap: "1rem", borderTop: "1px solid var(--surface-border)" }}>
+                <button 
                   type="button"
                   onClick={() => setTimeModalOpen(false)}
                   style={{
-                    flex: 1, padding: "0.65rem", borderRadius: "10px",
-                    background: "var(--surface-2)", border: "1px solid var(--surface-border)",
-                    color: "white", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem"
+                    padding: "0.6rem 1.2rem",
+                    background: "transparent",
+                    color: "var(--text-muted)",
+                    border: "none",
+                    fontWeight: 600,
+                    cursor: "pointer"
                   }}
                 >
                   Cancel
                 </button>
-                <button
+                <button 
                   type="button"
                   onClick={handleSaveHarvestTime}
                   disabled={updatingTime}
                   style={{
-                    flex: 1, padding: "0.65rem", borderRadius: "10px",
+                    padding: "0.6rem 1.5rem",
                     background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-                    border: "none", color: "white", fontWeight: 700,
-                    cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontWeight: 600,
+                    cursor: "pointer",
                     opacity: updatingTime ? 0.7 : 1
                   }}
                 >
