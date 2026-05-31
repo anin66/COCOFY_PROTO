@@ -33,7 +33,7 @@ export default function FinanceHistory() {
   const handleDeleteHistory = async (paymentId: string, customerName: string) => {
     const isConfirmed = await confirm({
       title: "Delete Payment Record?",
-      message: `Are you sure you want to delete the payment history for "${customerName}"? This will permanently remove the record from the database.`,
+      message: `Are you sure you want to delete the payment history for "${customerName}"? This will permanently remove the record and the underlying job from the database.`,
       confirmText: "Delete",
       cancelText: "Cancel",
       type: "danger"
@@ -42,11 +42,13 @@ export default function FinanceHistory() {
     if (!isConfirmed) return;
 
     try {
+      // Delete both the payment history entry and the corresponding job record
       await deleteDoc(doc(db, "payments", paymentId));
-      showToast("Payment record deleted successfully.", "success");
+      await deleteDoc(doc(db, "jobs", paymentId));
+      showToast("Payment record and underlying job deleted successfully.", "success");
     } catch (error: any) {
-      console.error("Error deleting payment record:", error);
-      showToast(error.message || "Failed to delete payment record.", "error");
+      console.error("Error deleting payment/job record:", error);
+      showToast(error.message || "Failed to delete payment/job record.", "error");
     }
   };
 
