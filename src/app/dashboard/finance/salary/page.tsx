@@ -391,7 +391,7 @@ export default function FinanceSalary() {
 
       const payoutId = `${selectedWorkerData.uid}_cycle_${selectedCycle.cycleNumber}`;
       
-      const payoutDocData: Payout = {
+      const payoutDocData: any = {
         id: payoutId,
         workerUid: selectedWorkerData.uid,
         workerName: selectedWorkerData.name,
@@ -406,10 +406,15 @@ export default function FinanceSalary() {
         incentivesIncluded: includeIncentives,
         amountPaid: finalPaid,
         paidAt: new Date().toISOString(),
-        paymentMethod: paymentMethod,
-        receiverName: paymentMethod === "CASH" ? receiverName : undefined,
-        notes: notes || undefined
+        paymentMethod: paymentMethod
       };
+
+      if (paymentMethod === "CASH" && receiverName) {
+        payoutDocData.receiverName = receiverName;
+      }
+      if (notes) {
+        payoutDocData.notes = notes;
+      }
 
       // 1. Save record to `payouts` collection
       await setDoc(doc(db, "payouts", payoutId), payoutDocData);
