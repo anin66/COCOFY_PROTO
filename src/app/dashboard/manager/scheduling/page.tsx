@@ -388,14 +388,18 @@ export default function SchedulingPage() {
                   selectedJobs.map((job, idx) => {
                     const sc = STATUS_COLORS[job.status] || "#6b7280";
                     const accepted = job.assignedWorkers?.filter((w) => w.status === "accepted").length || 0;
+                    const isEditable = job.status !== "COMPLETED" && job.status !== "ARCHIVED";
+
                     return (
                       <div
                         key={job.id}
                         className="sched-job-card"
+                        onClick={() => isEditable && handleOpenTimeModal(job)}
                         style={{
                           padding: "1rem 1.1rem", borderRadius: "14px",
                           background: "var(--surface-2)", border: "1px solid var(--surface-border)",
                           animation: `sched-card-in 0.35s ${idx * 0.06}s cubic-bezier(0.22,1,0.36,1) both`,
+                          cursor: isEditable ? "pointer" : "default"
                         }}
                       >
                         {/* Status + Name row */}
@@ -424,46 +428,9 @@ export default function SchedulingPage() {
                           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                             <Clock size={12} color="var(--accent)" />
                             {job.time ? (
-                              <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                                <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
-                                {job.status !== "COMPLETED" && job.status !== "ARCHIVED" && (
-                                  <button
-                                    onClick={() => handleOpenTimeModal(job)}
-                                    style={{
-                                      background: "none", border: "none", color: "var(--text-light)",
-                                      cursor: "pointer", padding: "2px", display: "inline-flex",
-                                      alignItems: "center"
-                                    }}
-                                    title="Edit Harvest Time"
-                                  >
-                                    <Edit size={10} />
-                                  </button>
-                                )}
-                              </div>
+                              <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
                             ) : (
-                              job.status !== "COMPLETED" && job.status !== "ARCHIVED" ? (
-                                <button
-                                  onClick={() => handleOpenTimeModal(job)}
-                                  style={{
-                                    background: "rgba(255, 153, 0, 0.1)",
-                                    border: "1px solid rgba(255, 153, 0, 0.2)",
-                                    color: "var(--accent)",
-                                    borderRadius: "4px",
-                                    fontSize: "0.68rem",
-                                    padding: "2px 6px",
-                                    fontWeight: 600,
-                                    cursor: "pointer",
-                                    fontFamily: "inherit",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "2px"
-                                  }}
-                                >
-                                  <Plus size={10} /> Time
-                                </button>
-                              ) : (
-                                <span style={{ color: "var(--text-dim)" }}>No Time</span>
-                              )
+                              <span style={{ color: "var(--text-dim)" }}>No Time</span>
                             )}
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
