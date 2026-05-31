@@ -229,6 +229,7 @@ export default function FinanceAnalytics() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [expType, setExpType] = useState("Fuel");
   const [customExpType, setCustomExpType] = useState("");
+  const [allPayouts, setAllPayouts] = useState<any[]>([]);
   const [expDesc, setExpDesc] = useState("");
   const [expAmount, setExpAmount] = useState("");
   const [expDate, setExpDate] = useState(new Date().toISOString().slice(0, 10));
@@ -332,7 +333,13 @@ export default function FinanceAnalytics() {
       setLoading(false);
     });
 
-    return () => { unsubJobs(); unsubPayments(); unsubExpenses(); };
+    const unsubPayouts = onSnapshot(collection(db, "payouts"), (snap) => {
+      const list: any[] = [];
+      snap.forEach((d) => list.push({ ...d.data(), id: d.id }));
+      setAllPayouts(list);
+    });
+
+    return () => { unsubJobs(); unsubPayments(); unsubExpenses(); unsubPayouts(); };
   }, []);
 
   /* ============================== FILTERED DATA ============================== */
@@ -568,17 +575,33 @@ export default function FinanceAnalytics() {
       }
       const s = map.get(loc)!;
       s.jobs += 1;
-      // Calculate actual worker cost based on harvested trees (fallback to estimated trees if not reported yet)
+
+      // Calculate actual worker cost based on harvested trees (only if paid in completed cycle, otherwise ₹0)
       let totalHarvested = 0;
       let hasHarvestedData = false;
       job.assignedWorkers?.forEach((w) => {
         if (w.status === "accepted" && w.harvestConfirmed) {
-          totalHarvested += w.harvestedTrees || 0;
-          hasHarvestedData = true;
+          // Check if this worker has a payout cycle that covers this job date
+          const isPaid = allPayouts.some((payout) => {
+            if (payout.workerUid !== w.uid) return false;
+            const jobDateStr = job.date || job.createdAt;
+            if (!jobDateStr) return false;
+            
+            const jDate = new Date(jobDateStr.slice(0, 10));
+            const pStart = new Date(payout.startDate.slice(0, 10));
+            const pEnd = new Date(payout.endDate.slice(0, 10));
+            
+            return jDate >= pStart && jDate <= pEnd;
+          });
+
+          if (isPaid) {
+            totalHarvested += w.harvestedTrees || 0;
+            hasHarvestedData = true;
+          }
         }
       });
 
-      const actualTrees = hasHarvestedData ? totalHarvested : (job.trees || 0);
+      const actualTrees = hasHarvestedData ? totalHarvested : 0;
       s.trees += actualTrees;
       s.workerCost += actualTrees * workerCostPerTreeBE;
     });
@@ -605,7 +628,7 @@ export default function FinanceAnalytics() {
 
     // Sort by profit margin descending, then profit amount
     return list.sort((a, b) => b.margin - a.margin || b.profit - a.profit);
-  }, [filteredJobs, filteredPayments, workerCostPerTreeBE]);
+  }, [filteredJobs, filteredPayments, workerCostPerTreeBE, allPayouts]);
 
   /* ============================== LOCATION STATS ============================== */
   const locationStats = useMemo(() => {
