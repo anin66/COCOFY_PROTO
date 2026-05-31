@@ -338,13 +338,33 @@ export default function DeliveryDashboard() {
                           Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
                         </div>
                       )}
-                      {job.pricePerTree && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
-                          {job.pricePerTree}
-                        </div>
-                      )}
                     </div>
+
+                    {/* Assigned Workers */}
+                    {job.assignedWorkers && job.assignedWorkers.length > 0 && (
+                      <div style={{ marginBottom: "1.25rem", fontSize: "0.85rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-light)", fontWeight: 600 }}>
+                          <Users size={16} color="var(--accent)" className="icon-hover-effect" />
+                          <span>Assigned Workers:</span>
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", paddingLeft: "1.3rem" }}>
+                          {job.assignedWorkers.map((w, idx) => (
+                            <span
+                              key={w.uid || idx}
+                              style={{
+                                background: "rgba(255, 255, 255, 0.05)",
+                                border: "1px solid var(--surface-border)",
+                                padding: "0.2rem 0.5rem",
+                                borderRadius: "6px",
+                                color: "var(--text-light)",
+                              }}
+                            >
+                              {w.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Action Button */}
                     {!isConfirmed && (
