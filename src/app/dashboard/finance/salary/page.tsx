@@ -855,6 +855,9 @@ export default function FinanceSalary() {
               border: "1px solid var(--surface-border)",
               borderRadius: "20px",
               width: "100%", maxWidth: "550px",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
               boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
               overflow: "hidden"
             }}
@@ -874,7 +877,7 @@ export default function FinanceSalary() {
             </div>
 
             {/* Content */}
-            <div style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            <div style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "1.5rem", overflowY: "auto", flex: 1 }}>
               {/* Profile Card */}
               <div style={{ background: "rgba(0,0,0,0.15)", padding: "1rem", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
