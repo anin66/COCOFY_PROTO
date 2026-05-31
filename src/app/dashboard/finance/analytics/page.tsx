@@ -551,9 +551,19 @@ export default function FinanceAnalytics() {
       }
       const s = map.get(loc)!;
       s.jobs += 1;
-      s.trees += job.trees || 0;
-      // Worker cost = trees * workerCostPerTreeBE
-      s.workerCost += (job.trees || 0) * workerCostPerTreeBE;
+      // Calculate actual worker cost based on harvested trees (fallback to estimated trees if not reported yet)
+      let totalHarvested = 0;
+      let hasHarvestedData = false;
+      job.assignedWorkers?.forEach((w) => {
+        if (w.status === "accepted" && w.harvestConfirmed) {
+          totalHarvested += w.harvestedTrees || 0;
+          hasHarvestedData = true;
+        }
+      });
+
+      const actualTrees = hasHarvestedData ? totalHarvested : (job.trees || 0);
+      s.trees += actualTrees;
+      s.workerCost += actualTrees * workerCostPerTreeBE;
     });
 
     // Group revenues from fully paid payments by location
