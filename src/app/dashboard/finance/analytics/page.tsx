@@ -228,6 +228,7 @@ export default function FinanceAnalytics() {
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [expType, setExpType] = useState("Fuel");
+  const [customExpType, setCustomExpType] = useState("");
   const [expDesc, setExpDesc] = useState("");
   const [expAmount, setExpAmount] = useState("");
   const [expDate, setExpDate] = useState(new Date().toISOString().slice(0, 10));
@@ -693,6 +694,7 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
   const openAddExpense = () => {
     setEditingExpense(null);
     setExpType("Fuel");
+    setCustomExpType("");
     setExpDesc("");
     setExpAmount("");
     setExpDate(new Date().toISOString().slice(0, 10));
@@ -701,7 +703,13 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
 
   const openEditExpense = (exp: Expense) => {
     setEditingExpense(exp);
-    setExpType(exp.type);
+    if (EXPENSE_TYPES.includes(exp.type) && exp.type !== "Other") {
+      setExpType(exp.type);
+      setCustomExpType("");
+    } else {
+      setExpType("Other");
+      setCustomExpType(exp.type);
+    }
     setExpDesc(exp.description);
     setExpAmount(String(exp.amount));
     setExpDate(exp.date);
@@ -711,10 +719,20 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
   const handleSaveExpense = async () => {
     if (!expAmount || parseFloat(expAmount) <= 0) { showToast("Enter a valid amount.", "error"); return; }
     if (!expDate) { showToast("Select a date.", "error"); return; }
+
+    let resolvedType = expType;
+    if (expType === "Other") {
+      if (!customExpType.trim()) {
+        showToast("Please enter a custom expense type.", "error");
+        return;
+      }
+      resolvedType = customExpType.trim();
+    }
+
     setExpSubmitting(true);
     try {
       const data = {
-        type: expType,
+        type: resolvedType,
         description: expDesc,
         amount: parseFloat(expAmount),
         date: expDate,
@@ -2644,6 +2662,18 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
                   {EXPENSE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
+              {expType === "Other" && (
+                <div>
+                  <label style={labelStyle}>Custom Expense Type</label>
+                  <input
+                    type="text"
+                    value={customExpType}
+                    onChange={(e) => setCustomExpType(e.target.value)}
+                    placeholder="Enter custom expense type..."
+                    style={{ ...inputStyle, width: "100%" }}
+                  />
+                </div>
+              )}
               <div>
                 <label style={labelStyle}>Description (Optional)</label>
                 <input type="text" value={expDesc} onChange={(e) => setExpDesc(e.target.value)} placeholder="Brief description..." style={{ ...inputStyle, width: "100%" }} />

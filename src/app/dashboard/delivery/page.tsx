@@ -342,21 +342,32 @@ export default function DeliveryDashboard() {
 
                     {/* Assigned Workers */}
                     {job.assignedWorkers && job.assignedWorkers.length > 0 && (
-                      <div style={{ marginBottom: "1.25rem", fontSize: "0.85rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-light)", fontWeight: 600 }}>
+                      <div style={{
+                        marginBottom: "1.25rem",
+                        padding: "0.75rem 1rem",
+                        borderRadius: "12px",
+                        background: "rgba(255, 0, 127, 0.08)",
+                        border: "1px solid rgba(255, 0, 127, 0.25)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.5rem"
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--foreground)", fontWeight: 700, fontSize: "0.85rem" }}>
                           <Users size={16} color="var(--accent)" className="icon-hover-effect" />
                           <span>Assigned Workers:</span>
                         </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", paddingLeft: "1.3rem" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
                           {job.assignedWorkers.map((w, idx) => (
                             <span
                               key={w.uid || idx}
                               style={{
-                                background: "rgba(255, 255, 255, 0.05)",
-                                border: "1px solid var(--surface-border)",
-                                padding: "0.2rem 0.5rem",
+                                background: "var(--surface-1)",
+                                border: "1px solid rgba(255, 0, 127, 0.2)",
+                                padding: "0.25rem 0.6rem",
                                 borderRadius: "6px",
-                                color: "var(--text-light)",
+                                color: "white",
+                                fontSize: "0.8rem",
+                                fontWeight: 600,
                               }}
                             >
                               {w.name}
