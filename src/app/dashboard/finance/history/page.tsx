@@ -4,13 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { db, auth } from "@/lib/firebase";
-import { collection, onSnapshot, doc, getDoc, deleteDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc, deleteDoc, updateDoc, query, where } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { 
   CheckCircle, MapPin, Phone, Calendar, TreePine, 
   IndianRupee, Download, Users, FileText, Image as ImageIcon, History as HistoryIcon,
-  Trash2
+  Trash2, X
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { useToast } from "@/context/ToastContext";
@@ -25,6 +25,9 @@ export default function FinanceHistory() {
   const [currentUserName, setCurrentUserName] = useState<string>("Finance Manager");
   const [loading, setLoading] = useState(true);
   const [completedPayments, setCompletedPayments] = useState<any[]>([]);
+  const [financeClearedAt, setFinanceClearedAt] = useState<string>("");
+  const [showClearModal, setShowClearModal] = useState<boolean>(false);
+  const [clearing, setClearing] = useState<boolean>(false);
 
   // Receipt Generation State
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
@@ -66,6 +69,7 @@ export default function FinanceHistory() {
         } else {
           setCurrentUserRole(role);
           setCurrentUserName(userDoc.data().name || "Finance Manager");
+          setFinanceClearedAt(userDoc.data().financeHistoryClearedAt || "");
         }
       }
     });
@@ -73,10 +77,15 @@ export default function FinanceHistory() {
   }, [router]);
 
   useEffect(() => {
-    // Listen to payments collection for FULLY_PAID
-    const unsubPayments = onSnapshot(collection(db, "payments"), (snapshot) => {
+    setLoading(true);
+    let q: any = collection(db, "payments");
+    if (financeClearedAt) {
+      q = query(collection(db, "payments"), where("lastUpdatedAt", ">", financeClearedAt));
+    }
+    // Listen to payments collection
+    const unsubPayments = onSnapshot(q, (snapshot: any) => {
       const list: any[] = [];
-      snapshot.forEach((d) => {
+      snapshot.forEach((d: any) => {
         const data = d.data();
         if (data.paymentStatus === "FULLY_PAID") {
           list.push({ ...data, id: d.id });
@@ -85,9 +94,12 @@ export default function FinanceHistory() {
       list.sort((a, b) => new Date(b.lastUpdatedAt).getTime() - new Date(a.lastUpdatedAt).getTime());
       setCompletedPayments(list);
       setLoading(false);
+    }, (error: any) => {
+      console.error("Error loading payments:", error);
+      setLoading(false);
     });
     return () => unsubPayments();
-  }, []);
+  }, [financeClearedAt]);
 
   const handleDownloadReceipt = async (paymentId: string, customerName: string) => {
     const element = receiptRefs.current[paymentId];
@@ -122,6 +134,68 @@ export default function FinanceHistory() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (completedPayments.length === 0) {
+      showToast("No data to export.", "error");
+      return;
+    }
+    
+    const headers = ["Job ID", "Customer Name", "Phone", "Location", "Date", "Trees Requested", "Price Per Tree", "Total Paid", "Last Updated"];
+    
+    const rows = completedPayments.map(payment => {
+      const job = payment.jobDetails || {};
+      return [
+        payment.id,
+        `"${(job.customerName || '').replace(/"/g, '""')}"`,
+        `"${(job.phone || '').replace(/"/g, '""')}"`,
+        `"${(job.location || '').replace(/"/g, '""')}"`,
+        job.date || '',
+        job.trees || 0,
+        `"${(job.pricePerTree || '').replace(/"/g, '""')}"`,
+        payment.totalAmount || 0,
+        payment.lastUpdatedAt || ''
+      ];
+    });
+    
+    const csvRows = [headers.join(",")];
+    for (const row of rows) {
+      csvRows.push(row.join(","));
+    }
+    
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `payment_history_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("CSV exported successfully.", "success");
+  };
+
+  const handleConfirmClear = async () => {
+    setClearing(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("No authenticated user");
+      
+      const newClearedAt = new Date().toISOString();
+      await updateDoc(doc(db, "users", user.uid), {
+        financeHistoryClearedAt: newClearedAt
+      });
+      
+      setFinanceClearedAt(newClearedAt);
+      setCompletedPayments([]);
+      setShowClearModal(false);
+      showToast("Payment history cleared from active view.", "success");
+    } catch (error: any) {
+      console.error("Error clearing history:", error);
+      showToast(error.message || "Failed to clear history.", "error");
+    } finally {
+      setClearing(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "transparent" }}>
       <Sidebar userName={currentUserName} userRole={currentUserRole.toUpperCase()} />
@@ -137,6 +211,36 @@ export default function FinanceHistory() {
                 Fully settled jobs and downloadable receipts.
               </p>
             </div>
+            {completedPayments.length > 0 && (
+              <button
+                onClick={() => setShowClearModal(true)}
+                style={{
+                  padding: "0.6rem 1.2rem",
+                  background: "rgba(239, 35, 60, 0.12)",
+                  color: "var(--error)",
+                  border: "1px solid rgba(239, 35, 60, 0.35)",
+                  borderRadius: "8px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  fontSize: "0.85rem",
+                  width: "auto"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--error)";
+                  e.currentTarget.style.color = "white";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(239, 35, 60, 0.12)";
+                  e.currentTarget.style.color = "var(--error)";
+                }}
+              >
+                Clear History
+              </button>
+            )}
           </div>
 
           {loading ? (
@@ -450,6 +554,141 @@ export default function FinanceHistory() {
             </div>
           )}
         </div>
+        {showClearModal && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+            padding: "1rem"
+          }}>
+            <div className="modal-opening" style={{
+              background: "var(--surface)",
+              border: "1px solid var(--surface-border)",
+              borderRadius: "20px",
+              width: "100%",
+              maxWidth: "460px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              overflow: "hidden"
+            }}>
+              {/* Header */}
+              <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontSize: "1.2rem" }}>⚠️</span>
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "white" }}>Clear Payment History</h3>
+                </div>
+                <button 
+                  onClick={() => setShowClearModal(false)}
+                  style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              
+              {/* Body */}
+              <div style={{ padding: "1.5rem", fontSize: "0.92rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
+                <p style={{ margin: "0 0 1rem 0" }}>
+                  Are you sure you want to clear your active history view? 
+                </p>
+                <p style={{ margin: "0 0 1rem 0", color: "var(--accent)", fontWeight: 500 }}>
+                  Note: The records will not be deleted from the database. However, they will be hidden from this view to optimize app performance and reduce database usage.
+                </p>
+                <p style={{ margin: 0, padding: "0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <strong>Important:</strong> We strongly recommend exporting your current history to CSV before clearing.
+                </p>
+              </div>
+              
+              {/* Footer */}
+              <div style={{
+                padding: "1rem 1.5rem",
+                background: "var(--surface-2)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "0.75rem",
+                borderTop: "1px solid var(--surface-border)"
+              }}>
+                <button
+                  onClick={handleExportCSV}
+                  style={{
+                    padding: "0.55rem 1.2rem",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                    borderRadius: "8px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+                  }}
+                >
+                  <Download size={14} />
+                  Export CSV
+                </button>
+
+                <div style={{ display: "flex", gap: "0.75rem" }}>
+                  <button
+                    onClick={() => setShowClearModal(false)}
+                    style={{
+                      padding: "0.55rem 1.2rem",
+                      background: "transparent",
+                      color: "white",
+                      border: "none",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      fontSize: "0.85rem"
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmClear}
+                    disabled={clearing}
+                    style={{
+                      padding: "0.55rem 1.5rem",
+                      background: clearing ? "var(--surface-border)" : "rgba(239,35,60,0.15)",
+                      border: "1px solid var(--error)",
+                      color: "var(--error)",
+                      borderRadius: "8px",
+                      fontWeight: 600,
+                      cursor: clearing ? "not-allowed" : "pointer",
+                      fontSize: "0.85rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem"
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!clearing) {
+                        e.currentTarget.style.background = "var(--error)";
+                        e.currentTarget.style.color = "white";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!clearing) {
+                        e.currentTarget.style.background = "rgba(239,35,60,0.15)";
+                        e.currentTarget.style.color = "var(--error)";
+                      }
+                    }}
+                  >
+                    {clearing ? "Clearing..." : "Confirm Clear"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <style dangerouslySetInnerHTML={{__html: `

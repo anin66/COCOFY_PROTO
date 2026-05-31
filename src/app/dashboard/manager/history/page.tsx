@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { db, auth } from "@/lib/firebase";
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc, query, where } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import { 
   Search, Briefcase, Phone, MapPin, Calendar, 
-  Users, TreePine, Clock, FileText, CheckCircle, Archive, Trash2
+  Users, TreePine, Clock, FileText, CheckCircle, Archive, Trash2, Download, X
 } from "lucide-react";
 
 interface AssignedWorker {
@@ -49,6 +49,9 @@ export default function HistoryPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [managerClearedAt, setManagerClearedAt] = useState<string>("");
+  const [showClearModal, setShowClearModal] = useState<boolean>(false);
+  const [clearing, setClearing] = useState<boolean>(false);
   const [confirmConfig, setConfirmConfig] = useState<{
     title: string;
     message: string;
@@ -68,6 +71,7 @@ export default function HistoryPage() {
           const role = data.role || "manager";
           setCurrentUserName(data.name || "Manager");
           setCurrentUserRole(role);
+          setManagerClearedAt(data.managerHistoryClearedAt || "");
           if (role !== "manager") {
             router.replace(`/dashboard/${role}`);
           }
@@ -80,9 +84,14 @@ export default function HistoryPage() {
   }, [router]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "jobs"), (snapshot) => {
+    setLoading(true);
+    let q: any = collection(db, "jobs");
+    if (managerClearedAt) {
+      q = query(collection(db, "jobs"), where("createdAt", ">", managerClearedAt));
+    }
+    const unsubscribe = onSnapshot(q, (snapshot: any) => {
       const archivedJobsList: Job[] = [];
-      snapshot.forEach((d) => {
+      snapshot.forEach((d: any) => {
         const data = d.data();
         if (data.status === "ARCHIVED") {
           archivedJobsList.push({ ...data, id: d.id } as Job);
@@ -91,12 +100,12 @@ export default function HistoryPage() {
       archivedJobsList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setJobs(archivedJobsList);
       setLoading(false);
-    }, (error) => {
+    }, (error: any) => {
       console.error("Error fetching history jobs:", error);
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [managerClearedAt]);
 
 
 
@@ -131,6 +140,72 @@ export default function HistoryPage() {
   const parsePrice = (priceStr: string) => {
     const num = parseInt(priceStr.replace(/[^0-9]/g, ""));
     return isNaN(num) ? 0 : num;
+  };
+
+  const handleExportCSV = () => {
+    if (jobs.length === 0) {
+      setConfirmConfig({
+        title: "No Data",
+        message: "No history data available to export.",
+        isAlertOnly: true,
+        onConfirm: () => {}
+      });
+      return;
+    }
+
+    const headers = ["Job ID", "Customer Name", "Phone", "Location", "Date", "Trees Requested", "Harvested Trees", "Price Per Tree", "Total Cost", "Created At"];
+    const rows = jobs.map(job => {
+      const jobHarvest = getJobHarvestTotal(job);
+      const price = parsePrice(job.pricePerTree);
+      const totalCost = jobHarvest * price;
+      return [
+        job.id,
+        `"${(job.customerName || '').replace(/"/g, '""')}"`,
+        `"${(job.phone || '').replace(/"/g, '""')}"`,
+        `"${(job.location || '').replace(/"/g, '""')}"`,
+        job.date || '',
+        job.trees || 0,
+        jobHarvest,
+        `"${(job.pricePerTree || '').replace(/"/g, '""')}"`,
+        totalCost,
+        job.createdAt || ''
+      ];
+    });
+
+    const csvRows = [headers.join(",")];
+    for (const row of rows) {
+      csvRows.push(row.join(","));
+    }
+
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `job_history_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleConfirmClear = async () => {
+    setClearing(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("No authenticated user");
+
+      const newClearedAt = new Date().toISOString();
+      await updateDoc(doc(db, "users", user.uid), {
+        managerHistoryClearedAt: newClearedAt
+      });
+
+      setManagerClearedAt(newClearedAt);
+      setJobs([]);
+      setShowClearModal(false);
+    } catch (error: any) {
+      console.error("Error clearing history:", error);
+    } finally {
+      setClearing(false);
+    }
   };
 
   // Filter jobs based on search
@@ -195,7 +270,38 @@ export default function HistoryPage() {
           </div>
 
           <div className="flex-stack-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Archived Records</h3>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Archived Records</h3>
+              {jobs.length > 0 && (
+                <button
+                  onClick={() => setShowClearModal(true)}
+                  style={{
+                    padding: "0.4rem 0.9rem",
+                    background: "rgba(239, 35, 60, 0.12)",
+                    color: "var(--error)",
+                    border: "1px solid rgba(239, 35, 60, 0.35)",
+                    borderRadius: "6px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    fontSize: "0.78rem"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--error)";
+                    e.currentTarget.style.color = "white";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 35, 60, 0.12)";
+                    e.currentTarget.style.color = "var(--error)";
+                  }}
+                >
+                  Clear History
+                </button>
+              )}
+            </div>
             <div className="flex-stack-mobile" style={{ display: "flex", gap: "1rem", width: "100%", maxWidth: "400px", justifyContent: "flex-end" }}>
               <div style={{ position: "relative", width: "100%" }}>
                 <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.5)" }} />
@@ -461,9 +567,156 @@ export default function HistoryPage() {
           </div>
         )}
 
+        {showClearModal && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+            padding: "1rem"
+          }}>
+            <div className="modal-opening" style={{
+              background: "var(--surface)",
+              border: "1px solid var(--surface-border)",
+              borderRadius: "20px",
+              width: "100%",
+              maxWidth: "460px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              overflow: "hidden"
+            }}>
+              {/* Header */}
+              <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontSize: "1.2rem" }}>⚠️</span>
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "white" }}>Clear Job History</h3>
+                </div>
+                <button 
+                  onClick={() => setShowClearModal(false)}
+                  style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              
+              {/* Body */}
+              <div style={{ padding: "1.5rem", fontSize: "0.92rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
+                <p style={{ margin: "0 0 1rem 0" }}>
+                  Are you sure you want to clear your active job history view? 
+                </p>
+                <p style={{ margin: "0 0 1rem 0", color: "var(--accent)", fontWeight: 500 }}>
+                  Note: The records will not be deleted from the database. However, they will be hidden from this view to optimize app performance and reduce database usage.
+                </p>
+                <p style={{ margin: 0, padding: "0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <strong>Important:</strong> We strongly recommend exporting your current history to CSV before clearing.
+                </p>
+              </div>
+              
+              {/* Footer */}
+              <div style={{
+                padding: "1rem 1.5rem",
+                background: "var(--surface-2)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "0.75rem",
+                borderTop: "1px solid var(--surface-border)"
+              }}>
+                <button
+                  onClick={handleExportCSV}
+                  style={{
+                    padding: "0.55rem 1.2rem",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                    borderRadius: "8px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+                  }}
+                >
+                  <Download size={14} />
+                  Export CSV
+                </button>
+
+                <div style={{ display: "flex", gap: "0.75rem" }}>
+                  <button
+                    onClick={() => setShowClearModal(false)}
+                    style={{
+                      padding: "0.55rem 1.2rem",
+                      background: "transparent",
+                      color: "white",
+                      border: "none",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      fontSize: "0.85rem"
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmClear}
+                    disabled={clearing}
+                    style={{
+                      padding: "0.55rem 1.5rem",
+                      background: clearing ? "var(--surface-border)" : "rgba(239,35,60,0.15)",
+                      border: "1px solid var(--error)",
+                      color: "var(--error)",
+                      borderRadius: "8px",
+                      fontWeight: 600,
+                      cursor: clearing ? "not-allowed" : "pointer",
+                      fontSize: "0.85rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem"
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!clearing) {
+                        e.currentTarget.style.background = "var(--error)";
+                        e.currentTarget.style.color = "white";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!clearing) {
+                        e.currentTarget.style.background = "rgba(239,35,60,0.15)";
+                        e.currentTarget.style.color = "var(--error)";
+                      }
+                    }}
+                  >
+                    {clearing ? "Clearing..." : "Confirm Clear"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
 
       <style dangerouslySetInnerHTML={{__html: `
+        @keyframes modalIn {
+          0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+          100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        @keyframes modalOut {
+          0% { transform: scale(1); opacity: 1; filter: blur(0px); }
+          40% { transform: scale(1.03); opacity: 0.9; }
+          100% { transform: scale(0.8) translateY(50px); opacity: 0; filter: blur(10px); }
+        }
+        .modal-opening { animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
         /* Premium Job Card Styling and Hover Micro-Animations */
         .job-card {
           background: var(--surface-2);
