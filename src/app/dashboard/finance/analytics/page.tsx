@@ -362,9 +362,26 @@ export default function FinanceAnalytics() {
     [filteredPayments]
   );
 
+  const totalWorkerCost = useMemo(() => {
+    let cost = 0;
+    filteredJobs.forEach((job) => {
+      let totalHarvested = 0;
+      let hasHarvestedData = false;
+      job.assignedWorkers?.forEach((w) => {
+        if (w.status === "accepted" && w.harvestConfirmed) {
+          totalHarvested += w.harvestedTrees || 0;
+          hasHarvestedData = true;
+        }
+      });
+      const actualTrees = hasHarvestedData ? totalHarvested : (job.trees || 0);
+      cost += actualTrees * workerCostPerTreeBE;
+    });
+    return cost;
+  }, [filteredJobs, workerCostPerTreeBE]);
+
   const totalExpensesAmt = useMemo(
-    () => filteredExpenses.reduce((s, e) => s + e.amount, 0),
-    [filteredExpenses]
+    () => filteredExpenses.reduce((s, e) => s + e.amount, 0) + totalWorkerCost,
+    [filteredExpenses, totalWorkerCost]
   );
 
   const netProfit = totalRevenue - totalExpensesAmt;
