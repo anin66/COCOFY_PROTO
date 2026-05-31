@@ -6,7 +6,7 @@ import TopBar from "@/components/dashboard/TopBar";
 import { useToast } from "@/context/ToastContext";
 import { db, auth } from "@/lib/firebase";
 import { 
-  collection, onSnapshot, doc, getDoc, setDoc, addDoc 
+  collection, onSnapshot, doc, getDoc, setDoc, addDoc, updateDoc 
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -124,6 +124,8 @@ export default function FinanceSalary() {
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "GPAY" | "BANK_TRANSFER">("CASH");
   const [receiverName, setReceiverName] = useState("");
   const [notes, setNotes] = useState("");
+  const [changePlanOption, setChangePlanOption] = useState<"continue" | "change">("continue");
+  const [nextPlanId, setNextPlanId] = useState<string>("");
 
   // Auth synchronization
   useEffect(() => {
@@ -368,6 +370,8 @@ export default function FinanceSalary() {
     setPaymentMethod("CASH");
     setReceiverName("");
     setNotes("");
+    setChangePlanOption("continue");
+    setNextPlanId(worker.planId || "");
     setPayoutModalOpen(true);
   };
 
@@ -421,6 +425,14 @@ export default function FinanceSalary() {
         createdAt: new Date().toISOString()
       };
       await addDoc(collection(db, "expenses"), expenseData);
+
+      // 3. Update worker plan assignment if user chose to change it
+      if (changePlanOption === "change" && nextPlanId !== selectedWorkerData.planId) {
+        await updateDoc(doc(db, "users", selectedWorkerData.uid), {
+          planId: nextPlanId || null,
+          planAssignedAt: selectedCycle.endDate
+        });
+      }
 
       showToast(`Payout of ₹${finalPaid.toLocaleString()} processed successfully for ${selectedWorkerData.name}.`, "success");
       setPayoutModalOpen(false);
@@ -977,6 +989,64 @@ export default function FinanceSalary() {
                       borderRadius: "8px", color: "white", fontSize: "0.95rem", outline: "none", resize: "none", fontFamily: "inherit"
                     }}
                   />
+                </div>
+
+                {/* Plan for Next Cycle */}
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "1rem", marginTop: "0.5rem" }}>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                    Plan for Next Cycle
+                  </label>
+                  <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                    <label style={{
+                      flex: 1, display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 0.8rem",
+                      background: changePlanOption === "continue" ? "rgba(16,185,129,0.08)" : "rgba(0,0,0,0.15)",
+                      border: `1px solid ${changePlanOption === "continue" ? "#10b981" : "var(--surface-border)"}`,
+                      borderRadius: "8px", cursor: "pointer", fontSize: "0.85rem", color: "white"
+                    }}>
+                      <input 
+                        type="radio" 
+                        name="plan-option" 
+                        value="continue" 
+                        checked={changePlanOption === "continue"}
+                        onChange={() => setChangePlanOption("continue")}
+                      />
+                      Continue same plan
+                    </label>
+                    <label style={{
+                      flex: 1, display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 0.8rem",
+                      background: changePlanOption === "change" ? "rgba(59, 130, 246, 0.08)" : "rgba(0,0,0,0.15)",
+                      border: `1px solid ${changePlanOption === "change" ? "#3b82f6" : "var(--surface-border)"}`,
+                      borderRadius: "8px", cursor: "pointer", fontSize: "0.85rem", color: "white"
+                    }}>
+                      <input 
+                        type="radio" 
+                        name="plan-option" 
+                        value="change"
+                        checked={changePlanOption === "change"}
+                        onChange={() => setChangePlanOption("change")}
+                      />
+                      Switch package
+                    </label>
+                  </div>
+
+                  {changePlanOption === "change" && (
+                    <select
+                      value={nextPlanId}
+                      onChange={(e) => setNextPlanId(e.target.value)}
+                      style={{
+                        width: "100%", padding: "0.75rem 1rem",
+                        background: "rgba(0,0,0,0.25)", border: "1px solid var(--surface-border)",
+                        borderRadius: "8px", color: "white", fontSize: "0.9rem", outline: "none", fontFamily: "inherit"
+                      }}
+                    >
+                      <option value="" style={{ backgroundColor: "#121218" }}>Unassign Plan</option>
+                      {plans.map((p) => (
+                        <option key={p.id} value={p.id} style={{ backgroundColor: "#121218" }}>
+                          {p.name} (Base count: {p.baseCount} trees | ₹{p.baseSalary.toLocaleString()} base)
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 
