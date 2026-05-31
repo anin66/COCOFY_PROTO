@@ -30,6 +30,7 @@ interface Worker {
   phone: string;
   role: string;
   planId?: string | null;
+  planAssignedAt?: string | null;
 }
 
 export default function ManagerPlans() {
@@ -296,15 +297,17 @@ export default function ManagerPlans() {
 
   const handleAssignPlan = async (workerUid: string, planId: string | null) => {
     const oldWorkers = [...workers];
+    const assignedTime = planId ? new Date().toISOString() : null;
 
     // Optimistic Update
     setWorkers((prev) =>
-      prev.map((w) => (w.uid === workerUid ? { ...w, planId: planId } : w))
+      prev.map((w) => (w.uid === workerUid ? { ...w, planId: planId, planAssignedAt: assignedTime } : w))
     );
 
     try {
       await updateDoc(doc(db, "users", workerUid), {
-        planId: planId || null
+        planId: planId || null,
+        planAssignedAt: assignedTime
       });
     } catch (error) {
       console.error("Error assigning plan:", error);
