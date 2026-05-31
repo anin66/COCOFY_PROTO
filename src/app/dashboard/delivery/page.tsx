@@ -59,48 +59,10 @@ export default function DeliveryDashboard() {
     activeJobId: activeJob?.id || null,
   });
 
-  // Fetch stay or live locations of workers assigned to the active job
+  // Fetch stay or live locations of workers assigned to the active job (disabled: workers GPS system removed)
   useEffect(() => {
-    if (!activeJob) {
-      setActiveJobWorkers([]);
-      return;
-    }
-
-    const fetchWorkerStays = async () => {
-      // Get all assigned workers (including pending responses)
-      const assignedWorkers = activeJob.assignedWorkers || [];
-      const workerStays: WorkerLocation[] = [];
-
-      for (let worker of assignedWorkers) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", worker.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            // Use allocated stayLocation, fall back to auto-fetched lastLocation
-            const lat = userData.stayLocation?.latitude || userData.lastLocation?.latitude;
-            const lng = userData.stayLocation?.longitude || userData.lastLocation?.longitude;
-            const address = userData.stayLocation?.address || "Worker (Live Location)";
-
-            if (lat && lng) {
-              workerStays.push({
-                uid: worker.uid,
-                name: userData.name || worker.name,
-                latitude: lat,
-                longitude: lng,
-                address: address,
-              });
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching worker stay/live location:", err);
-        }
-      }
-
-      setActiveJobWorkers(workerStays);
-    };
-
-    fetchWorkerStays();
-  }, [activeJob?.id, activeJob?.assignedWorkers]);
+    setActiveJobWorkers([]);
+  }, [activeJob?.id]);
 
 
   // Get current user and redirect if not delivery

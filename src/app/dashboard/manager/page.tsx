@@ -143,48 +143,10 @@ export default function ManagerDashboard() {
     }
   }, [jobs, trackingJob?.id]);
 
-  // Fetch stay or live locations of workers assigned to the job being tracked
+  // Fetch stay or live locations of workers assigned to the job being tracked (disabled: workers GPS system removed)
   useEffect(() => {
-    if (!trackingJob) {
-      setTrackingWorkers([]);
-      return;
-    }
-
-    const fetchWorkerStays = async () => {
-      // Get all assigned workers (including pending responses)
-      const assignedWorkers = trackingJob.assignedWorkers || [];
-      const workerStays: WorkerLocation[] = [];
-
-      for (let worker of assignedWorkers) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", worker.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            // Use allocated stayLocation, fall back to auto-fetched lastLocation
-            const lat = userData.stayLocation?.latitude || userData.lastLocation?.latitude;
-            const lng = userData.stayLocation?.longitude || userData.lastLocation?.longitude;
-            const address = userData.stayLocation?.address || "Worker (Live Location)";
-
-            if (lat && lng) {
-              workerStays.push({
-                uid: worker.uid,
-                name: userData.name || worker.name,
-                latitude: lat,
-                longitude: lng,
-                address: address,
-              });
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching worker stay/live info:", err);
-        }
-      }
-
-      setTrackingWorkers(workerStays);
-    };
-
-    fetchWorkerStays();
-  }, [trackingJob?.id, trackingJob?.assignedWorkers]);
+    setTrackingWorkers([]);
+  }, [trackingJob?.id]);
 
   const handleTrackJob = (job: Job) => {
     setTrackingJob(job);

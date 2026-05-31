@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
-import { groupWorkerLocations } from "@/lib/locationUtils";
-import { Truck, Users, TreePine, MapPin } from "lucide-react";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const rawToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
@@ -41,8 +39,8 @@ export default function DeliveryTrackingMap({
   const harvestMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
 
-  // Group workers to stay locations to de-duplicate stops
-  const groupedStops = groupWorkerLocations(workerStayLocations);
+  // Group workers to stay locations to de-duplicate stops (disabled: workers GPS system removed)
+  const groupedStops: any[] = [];
 
   // Helper to create HTML element for custom markers
   const createMarkerElement = (type: "delivery" | "worker" | "harvest", label = "", heading = 0) => {
@@ -172,7 +170,7 @@ export default function DeliveryTrackingMap({
             Workers (${stop.names.length}):
           </p>
           <ul style="margin: 0; padding-left: 16px; font-size: 11px;">
-            ${stop.names.map((name) => `<li>${name}</li>`).join("")}
+            ${stop.names.map((name: string) => `<li>${name}</li>`).join("")}
           </ul>
           ${stop.address ? `<p style="margin: 6px 0 0; font-size: 11px; color: #555; border-top: 1px solid #eee; padding-top: 4px;">${stop.address}</p>` : ""}
         </div>

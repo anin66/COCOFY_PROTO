@@ -13,7 +13,7 @@ export function useLocationTracker({ uid, role, activeJobId = null }: TrackerOpt
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!uid || !role) return;
+    if (!uid || !role || role === "worker") return;
 
     const updateFirestoreLocation = async (latitude: number, longitude: number, heading = 0) => {
       try {

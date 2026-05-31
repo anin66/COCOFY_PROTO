@@ -15,7 +15,8 @@ import {
   Truck,
   TrendingUp,
   LogOut,
-  X
+  X,
+  PlusCircle
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -58,6 +59,7 @@ export default function Sidebar({ userName = "Trial Manager", userRole = "MANAGE
     { label: "Workers Ranking", icon: Trophy, href: "/dashboard/manager/ranking" },
     { label: "Job History", icon: History, href: "/dashboard/manager/history" },
     { label: "Plans", icon: ClipboardList, href: "/dashboard/manager/plans" },
+    { label: "Miscellaneous", icon: PlusCircle, href: "/dashboard/manager/miscellaneous" },
   ];
 
   const workerNav = [

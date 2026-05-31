@@ -11,7 +11,6 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useToast } from "@/context/ToastContext";
 import { triggerPushNotification } from "@/lib/notifications";
 import { SkeletonCard } from "@/components/ui/Skeleton";
-import { useLocationTracker } from "@/hooks/useLocationTracker";
 
 
 interface AssignedWorker {
@@ -49,11 +48,6 @@ export default function WorkerDashboard() {
   const [rejectJobId, setRejectJobId] = useState<string | null>(null);
   const [harvestCounts, setHarvestCounts] = useState<Record<string, number>>({});
 
-  // Start background location tracker with adaptive timing
-  useLocationTracker({
-    uid: currentUid,
-    role: "worker",
-  });
 
 
   // Get current user and redirect if not a worker
