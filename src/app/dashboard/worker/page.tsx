@@ -402,12 +402,6 @@ export default function WorkerDashboard() {
                           Time: <span style={{ color: "var(--accent)", fontWeight: 600 }}>{job.time}</span>
                         </div>
                       )}
-                      {job.pricePerTree && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <Briefcase size={16} color="var(--accent)" className="icon-hover-effect" />
-                          {job.pricePerTree}
-                        </div>
-                      )}
                     </div>
 
                     {/* Accept / Reject Buttons */}
