@@ -358,10 +358,25 @@ export default function FinanceAnalytics() {
     [allExpenses, rangeFrom, rangeTo]
   );
 
-  const filteredJobs = useMemo(
-    () => allJobs.filter((j) => isInRange(j.date || j.createdAt, rangeFrom, rangeTo)),
-    [allJobs, rangeFrom, rangeTo]
-  );
+  const filteredJobs = useMemo(() => {
+    return allJobs
+      .filter((j) => isInRange(j.date || j.createdAt, rangeFrom, rangeTo))
+      .map((job) => {
+        let totalHarvested = 0;
+        let hasHarvestedData = false;
+        job.assignedWorkers?.forEach((w) => {
+          if (w.status === "accepted" && w.harvestConfirmed) {
+            totalHarvested += w.harvestedTrees || 0;
+            hasHarvestedData = true;
+          }
+        });
+        const actualTrees = hasHarvestedData ? totalHarvested : (job.trees || 0);
+        return {
+          ...job,
+          trees: actualTrees
+        };
+      });
+  }, [allJobs, rangeFrom, rangeTo]);
 
   /* ============================== KPI CALCULATIONS ============================== */
   const totalRevenue = useMemo(
@@ -858,10 +873,25 @@ Example format: [{"type":"trend","title":"Revenue Growing Steadily","description
     [allExpenses, ledgerBounds]
   );
 
-  const ledgerJobs = useMemo(
-    () => allJobs.filter((j) => isInRange(j.date || j.createdAt, ledgerBounds.from, ledgerBounds.to)),
-    [allJobs, ledgerBounds]
-  );
+  const ledgerJobs = useMemo(() => {
+    return allJobs
+      .filter((j) => isInRange(j.date || j.createdAt, ledgerBounds.from, ledgerBounds.to))
+      .map((job) => {
+        let totalHarvested = 0;
+        let hasHarvestedData = false;
+        job.assignedWorkers?.forEach((w) => {
+          if (w.status === "accepted" && w.harvestConfirmed) {
+            totalHarvested += w.harvestedTrees || 0;
+            hasHarvestedData = true;
+          }
+        });
+        const actualTrees = hasHarvestedData ? totalHarvested : (job.trees || 0);
+        return {
+          ...job,
+          trees: actualTrees
+        };
+      });
+  }, [allJobs, ledgerBounds]);
 
   const ledgerDues = useMemo(
     () => allPayments.filter((p) => (p.paymentStatus === "UNPAID" || p.paymentStatus === "PARTIALLY_PAID") && isInRange(p.lastUpdatedAt || p.jobDetails?.date || p.jobDetails?.createdAt, ledgerBounds.from, ledgerBounds.to)),
