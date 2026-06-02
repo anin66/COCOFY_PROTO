@@ -68,6 +68,8 @@ export default function ManagerDashboard() {
   const [currentUserRole, setCurrentUserRole] = useState("manager");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -461,6 +463,14 @@ export default function ManagerDashboard() {
     }, 350);
   };
 
+  const filteredJobs = jobs.filter((job) => {
+    const matchesSearch = 
+      (job.customerName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (job.location?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+    const matchesDate = selectedDate ? job.date === selectedDate : true;
+    return matchesSearch && matchesDate;
+  });
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "transparent" }}>
       {/* Sidebar */}
@@ -481,13 +491,15 @@ export default function ManagerDashboard() {
           }}>
             <h3 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>Job Requests</h3>
             
-            <div className="flex-stack-mobile" style={{ display: "flex", gap: "1rem", width: "100%", maxWidth: "500px", justifyContent: "flex-end" }}>
+            <div className="flex-stack-mobile" style={{ display: "flex", gap: "1rem", width: "100%", maxWidth: "750px", justifyContent: "flex-end", alignItems: "center" }}>
               {/* Search Bar */}
-              <div style={{ position: "relative", width: "100%" }}>
+              <div style={{ position: "relative", flex: 2, minWidth: "200px" }}>
                 <Search size={18} style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
                 <input 
                   type="text" 
                   placeholder="Search customer/location..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
                     background: "var(--surface)",
                     border: "1px solid var(--surface-border)",
@@ -498,6 +510,14 @@ export default function ManagerDashboard() {
                     outline: "none",
                     fontFamily: "inherit"
                   }} 
+                />
+              </div>
+
+              {/* Date Filter */}
+              <div style={{ position: "relative", flex: 1.5, minWidth: "180px" }}>
+                <DatePicker
+                  value={selectedDate}
+                  onChange={(val) => setSelectedDate(val)}
                 />
               </div>
 
@@ -553,13 +573,27 @@ export default function ManagerDashboard() {
             }}>
               <p>No active job requests. Click 'New Job' to create one.</p>
             </div>
+          ) : filteredJobs.length === 0 ? (
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "300px",
+              background: "var(--surface-overlay)",
+              backdropFilter: "blur(12px)",
+              borderRadius: "12px",
+              border: "1px dashed var(--surface-border)",
+              color: "var(--text-light)"
+            }}>
+              <p>No job requests found matching your search or date filter.</p>
+            </div>
           ) : (
             <div style={{ 
               display: "grid", 
               gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
               gap: "1.5rem" 
             }}>
-              {jobs.map((job) => (
+              {filteredJobs.map((job) => (
                 <div key={job.id} 
                   className={`job-card ${job.id === newlyCreatedJobId ? "new-card-anim" : ""} ${job.id === deletingJobId ? "delete-card-anim" : ""}`}
                   style={{
