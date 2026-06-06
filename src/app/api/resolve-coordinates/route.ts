@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     }
 
     let currentUrl = url.trim();
-    let coords = parseCoordinates(currentUrl);
+    let coords = parseCoordinates(currentUrl, true); // Ignore camera coordinates
 
     if (coords) {
       return NextResponse.json(coords);
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
 
         lastFetchedUrl = currentUrl;
         
-        // 1. Try parsing coordinates from the current URL
-        coords = parseCoordinates(currentUrl);
+        // 1. Try parsing coordinates from the current URL (ignore camera coordinates)
+        coords = parseCoordinates(currentUrl, true);
         if (coords) {
           return NextResponse.json(coords);
         }
@@ -55,8 +55,8 @@ export async function POST(request: Request) {
         // Resolve relative redirect URL
         const nextUrl = new URL(location, currentUrl).toString();
 
-        // 2. Try parsing coordinates from the redirect Location URL
-        coords = parseCoordinates(nextUrl);
+        // 2. Try parsing coordinates from the redirect Location URL (ignore camera coordinates)
+        coords = parseCoordinates(nextUrl, true);
         if (coords) {
           return NextResponse.json(coords);
         }
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         // If redirecting to Google Consent screen, decode and parse coordinates from the nextUrl
         if (nextUrl.includes("consent.google.com")) {
           const decodedNextUrl = decodeURIComponent(nextUrl);
-          coords = parseCoordinates(decodedNextUrl);
+          coords = parseCoordinates(decodedNextUrl, true);
           if (coords) {
             return NextResponse.json(coords);
           }

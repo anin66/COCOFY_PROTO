@@ -69,7 +69,7 @@ export function groupWorkerLocations(
   return groups;
 }
 
-export function parseCoordinates(input: string): { latitude: number; longitude: number } | null {
+export function parseCoordinates(input: string, ignoreCamera = false): { latitude: number; longitude: number } | null {
   if (!input) return null;
 
   let decoded = input;
@@ -79,7 +79,32 @@ export function parseCoordinates(input: string): { latitude: number; longitude: 
     // Ignore decoding errors
   }
 
-  // 1. Try Google Maps internal coordinate format in URL data: !3dLAT!4dLNG
+  // 1. Try DMS (Degrees, Minutes, Seconds) coordinate format: e.g. 9°55'52.3"N 76°16'02.3"E
+  const dmsRegex = /(\d+)\s*°\s*(\d+)\s*'\s*([\d.]+)\s*"\s*([NSns])[\s,+/]*(\d+)\s*°\s*(\d+)\s*'\s*([\d.]+)\s*"\s*([EWew])/;
+  const dmsMatch = decoded.match(dmsRegex);
+  if (dmsMatch) {
+    const latDeg = parseFloat(dmsMatch[1]);
+    const latMin = parseFloat(dmsMatch[2]);
+    const latSec = parseFloat(dmsMatch[3]);
+    const latDir = dmsMatch[4].toUpperCase();
+
+    const lngDeg = parseFloat(dmsMatch[5]);
+    const lngMin = parseFloat(dmsMatch[6]);
+    const lngSec = parseFloat(dmsMatch[7]);
+    const lngDir = dmsMatch[8].toUpperCase();
+
+    let latitude = latDeg + latMin / 60 + latSec / 3600;
+    if (latDir === "S") latitude = -latitude;
+
+    let longitude = lngDeg + lngMin / 60 + lngSec / 3600;
+    if (lngDir === "W") longitude = -longitude;
+
+    if (latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180) {
+      return { latitude, longitude };
+    }
+  }
+
+  // 2. Try Google Maps internal coordinate format in URL data: !3dLAT!4dLNG
   const googleDataMatch = decoded.match(/!3d([-+]?[0-9]*\.[0-9]+).*?!4d([-+]?[0-9]*\.[0-9]+)/);
   if (googleDataMatch) {
     const lat = parseFloat(googleDataMatch[1]);
@@ -89,7 +114,7 @@ export function parseCoordinates(input: string): { latitude: number; longitude: 
     }
   }
 
-  // 2. Try static map center format (e.g., staticmap?center=9.9312%2C76.2673 or staticmap?center=9.9312,76.2673)
+  // 3. Try static map center format (e.g., staticmap?center=9.9312%2C76.2673 or staticmap?center=9.9312,76.2673)
   const staticMapMatch = decoded.match(/staticmap\?center=([-+]?[0-9]*\.[0-9]+)(?:%2C|,)([-+]?[0-9]*\.[0-9]+)/i);
   if (staticMapMatch) {
     const lat = parseFloat(staticMapMatch[1]);
@@ -99,14 +124,27 @@ export function parseCoordinates(input: string): { latitude: number; longitude: 
     }
   }
 
-  // 3. Try standard comma-separated coordinates or URL coordinates (e.g. 9.9312,76.2673 or @9.9312,76.2673)
-  const coordRegex = /([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/;
-  const match = decoded.match(coordRegex);
-  if (match) {
-    const lat = parseFloat(match[1]);
-    const lng = parseFloat(match[2]);
+  // 4. Try standard comma-separated coordinates NOT prefixed with @ (e.g. in URL path or query params)
+  const nonCameraRegex = /(?:^|[^@\d.-])([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/;
+  const nonCameraMatch = decoded.match(nonCameraRegex);
+  if (nonCameraMatch) {
+    const lat = parseFloat(nonCameraMatch[1]);
+    const lng = parseFloat(nonCameraMatch[2]);
     if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
       return { latitude: lat, longitude: lng };
+    }
+  }
+
+  // 5. Try standard camera-prefixed coordinates (e.g. /@lat,lng, only if not ignored)
+  if (!ignoreCamera) {
+    const cameraRegex = /@([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/;
+    const cameraMatch = decoded.match(cameraRegex);
+    if (cameraMatch) {
+      const lat = parseFloat(cameraMatch[1]);
+      const lng = parseFloat(cameraMatch[2]);
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        return { latitude: lat, longitude: lng };
+      }
     }
   }
 
@@ -127,7 +165,7 @@ export function extractCoordinatesFromHtml(html: string): { latitude: number; lo
   while ((match = metaRegex.exec(html)) !== null) {
     const content = match[1];
     if (content.startsWith("http") || content.includes("maps")) {
-      const coords = parseCoordinates(content);
+      const coords = parseCoordinates(content, true);
       if (coords) return coords;
     }
   }
