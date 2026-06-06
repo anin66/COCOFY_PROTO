@@ -26,6 +26,7 @@ export async function POST(request: Request) {
         const response = await fetch(currentUrl, {
           method: "GET",
           redirect: "manual",
+          cache: "no-store",
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
           }
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
       try {
         const response = await fetch(lastFetchedUrl, {
           method: "GET",
+          cache: "no-store",
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
           }
