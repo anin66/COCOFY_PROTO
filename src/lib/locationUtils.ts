@@ -72,8 +72,15 @@ export function groupWorkerLocations(
 export function parseCoordinates(input: string): { latitude: number; longitude: number } | null {
   if (!input) return null;
 
+  let decoded = input;
+  try {
+    decoded = decodeURIComponent(input);
+  } catch (e) {
+    // Ignore decoding errors
+  }
+
   // 1. Try Google Maps internal coordinate format in URL data: !3dLAT!4dLNG
-  const googleDataMatch = input.match(/!3d([-+]?[0-9]*\.[0-9]+).*?!4d([-+]?[0-9]*\.[0-9]+)/);
+  const googleDataMatch = decoded.match(/!3d([-+]?[0-9]*\.[0-9]+).*?!4d([-+]?[0-9]*\.[0-9]+)/);
   if (googleDataMatch) {
     const lat = parseFloat(googleDataMatch[1]);
     const lng = parseFloat(googleDataMatch[2]);
@@ -83,7 +90,7 @@ export function parseCoordinates(input: string): { latitude: number; longitude: 
   }
 
   // 2. Try static map center format (e.g., staticmap?center=9.9312%2C76.2673 or staticmap?center=9.9312,76.2673)
-  const staticMapMatch = input.match(/staticmap\?center=([-+]?[0-9]*\.[0-9]+)(?:%2C|,)([-+]?[0-9]*\.[0-9]+)/i);
+  const staticMapMatch = decoded.match(/staticmap\?center=([-+]?[0-9]*\.[0-9]+)(?:%2C|,)([-+]?[0-9]*\.[0-9]+)/i);
   if (staticMapMatch) {
     const lat = parseFloat(staticMapMatch[1]);
     const lng = parseFloat(staticMapMatch[2]);
@@ -94,7 +101,7 @@ export function parseCoordinates(input: string): { latitude: number; longitude: 
 
   // 3. Try standard comma-separated coordinates or URL coordinates (e.g. 9.9312,76.2673 or @9.9312,76.2673)
   const coordRegex = /([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/;
-  const match = input.match(coordRegex);
+  const match = decoded.match(coordRegex);
   if (match) {
     const lat = parseFloat(match[1]);
     const lng = parseFloat(match[2]);

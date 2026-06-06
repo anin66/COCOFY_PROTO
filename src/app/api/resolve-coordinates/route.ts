@@ -8,43 +8,97 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // Server-side fetch will follow redirects and give us the final URL containing coordinates
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-      }
-    });
-
-    const finalUrl = response.url;
-    const coords = parseCoordinates(finalUrl);
+    let currentUrl = url.trim();
+    let coords = parseCoordinates(currentUrl);
 
     if (coords) {
       return NextResponse.json(coords);
     }
 
-    // Fallback: If not in URL, check location header
-    const redirectUrl = response.headers.get("location");
-    if (redirectUrl) {
-      const redirectCoords = parseCoordinates(redirectUrl);
-      if (redirectCoords) {
-        return NextResponse.json(redirectCoords);
+    let steps = 0;
+    const maxSteps = 5;
+    let lastFetchedUrl = currentUrl;
+    let finalHtml = "";
+
+    while (steps < maxSteps) {
+      steps++;
+      try {
+        const response = await fetch(currentUrl, {
+          method: "GET",
+          redirect: "manual",
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          }
+        });
+
+        lastFetchedUrl = currentUrl;
+        
+        // 1. Try parsing coordinates from the current URL
+        coords = parseCoordinates(currentUrl);
+        if (coords) {
+          return NextResponse.json(coords);
+        }
+
+        const location = response.headers.get("location");
+        if (!location) {
+          // No more redirects. Read HTML to see if coordinates are in page content (if not a consent page)
+          if (!currentUrl.includes("consent.google.com")) {
+            finalHtml = await response.text();
+            coords = extractCoordinatesFromHtml(finalHtml);
+            if (coords) {
+              return NextResponse.json(coords);
+            }
+          }
+          break;
+        }
+
+        // Resolve relative redirect URL
+        const nextUrl = new URL(location, currentUrl).toString();
+
+        // 2. Try parsing coordinates from the redirect Location URL
+        coords = parseCoordinates(nextUrl);
+        if (coords) {
+          return NextResponse.json(coords);
+        }
+
+        // If redirecting to Google Consent screen, decode and parse coordinates from the nextUrl
+        if (nextUrl.includes("consent.google.com")) {
+          const decodedNextUrl = decodeURIComponent(nextUrl);
+          coords = parseCoordinates(decodedNextUrl);
+          if (coords) {
+            return NextResponse.json(coords);
+          }
+          break;
+        }
+
+        currentUrl = nextUrl;
+      } catch (err) {
+        console.error(`Error during manual redirect step ${steps}:`, err);
+        break;
       }
     }
 
-    // Fallback 2: Check the response HTML content (e.g. static maps, preview URLs or embedded data)
-    try {
-      const html = await response.text();
-      const htmlCoords = extractCoordinatesFromHtml(html);
-      if (htmlCoords) {
-        return NextResponse.json(htmlCoords);
+    // Fallback: If we still couldn't resolve, fetch the last non-consent URL fully (with redirects)
+    if (!lastFetchedUrl.includes("consent.google.com") && !finalHtml) {
+      try {
+        const response = await fetch(lastFetchedUrl, {
+          method: "GET",
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          }
+        });
+        const html = await response.text();
+        coords = extractCoordinatesFromHtml(html);
+        if (coords) {
+          return NextResponse.json(coords);
+        }
+      } catch (err) {
+        console.error("Error in final fallback fetch:", err);
       }
-    } catch (e) {
-      console.error("Error reading HTML content of Maps page:", e);
     }
 
     return NextResponse.json(
-      { error: "Could not extract coordinates from the resolved URL: " + finalUrl },
+      { error: "Could not extract coordinates from the resolved URL: " + lastFetchedUrl },
       { status: 400 }
     );
   } catch (error) {
