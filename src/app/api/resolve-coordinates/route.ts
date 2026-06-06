@@ -32,6 +32,17 @@ export async function POST(request: Request) {
       }
     }
 
+    // Fallback 2: Check the response HTML content (e.g. static maps, preview URLs or embedded data)
+    try {
+      const html = await response.text();
+      const htmlCoords = parseCoordinates(html);
+      if (htmlCoords) {
+        return NextResponse.json(htmlCoords);
+      }
+    } catch (e) {
+      console.error("Error reading HTML content of Maps page:", e);
+    }
+
     return NextResponse.json(
       { error: "Could not extract coordinates from the resolved URL: " + finalUrl },
       { status: 400 }

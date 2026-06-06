@@ -69,23 +69,35 @@ export function groupWorkerLocations(
   return groups;
 }
 
-/**
- * Parses a string containing coordinates or a Google Maps URL,
- * and returns latitude and longitude numbers, or null if invalid.
- */
 export function parseCoordinates(input: string): { latitude: number; longitude: number } | null {
   if (!input) return null;
 
-  // Regular expression to match lat, lng coordinates
-  // Example: 9.9312, 76.2673 or 9.9312,76.2673 or inside a URL like @9.9312,76.2673
+  // 1. Try Google Maps internal coordinate format in URL data: !3dLAT!4dLNG
+  const googleDataMatch = input.match(/!3d([-+]?[0-9]*\.[0-9]+).*?!4d([-+]?[0-9]*\.[0-9]+)/);
+  if (googleDataMatch) {
+    const lat = parseFloat(googleDataMatch[1]);
+    const lng = parseFloat(googleDataMatch[2]);
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { latitude: lat, longitude: lng };
+    }
+  }
+
+  // 2. Try static map center format (e.g., staticmap?center=9.9312%2C76.2673 or staticmap?center=9.9312,76.2673)
+  const staticMapMatch = input.match(/staticmap\?center=([-+]?[0-9]*\.[0-9]+)(?:%2C|,)([-+]?[0-9]*\.[0-9]+)/i);
+  if (staticMapMatch) {
+    const lat = parseFloat(staticMapMatch[1]);
+    const lng = parseFloat(staticMapMatch[2]);
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { latitude: lat, longitude: lng };
+    }
+  }
+
+  // 3. Try standard comma-separated coordinates or URL coordinates (e.g. 9.9312,76.2673 or @9.9312,76.2673)
   const coordRegex = /([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/;
-  
   const match = input.match(coordRegex);
   if (match) {
     const lat = parseFloat(match[1]);
     const lng = parseFloat(match[2]);
-    
-    // Validate range
     if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
       return { latitude: lat, longitude: lng };
     }
