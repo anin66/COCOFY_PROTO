@@ -35,7 +35,7 @@ interface Job {
   time?: string;
   assignedDelivery?: { uid: string; name: string; status: "pending" | "confirmed" } | null;
   assignedWorkers?: { uid: string; name: string; status: string }[];
-  harvestLocation?: { address: string; latitude: number; longitude: number } | null;
+  harvestLocation?: { address: string; latitude: number; longitude: number; rawUrl?: string } | null;
   deliveryLocation?: { latitude: number; longitude: number; heading?: number } | null;
 }
 
@@ -421,9 +421,13 @@ export default function DeliveryDashboard() {
                           // Unified Google Maps Route Link
                           let gmapsRouteUrl = "https://www.google.com/maps/dir/?api=1";
                           if (job.harvestLocation) {
-                            gmapsRouteUrl += `&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`;
+                            if (job.harvestLocation.rawUrl && job.harvestLocation.rawUrl.startsWith("http")) {
+                              gmapsRouteUrl = job.harvestLocation.rawUrl;
+                            } else {
+                              gmapsRouteUrl += `&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`;
+                            }
                           }
-                          if (groupedStops.length > 0) {
+                          if (groupedStops.length > 0 && !(job.harvestLocation && job.harvestLocation.rawUrl && job.harvestLocation.rawUrl.startsWith("http"))) {
                             const waypointsStr = groupedStops
                               .map((stop) => `${stop.latitude},${stop.longitude}`)
                               .join("|");
@@ -540,7 +544,9 @@ export default function DeliveryDashboard() {
                                       </span>
                                     </div>
                                     <a
-                                      href={`https://www.google.com/maps/dir/?api=1&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`}
+                                      href={(job.harvestLocation.rawUrl && job.harvestLocation.rawUrl.startsWith("http"))
+                                        ? job.harvestLocation.rawUrl
+                                        : `https://www.google.com/maps/dir/?api=1&destination=${job.harvestLocation.latitude},${job.harvestLocation.longitude}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       style={{

@@ -24,6 +24,7 @@ interface Worker {
     address: string;
     latitude: number;
     longitude: number;
+    rawUrl?: string;
   };
 }
 
@@ -110,6 +111,7 @@ export default function WorkersDirectory() {
         address: stayAddress.trim(),
         latitude: parsed.latitude,
         longitude: parsed.longitude,
+        rawUrl: stayCoordsInput.trim(),
       };
 
       await updateDoc(userRef, { stayLocation });

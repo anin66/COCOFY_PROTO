@@ -142,6 +142,7 @@ export default function AssignDeliveryModal({
           address: harvestAddress.trim(),
           latitude: parsedCoords.latitude,
           longitude: parsedCoords.longitude,
+          rawUrl: harvestCoordsInput.trim(),
         },
         status: "DELIVERY_PENDING",
       }).then(() => {
