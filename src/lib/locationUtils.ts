@@ -105,3 +105,35 @@ export function parseCoordinates(input: string): { latitude: number; longitude: 
 
   return null;
 }
+
+/**
+ * Safely extracts coordinates from Google Maps HTML page content.
+ * Instead of searching the raw HTML globally (which might match random JS numbers),
+ * it scans specific meta tags or static maps center parameters.
+ */
+export function extractCoordinatesFromHtml(html: string): { latitude: number; longitude: number } | null {
+  if (!html) return null;
+
+  // 1. Scan content attributes of meta tags (e.g. og:url, og:image)
+  const metaRegex = /<meta[^>]+content=["']([^"']+)["']/g;
+  let match;
+  while ((match = metaRegex.exec(html)) !== null) {
+    const content = match[1];
+    if (content.startsWith("http") || content.includes("maps")) {
+      const coords = parseCoordinates(content);
+      if (coords) return coords;
+    }
+  }
+
+  // 2. Scan for static maps center parameters
+  const staticMapMatch = html.match(/staticmap\?center=([-+]?[0-9]*\.[0-9]+)(?:%2C|,)([-+]?[0-9]*\.[0-9]+)/i);
+  if (staticMapMatch) {
+    const lat = parseFloat(staticMapMatch[1]);
+    const lng = parseFloat(staticMapMatch[2]);
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { latitude: lat, longitude: lng };
+    }
+  }
+
+  return null;
+}

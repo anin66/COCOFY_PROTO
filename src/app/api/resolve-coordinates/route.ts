@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseCoordinates } from "@/lib/locationUtils";
+import { parseCoordinates, extractCoordinatesFromHtml } from "@/lib/locationUtils";
 
 export async function POST(request: Request) {
   try {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     // Fallback 2: Check the response HTML content (e.g. static maps, preview URLs or embedded data)
     try {
       const html = await response.text();
-      const htmlCoords = parseCoordinates(html);
+      const htmlCoords = extractCoordinatesFromHtml(html);
       if (htmlCoords) {
         return NextResponse.json(htmlCoords);
       }
