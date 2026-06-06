@@ -124,18 +124,39 @@ export function parseCoordinates(input: string, ignoreCamera = false): { latitud
     }
   }
 
-  // 4. Try standard comma-separated coordinates NOT prefixed with @ (e.g. in URL path or query params)
-  const nonCameraRegex = /(?:^|[^@\d.-])([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/;
-  const nonCameraMatch = decoded.match(nonCameraRegex);
-  if (nonCameraMatch) {
-    const lat = parseFloat(nonCameraMatch[1]);
-    const lng = parseFloat(nonCameraMatch[2]);
+  // 4. Try place-specific URL parameters or paths (these target the searched place, not map viewport)
+  const placePatterns = [
+    /maps\/place\/([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/i,
+    /maps\/search\/([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/i,
+    /[?&]q=([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/i,
+    /[?&]query=([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/i,
+    /[?&]destination=([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/i,
+    /[?&]daddr=([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/i,
+  ];
+
+  for (const pattern of placePatterns) {
+    const match = decoded.match(pattern);
+    if (match) {
+      const lat = parseFloat(match[1]);
+      const lng = parseFloat(match[2]);
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        return { latitude: lat, longitude: lng };
+      }
+    }
+  }
+
+  // 5. Try raw coordinates (where the entire string consists solely of coordinates, e.g. "9.9312, 76.2673")
+  const rawCoordsRegex = /^\s*([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)\s*$/;
+  const rawMatch = decoded.match(rawCoordsRegex);
+  if (rawMatch) {
+    const lat = parseFloat(rawMatch[1]);
+    const lng = parseFloat(rawMatch[2]);
     if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
       return { latitude: lat, longitude: lng };
     }
   }
 
-  // 5. Try standard camera-prefixed coordinates (e.g. /@lat,lng, only if not ignored)
+  // 6. Fallback: Try general camera-prefixed coordinates (e.g. /@lat,lng, only if not ignored)
   if (!ignoreCamera) {
     const cameraRegex = /@([-+]?[0-9]*\.[0-9]+)\s*,\s*([-+]?[0-9]*\.[0-9]+)/;
     const cameraMatch = decoded.match(cameraRegex);
