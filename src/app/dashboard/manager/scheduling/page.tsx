@@ -93,6 +93,29 @@ export default function SchedulingPage() {
       });
 
       showToast("Job confirmed successfully.", "success");
+
+      // Send automated WhatsApp confirmation in background if job was unconfirmed
+      if (isUnconfirmed) {
+        fetch("/api/send-confirmation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jobId: selectedJobForTime.id })
+        }).then(async (res) => {
+          if (res.ok) {
+            const resData = await res.json();
+            if (resData.mock) {
+              console.log("Mock WhatsApp message sent:", resData.url);
+            } else {
+              showToast("Automated WhatsApp notification sent to customer.", "success");
+            }
+          } else {
+            console.error("Failed to send WhatsApp notification");
+          }
+        }).catch(err => {
+          console.error("Error sending WhatsApp notification:", err);
+        });
+      }
+
       setTimeModalOpen(false);
       setSelectedJobForTime(null);
       setHarvestTimeInput("");

@@ -125,7 +125,7 @@ export async function POST(request: Request) {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromPhone = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886";
 
-    const bodyText = `Your appointment is coming up on ${harvestDate} at ${harvestTime}. Choose location: ${secureUrl}. If you need to change it, please reply back and let us know.`;
+    const bodyText = `Your appointment is coming up on ${harvestDate} at ${harvestTime}. Please choose your precise location: ${secureUrl}. Thank you!`;
 
     // 3. Send message via Twilio
     if (!accountSid || !authToken) {
