@@ -151,6 +151,23 @@ export default function ManagerDashboard() {
     setTrackingWorkers([]);
   }, [trackingJob?.id]);
 
+  // Handle clicking outside the dropdown to close it
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".dropdown-container")) {
+        setActiveDropdownId(null);
+      }
+    };
+    if (activeDropdownId !== null) {
+      document.addEventListener("click", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [activeDropdownId]);
+
+
   const handleTrackJob = (job: Job) => {
     setTrackingJob(job);
     setIsTrackingModalOpen(true);
@@ -739,7 +756,7 @@ export default function ManagerDashboard() {
                       );
                     })()}
                     
-                    <div style={{ position: "relative" }}>
+                    <div style={{ position: "relative" }} className="dropdown-container">
                       <button 
                         onClick={() => setActiveDropdownId(activeDropdownId === job.id ? null : job.id)}
                         style={{ 
@@ -772,93 +789,82 @@ export default function ManagerDashboard() {
 
                       {/* Dropdown Menu */}
                       {activeDropdownId === job.id && (
-                        <>
-                          <div 
-                            onClick={() => setActiveDropdownId(null)}
+                        <div style={{
+                          position: "absolute",
+                          top: "100%",
+                          right: 0,
+                          marginTop: "0.5rem",
+                          background: "var(--surface)",
+                          border: "1px solid var(--surface-border)",
+                          borderRadius: "10px",
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
+                          width: "140px",
+                          zIndex: 11,
+                          overflow: "hidden",
+                          animation: "dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                        }}>
+                          <button
+                            onClick={() => handleEditClick(job)}
                             style={{
-                              position: "fixed",
-                              inset: 0,
-                              zIndex: 10,
-                              cursor: "default"
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              width: "100%",
+                              padding: "0.75rem 1rem",
+                              background: "none",
+                              border: "none",
+                              color: "var(--text-muted)",
+                              fontSize: "0.85rem",
+                              fontWeight: 550,
+                              textAlign: "left",
+                              cursor: "pointer",
+                              transition: "all 0.2s"
                             }}
-                          />
-                          <div style={{
-                            position: "absolute",
-                            top: "100%",
-                            right: 0,
-                            marginTop: "0.5rem",
-                            background: "var(--surface)",
-                            border: "1px solid var(--surface-border)",
-                            borderRadius: "10px",
-                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
-                            width: "140px",
-                            zIndex: 11,
-                            overflow: "hidden",
-                            animation: "dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-                          }}>
-                            <button
-                              onClick={() => handleEditClick(job)}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                width: "100%",
-                                padding: "0.75rem 1rem",
-                                background: "none",
-                                border: "none",
-                                color: "var(--text-muted)",
-                                fontSize: "0.85rem",
-                                fontWeight: 550,
-                                textAlign: "left",
-                                cursor: "pointer",
-                                transition: "all 0.2s"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "var(--surface-2)";
-                                e.currentTarget.style.color = "var(--accent)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "none";
-                                e.currentTarget.style.color = "var(--text-muted)";
-                              }}
-                            >
-                              <Edit size={14} />
-                              Edit Job
-                            </button>
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "var(--surface-2)";
+                              e.currentTarget.style.color = "var(--accent)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = "none";
+                              e.currentTarget.style.color = "var(--text-muted)";
+                            }}
+                          >
+                            <Edit size={14} />
+                            Edit Job
+                          </button>
 
-                            <div style={{ height: "1px", background: "var(--surface-border)" }} />
+                          <div style={{ height: "1px", background: "var(--surface-border)" }} />
 
-                            <button
-                              onClick={() => handleDeleteClick(job)}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                width: "100%",
-                                padding: "0.75rem 1rem",
-                                background: "none",
-                                border: "none",
-                                color: "rgba(239, 68, 68, 0.8)",
-                                fontSize: "0.85rem",
-                                fontWeight: 550,
-                                textAlign: "left",
-                                cursor: "pointer",
-                                transition: "all 0.2s"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-                                e.currentTarget.style.color = "rgb(239, 68, 68)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "none";
-                                e.currentTarget.style.color = "rgba(239, 68, 68, 0.8)";
-                              }}
-                            >
-                              <Trash2 size={14} />
-                              Delete Job
-                            </button>
-                          </div>
-                        </>
+                          <button
+                            onClick={() => handleDeleteClick(job)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              width: "100%",
+                              padding: "0.75rem 1rem",
+                              background: "none",
+                              border: "none",
+                              color: "rgba(239, 68, 68, 0.8)",
+                              fontSize: "0.85rem",
+                              fontWeight: 550,
+                              textAlign: "left",
+                              cursor: "pointer",
+                              transition: "all 0.2s"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
+                              e.currentTarget.style.color = "rgb(239, 68, 68)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = "none";
+                              e.currentTarget.style.color = "rgba(239, 68, 68, 0.8)";
+                            }}
+                          >
+                            <Trash2 size={14} />
+                            Delete Job
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1113,11 +1119,14 @@ export default function ManagerDashboard() {
               borderRadius: "20px",
               width: "100%",
               maxWidth: "550px",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
               overflow: "hidden"
             }}>
               {/* Modal Header */}
-              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <Briefcase size={24} color="var(--accent)" />
                   <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>Create New Job</h2>
@@ -1131,7 +1140,7 @@ export default function ManagerDashboard() {
               </div>
 
               {/* Modal Body */}
-              <div style={{ padding: "2rem" }}>
+              <div style={{ padding: "2rem", overflowY: "auto", flex: 1 }}>
                 <p style={{ margin: "0 0 2rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
                   Set up a new coconut harvesting task. Specify the trees and team size needed.
                 </p>
@@ -1303,7 +1312,7 @@ export default function ManagerDashboard() {
               </div>
 
               {/* Modal Footer */}
-              <div style={{ padding: "1.5rem 2rem", background: "var(--surface-2)", display: "flex", justifyContent: "flex-end", gap: "1rem", borderTop: "1px solid var(--surface-border)" }}>
+              <div style={{ padding: "1.5rem 2rem", background: "var(--surface-2)", display: "flex", justifyContent: "flex-end", gap: "1rem", borderTop: "1px solid var(--surface-border)", flexShrink: 0 }}>
                 <button 
                   type="button"
                   onClick={closeModal}
@@ -1362,11 +1371,14 @@ export default function ManagerDashboard() {
               borderRadius: "20px",
               width: "100%",
               maxWidth: "550px",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
               overflow: "hidden"
             }}>
               {/* Modal Header */}
-              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <Edit size={24} color="var(--accent)" />
                   <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>Edit Job Request</h2>
@@ -1380,7 +1392,7 @@ export default function ManagerDashboard() {
               </div>
 
               {/* Modal Body */}
-              <div style={{ padding: "2rem" }}>
+              <div style={{ padding: "2rem", overflowY: "auto", flex: 1 }}>
                 <p style={{ margin: "0 0 2rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
                   Update coconut harvesting task details for this customer.
                 </p>
@@ -1686,7 +1698,7 @@ export default function ManagerDashboard() {
               </div>
 
               {/* Modal Footer */}
-              <div style={{ padding: "1.5rem 2rem", background: "var(--surface-2)", display: "flex", justifyContent: "flex-end", gap: "1rem", borderTop: "1px solid var(--surface-border)" }}>
+              <div style={{ padding: "1.5rem 2rem", background: "var(--surface-2)", display: "flex", justifyContent: "flex-end", gap: "1rem", borderTop: "1px solid var(--surface-border)", flexShrink: 0 }}>
                 <button 
                   type="button"
                   onClick={closeEditModal}
@@ -1831,11 +1843,14 @@ export default function ManagerDashboard() {
               borderRadius: "20px",
               width: "100%",
               maxWidth: "460px",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
               overflow: "hidden"
             }}>
               {/* Modal Header */}
-              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ padding: "1.5rem 2rem", borderBottom: "1px solid var(--surface-border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <Clock size={24} color="var(--accent)" />
                   <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "var(--foreground)" }}>Confirm Job Details</h2>
@@ -1849,7 +1864,7 @@ export default function ManagerDashboard() {
               </div>
 
               {/* Modal Body */}
-              <div style={{ padding: "2rem" }}>
+              <div style={{ padding: "2rem", overflowY: "auto", flex: 1 }}>
                 <p style={{ margin: "0 0 1.5rem 0", color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.5 }}>
                   Finalize the start time and pricing structure for <strong style={{ color: "var(--foreground)" }}>{confirmingJob.customerName}</strong>.
                 </p>
@@ -2020,7 +2035,7 @@ export default function ManagerDashboard() {
               </div>
 
               {/* Modal Footer */}
-              <div style={{ padding: "1.5rem 2rem", background: "var(--surface-2)", display: "flex", justifyContent: "flex-end", gap: "1rem", borderTop: "1px solid var(--surface-border)" }}>
+              <div style={{ padding: "1.5rem 2rem", background: "var(--surface-2)", display: "flex", justifyContent: "flex-end", gap: "1rem", borderTop: "1px solid var(--surface-border)", flexShrink: 0 }}>
                 <button 
                   type="button"
                   onClick={closeConfirmModal}
