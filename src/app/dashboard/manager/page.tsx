@@ -10,7 +10,8 @@ import {
   Clock, Truck, CheckCircle, XCircle, RefreshCw
 } from "lucide-react";
 import { db, auth } from "@/lib/firebase";
-import { collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, getDoc } from "firebase/firestore";
+import { triggerPushNotification } from "@/lib/notifications";
+import { collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, getDoc, query, where, getDocs, increment } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import DatePicker from "@/components/ui/DatePicker";
@@ -172,6 +173,8 @@ export default function ManagerDashboard() {
   const [confirmStartTime, setConfirmStartTime] = useState("");
   const [confirmSelectedPrice, setConfirmSelectedPrice] = useState("Price (₹30/tree)");
 
+  const [allWorkers, setAllWorkers] = useState<any[]>([]);
+
   const [editFormData, setEditFormData] = useState({
     id: "",
     customerName: "",
@@ -183,6 +186,7 @@ export default function ManagerDashboard() {
     pricePerTree: "",
     status: "UNCONFIRMED" as Job["status"],
     createdAt: "",
+    assignedWorkers: [] as AssignedWorker[],
   });
 
   const handleEditClick = (job: Job) => {
@@ -198,6 +202,7 @@ export default function ManagerDashboard() {
       pricePerTree: job.pricePerTree,
       status: job.status,
       createdAt: job.createdAt,
+      assignedWorkers: job.assignedWorkers || [],
     });
     setIsEditModalOpen(true);
     setActiveDropdownId(null);
@@ -213,9 +218,45 @@ export default function ManagerDashboard() {
     const oldJobs = [...jobs];
     const { id, ...updatedFields } = editFormData;
 
+    const originalWorkers = editingJob?.assignedWorkers || [];
+    const newWorkers = editFormData.assignedWorkers || [];
+
+    // 1. Identify removed workers
+    const removedWorkers = originalWorkers.filter(
+      (orig) => !newWorkers.some((nw) => nw.uid === orig.uid)
+    );
+
+    // 2. Identify added workers
+    const addedWorkers = newWorkers.filter(
+      (nw) => !originalWorkers.some((orig) => orig.uid === nw.uid)
+    );
+
+    // 3. Compute status transitions
+    let newStatus = editFormData.status;
+    if (["CONFIRMED", "TEAM_PENDING", "TEAM_READY", "DELIVERY_PENDING", "ACTIVE", "WORK_COMPLETED"].includes(newStatus)) {
+      if (newWorkers.length === 0) {
+        newStatus = "CONFIRMED";
+      } else {
+        const acceptedCount = newWorkers.filter((w) => w.status === "accepted").length;
+        if (acceptedCount >= editFormData.workersRequired) {
+          if (!["TEAM_READY", "DELIVERY_PENDING", "ACTIVE", "WORK_COMPLETED", "PICKUP_STARTED", "ARRIVED_AT_DESTINATION"].includes(newStatus)) {
+            newStatus = "TEAM_READY";
+          }
+        } else {
+          newStatus = "TEAM_PENDING";
+        }
+      }
+    }
+
+    const fieldsToUpdate = {
+      ...updatedFields,
+      assignedWorkers: newWorkers,
+      status: newStatus,
+    };
+
     // Optimistic Update
     setJobs((prev) =>
-      prev.map((job) => (job.id === id ? ({ ...job, ...updatedFields } as Job) : job))
+      prev.map((job) => (job.id === id ? ({ ...job, ...fieldsToUpdate } as Job) : job))
     );
 
     // Close modal instantly
@@ -227,9 +268,54 @@ export default function ManagerDashboard() {
     }, 350);
 
     try {
+      // 4. Update Firestore ranking points for removed workers who had accepted
+      const updatePromises = removedWorkers
+        .filter((w) => w.status === "accepted")
+        .map(async (w) => {
+          try {
+            const userRef = doc(db, "users", w.uid);
+            await updateDoc(userRef, {
+              rankingPoints: increment(-10),
+            });
+          } catch (err) {
+            console.error(`Error updating ranking points for removed worker ${w.name}:`, err);
+          }
+        });
+      await Promise.all(updatePromises);
+
+      // 5. Update Job in Firestore
       const jobRef = doc(db, "jobs", id);
-      await updateDoc(jobRef, updatedFields);
+      await updateDoc(jobRef, fieldsToUpdate);
       showToast("Job updated successfully.", "success");
+
+      // 6. Push notifications
+      // Notify removed workers
+      const acceptedRemovedUids = removedWorkers.filter((w) => w.status === "accepted").map((w) => w.uid);
+      if (acceptedRemovedUids.length > 0) {
+        triggerPushNotification(
+          acceptedRemovedUids,
+          "Removed from Job",
+          `You have been removed from the harvesting job at ${editFormData.location || "Unknown Location"}. 10 ranking points have been deducted from your profile.`
+        );
+      }
+      const pendingRemovedUids = removedWorkers.filter((w) => w.status === "pending").map((w) => w.uid);
+      if (pendingRemovedUids.length > 0) {
+        triggerPushNotification(
+          pendingRemovedUids,
+          "Removed from Job",
+          `You have been removed from the harvesting job at ${editFormData.location || "Unknown Location"}.`
+        );
+      }
+
+      // Notify added workers
+      if (addedWorkers.length > 0) {
+        const addedUids = addedWorkers.map((w) => w.uid);
+        triggerPushNotification(
+          addedUids,
+          "New Job Assigned",
+          `You have been assigned to a new harvesting job at ${editFormData.location || "Unknown Location"}.`
+        );
+      }
     } catch (error) {
       console.error("Error updating job:", error);
       showToast("Failed to update job.", "error");
@@ -305,6 +391,31 @@ export default function ManagerDashboard() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!isEditModalOpen) return;
+    const fetchWorkers = async () => {
+      try {
+        const q = query(collection(db, "users"), where("role", "==", "worker"));
+        const snap = await getDocs(q);
+        const list: any[] = [];
+        snap.forEach((d) => {
+          const data = d.data();
+          list.push({
+            uid: data.uid || d.id,
+            name: data.name || "Unnamed Worker",
+            rankingPoints: data.rankingPoints ?? 0,
+          });
+        });
+        // Sort descending by rankingPoints
+        list.sort((a, b) => (b.rankingPoints ?? 0) - (a.rankingPoints ?? 0));
+        setAllWorkers(list);
+      } catch (err) {
+        console.error("Error fetching workers for edit modal:", err);
+      }
+    };
+    fetchWorkers();
+  }, [isEditModalOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -1436,6 +1547,140 @@ export default function ManagerDashboard() {
                       <option value="50" />
                       <option value="60" />
                     </datalist>
+                  </div>
+
+                  {/* Manage Assigned Team */}
+                  <div style={{ gridColumn: "1 / -1", marginTop: "0.5rem", borderTop: "1px solid var(--surface-border)", paddingTop: "1rem" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem", fontSize: "0.9rem", fontWeight: 700, color: "var(--accent)" }}>
+                      <Users size={18} /> Manage Assigned Team
+                    </label>
+
+                    {/* Currently Assigned Workers list */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
+                      {editFormData.assignedWorkers && editFormData.assignedWorkers.length > 0 ? (
+                        editFormData.assignedWorkers.map((w, idx) => (
+                          <div key={idx} style={{
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                            padding: "0.6rem 1rem", borderRadius: "10px",
+                            background: "var(--surface-2)",
+                            border: "1px solid var(--surface-border)",
+                          }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                              <div style={{
+                                width: "26px", height: "26px", borderRadius: "50%",
+                                background: w.status === "accepted" ? "rgba(16,185,129,0.15)" : w.status === "rejected" ? "rgba(239,68,68,0.15)" : "rgba(245,158,11,0.15)",
+                                color: w.status === "accepted" ? "#10b981" : w.status === "rejected" ? "#ef4444" : "#f59e0b",
+                                display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center",
+                                fontSize: "0.75rem", fontWeight: 700
+                              }}>
+                                {w.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div style={{ fontSize: "0.88rem", fontWeight: 600 }}>{w.name}</div>
+                                <div style={{
+                                  fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase",
+                                  color: w.status === "accepted" ? "#10b981" : w.status === "rejected" ? "#ef4444" : "#f59e0b"
+                                }}>
+                                  {w.status}
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditFormData(prev => ({
+                                  ...prev,
+                                  assignedWorkers: (prev.assignedWorkers || []).filter((_, i) => i !== idx)
+                                }));
+                              }}
+                              style={{
+                                background: "rgba(239,68,68,0.1)",
+                                border: "none",
+                                borderRadius: "6px",
+                                color: "#ef4444",
+                                padding: "4px 8px",
+                                fontSize: "0.75rem",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.25rem",
+                                transition: "all 0.2s"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "rgba(239,68,68,0.2)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "rgba(239,68,68,0.1)";
+                              }}
+                            >
+                              <X size={12} />
+                              Remove
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{
+                          textAlign: "center", padding: "1.5rem", borderRadius: "10px",
+                          border: "1px dashed var(--surface-border)", color: "var(--text-light)",
+                          fontSize: "0.85rem"
+                        }}>
+                          No workers assigned to this job.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Add Worker Selector */}
+                    {allWorkers.filter(w => !(editFormData.assignedWorkers || []).some(aw => aw.uid === w.uid)).length > 0 && (
+                      <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                        <div style={{ flex: 1 }}>
+                          <select
+                            id="add-worker-select"
+                            defaultValue=""
+                            onChange={(e) => {
+                              const selectedUid = e.target.value;
+                              if (!selectedUid) return;
+                              const workerObj = allWorkers.find(w => w.uid === selectedUid);
+                              if (workerObj) {
+                                setEditFormData(prev => ({
+                                  ...prev,
+                                  assignedWorkers: [
+                                    ...(prev.assignedWorkers || []),
+                                    {
+                                      uid: workerObj.uid,
+                                      name: workerObj.name,
+                                      status: "pending"
+                                    }
+                                  ]
+                                }));
+                              }
+                              e.target.value = ""; // Reset dropdown
+                            }}
+                            style={{
+                              width: "100%",
+                              background: "var(--surface-2)",
+                              border: "1px solid var(--surface-border)",
+                              color: "var(--foreground)",
+                              padding: "0.65rem 1rem",
+                              borderRadius: "8px",
+                              outline: "none",
+                              fontFamily: "inherit",
+                              fontSize: "0.85rem"
+                            }}
+                          >
+                            <option value="" disabled>Add worker to team...</option>
+                            {allWorkers
+                              .filter(w => !(editFormData.assignedWorkers || []).some(aw => aw.uid === w.uid))
+                              .map(w => (
+                                <option key={w.uid} value={w.uid}>
+                                  {w.name} (★ {w.rankingPoints})
+                                </option>
+                              ))
+                            }
+                          </select>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </form>
               </div>
