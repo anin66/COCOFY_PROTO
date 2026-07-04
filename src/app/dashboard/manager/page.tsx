@@ -728,7 +728,14 @@ export default function ManagerDashboard() {
                   padding: "1.5rem",
                   borderRadius: "16px"
                 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                  <div style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "flex-start", 
+                    marginBottom: "1rem",
+                    position: "relative",
+                    zIndex: activeDropdownId === job.id ? 5 : 1
+                  }}>
                     {(() => {
                       const statusConfig: Record<string, { bg: string; border: string; color: string; icon: React.ReactNode; label: string }> = {
                         UNCONFIRMED: { bg: "rgba(217,119,6,0.1)", border: "rgba(217,119,6,0.3)", color: "#d97706", icon: <Clock size={12} />, label: "AWAITING RESPONSE" },
@@ -829,7 +836,7 @@ export default function ManagerDashboard() {
                               e.currentTarget.style.color = "var(--text-muted)";
                             }}
                           >
-                            <Edit size={14} />
+                            <Edit size={14} style={{ pointerEvents: "none" }} />
                             Edit Job
                           </button>
 
@@ -861,7 +868,7 @@ export default function ManagerDashboard() {
                               e.currentTarget.style.color = "rgba(239, 68, 68, 0.8)";
                             }}
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} style={{ pointerEvents: "none" }} />
                             Delete Job
                           </button>
                         </div>
